@@ -88,7 +88,7 @@ OnPreptimeEnd()
 	}
 
 	drawPlayerRoles();
-	scripts\ttt\ui::setHeadIcons();
+	scripts\ttt\ui::displayHeadIcons();
 	level.disableSpawning = true;
 	//visionSetNaked(getDvar("mapname"), 2.0);
 

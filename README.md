@@ -5,7 +5,6 @@
 ### To-Do
 
 * Fix Dead-Chat
-* Fix Headicons disappearing when moving
 * Traitor-only Chat
 * Traitor Items (Ideas)
   * Radar

@@ -31,12 +31,10 @@ initPlayer()
 	self.ttt.ui["hud"]["role"] setPoint("TOP RIGHT", "TOP RIGHT", -20, 10);
 	self.ttt.ui["hud"]["role"].color = (1, 1, 1);
 	self.ttt.ui["hud"]["role"].glowAlpha = 1;
-	self.ttt.ui["hud"]["role"].foreground = false;
 	self.ttt.ui["hud"]["role"].hidewheninmenu = true;
 
 	self.ttt.ui["hud"]["health"] = self createFontString("hudbig", 0.8);
 	self.ttt.ui["hud"]["health"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -90, -8);
-	self.ttt.ui["hud"]["health"].foreground = false;
 	self.ttt.ui["hud"]["health"].hidewheninmenu = true;
 	self.ttt.ui["hud"]["health"].glowAlpha = 1;
 
@@ -77,20 +75,61 @@ updatePlayerRoleDisplay(role)
 	self.ttt.ui["hud"]["role"] setText(text);
 }
 
-setHeadIcons()
+displayHeadIcons()
 {
-	for (i = 0; i < level.players.size; i++)
-	{
-		for (j = 0; j < level.players.size; j++)
-		{
-			if (level.players[i].guid == level.players[j].guid) continue;
+	self.ttt.ui["hud"]["headicons"] = [];
 
-			if (level.players[i].ttt.role == "traitor" && level.players[j].ttt.role == "traitor")
-				level.players[i] maps\mp\_entityheadicons::setHeadIcon(level.players[j], game["entity_headicon_allies"], (0, 0, 80), 8, 8, false, false);
-			if (level.players[i].ttt.role == "detective")
-				level.players[i] maps\mp\_entityheadicons::setHeadIcon(level.players[j], game["entity_headicon_axis"], (0, 0, 80), 8, 8, false, false);
+	livingPlayers = getLivingPlayers();
+	foreach (player in livingPlayers)
+	{
+		foreach (target in livingPlayers)
+		{
+			if (player == target) continue;
+
+			if (player.ttt.role == "traitor" && target.ttt.role == "traitor")
+				player displayHeadIconOnPlayer(target, game["entity_headicon_allies"]);
+			if (target.ttt.role == "detective")
+				player displayHeadIconOnPlayer(target, game["entity_headicon_axis"]);
 		}
 	}
+}
+
+displayHeadIconOnPlayer(target, image)
+{
+	i = self.ttt.ui["hud"]["headicons"].size;
+
+	self.ttt.ui["hud"]["headicons"][i] = newClientHudElem(self);
+	self.ttt.ui["hud"]["headicons"][i].archived = true;
+	self.ttt.ui["hud"]["headicons"][i] setShader(image, 8, 8);
+
+	self.ttt.ui["hud"]["headicons"][i] setWaypoint(false, false);
+	self.ttt.ui["hud"]["headicons"][i] thread headIconThink(target);
+	self.ttt.ui["hud"]["headicons"][i] thread headIconOnDestroy(target);
+}
+
+headIconThink(target)
+{
+	self endon("death");
+	target endon("death");
+	target endon("disconnect");
+
+	offset = (0, 0, 20);
+
+	for(;;)
+	{
+		eyePos = target getEye();
+		self.x = eyePos[0] + offset[0];
+		self.y = eyePos[1] + offset[1];
+		self.z = eyePos[2] + offset[2];
+
+		wait(0.05);
+	}
+}
+
+headIconOnDestroy(target)
+{
+	target waittill_any("death", "disconnect");
+	self destroy();
 }
 
 displayRoundEnd(winner, reason)
