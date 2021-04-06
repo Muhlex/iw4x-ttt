@@ -395,25 +395,3 @@ endRound(winner, reason)
 
 	thread OnAftertimeEnd();
 }
-
-/** TODOS:
- * - Traitor-only Chat
- * - Traitor Items
- * --- Radar
- * --- Kevlar
- * --- Ranger
- * --- RPG? Predator (nerfed)?
- * --- Bombe (C4 aus TTT)
- * --- Silent AWP
- * --- Trash Disguiser
- * --- Throwing Knife
- * --- Jihad Bombe
- * - Detective Items
- * --- Default Kevlar?
- * --- M3 Super SPAS-12
- * --- Riot Shield
- * --- Stun / Flashbang
- * --- One-Shot Deagle
- * --- Heal-Station
- * --- Blast-Shield
- */
