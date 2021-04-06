@@ -201,7 +201,7 @@ displayScoreboard()
 		else self.ttt.ui["sb"]["names"][i] setParent(self.ttt.ui["sb"]["names"][i - 1]);
 		self.ttt.ui["sb"]["names"][i] setPoint("TOP CENTER", "BOTTOM CENTER", 0, 0);
 		if (player.guid == self.guid) self.ttt.ui["sb"]["names"][i].color = level.ttt.colors["self"];
-		if (player.ttt.role == "detective" || self.ttt.role == "traitor" || level.gameEnded)
+		if (player.ttt.role == "detective" || self.ttt.role == "traitor" || level.gameEnded || !isAlive(self))
 		{
 			self.ttt.ui["sb"]["names"][i].glowColor = level.ttt.colors[player.ttt.role];
 			self.ttt.ui["sb"]["names"][i].glowAlpha = 1.0;
@@ -230,7 +230,7 @@ displayScoreboard()
 			else self.ttt.ui["sb"]["names"][j] setParent(self.ttt.ui["sb"]["names"][j - 1]);
 			self.ttt.ui["sb"]["names"][j] setPoint("TOP CENTER", "BOTTOM CENTER", 0, 0);
 			if (player.guid == self.guid) self.ttt.ui["sb"]["names"][j].color = level.ttt.colors["self"];
-			if (player.ttt.role == "detective" || self.ttt.role == "traitor" || level.gameEnded)
+			if (player.ttt.role == "detective" || self.ttt.role == "traitor" || level.gameEnded || !isAlive(self))
 			{
 				self.ttt.ui["sb"]["names"][j].glowColor = level.ttt.colors[player.ttt.role];
 				self.ttt.ui["sb"]["names"][j].glowAlpha = 1.0;
@@ -264,7 +264,7 @@ displayScoreboard()
 			else self.ttt.ui["sb"]["names"][j] setParent(self.ttt.ui["sb"]["names"][j - 1]);
 			self.ttt.ui["sb"]["names"][j] setPoint("TOP CENTER", "BOTTOM CENTER", 0, 0);
 			if (player.guid == self.guid) self.ttt.ui["sb"]["names"][j].color = level.ttt.colors["self"];
-			if (player.ttt.role == "detective" || self.ttt.role == "traitor" || level.gameEnded)
+			if (player.ttt.role == "detective" || self.ttt.role == "traitor" || level.gameEnded || !isAlive(self))
 			{
 				self.ttt.ui["sb"]["names"][j].glowColor = level.ttt.colors[player.ttt.role];
 				self.ttt.ui["sb"]["names"][j].glowAlpha = 1.0;
