@@ -11,6 +11,8 @@ init()
 	level.ttt.maxhealth = getDvarInt("scr_player_maxhealth");
 	level.ttt.headshotMultiplier = getDvarFloat("ttt_headshot_multiplier");
 	level.ttt.headshotMultiplierSniper = getDvarFloat("ttt_headshot_multiplier_sniper");
+	level.ttt.preptime = getDvarInt("ttt_preptime");
+	if (level.ttt.preptime < 1) level.ttt.preptime = 1;
 
 	level.ttt.prematch = true;
 	level.ttt.preparing = true;
@@ -24,7 +26,7 @@ init()
 	setDvar("scr_game_spectatetype", "2");
 
 	setDvar("scr_dm_scorelimit", "0");
-	setDvar("scr_dm_timelimit", (getDvarFloat("ttt_roundtime") + getDvarInt("ttt_preptime") / 60));
+	setDvar("scr_dm_timelimit", (getDvarFloat("ttt_roundtime") + level.ttt.preptime / 60));
 	setDvar("scr_dm_numlives", "0");
 	setDvar("scr_dm_winlimit", "0");
 
@@ -76,7 +78,7 @@ OnPreptimeEnd()
 {
 	level endon("game_ended");
 
-	wait(int(getDvarInt("ttt_preptime")));
+	wait(level.ttt.preptime);
 	level.ttt.preparing = false;
 
 	foreach(player in getLivingPlayers())
