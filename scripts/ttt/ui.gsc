@@ -214,18 +214,21 @@ displayScoreboard()
 	self.ttt.ui["sb"]["bg"] = self createRectangle(240, 0, (0, 0, 0));
 	self.ttt.ui["sb"]["bg"] setPoint("CENTER", "CENTER", 0, 0);
 	self.ttt.ui["sb"]["bg"].alpha = 0.65;
+	self.ttt.ui["sb"]["bg"].archived = false;
 	self.ttt.ui["sb"]["bg"].foreground = true; // gets it displayed over the crosshair
 	self.ttt.ui["sb"]["bg"].sort = -1;
 
 	self.ttt.ui["sb"]["icon"]["face"] = createIcon("cardicon_comic_shepherd", 32, 32);
 	self.ttt.ui["sb"]["icon"]["face"] setParent(self.ttt.ui["sb"]["bg"]);
 	self.ttt.ui["sb"]["icon"]["face"] setPoint("BOTTOM LEFT", "TOP LEFT", 4, 2);
+	self.ttt.ui["sb"]["icon"]["face"].archived = false;
 	self.ttt.ui["sb"]["icon"]["face"].foreground = true;
 	self.ttt.ui["sb"]["icon"]["face"].sort = 5;
 
 	self.ttt.ui["sb"]["icon"]["pipe"] = createIcon("cardtitle_silencer", 20, 4);
 	self.ttt.ui["sb"]["icon"]["pipe"] setParent(self.ttt.ui["sb"]["icon"]["face"]);
 	self.ttt.ui["sb"]["icon"]["pipe"] setPoint("TOP LEFT", "TOP LEFT", 14, 22);
+	self.ttt.ui["sb"]["icon"]["pipe"].archived = false;
 	self.ttt.ui["sb"]["icon"]["pipe"].foreground = true;
 	self.ttt.ui["sb"]["icon"]["pipe"].sort = 10;
 
@@ -234,6 +237,7 @@ displayScoreboard()
 	self.ttt.ui["sb"]["headings"]["alive"] = self createFontString("objective", 1.5);
 	self.ttt.ui["sb"]["headings"]["alive"] setParent(self.ttt.ui["sb"]["bg"]);
 	self.ttt.ui["sb"]["headings"]["alive"] setPoint("TOP CENTER", "TOP CENTER", 0, vertPadding);
+	self.ttt.ui["sb"]["headings"]["alive"].archived = false;
 	self.ttt.ui["sb"]["headings"]["alive"] setText("TERRORISTS (" + players["alive"].size + ")");
 
 	foreach (i, player in players["alive"])
@@ -242,6 +246,7 @@ displayScoreboard()
 		if (i == 0) self.ttt.ui["sb"]["names"][i] setParent(self.ttt.ui["sb"]["headings"]["alive"]);
 		else self.ttt.ui["sb"]["names"][i] setParent(self.ttt.ui["sb"]["names"][i - 1]);
 		self.ttt.ui["sb"]["names"][i] setPoint("TOP CENTER", "BOTTOM CENTER", 0, 0);
+		self.ttt.ui["sb"]["names"][i].archived = false;
 		if (player.guid == self.guid)
 		{
 			self.ttt.ui["sb"]["names"][i].glowColor = level.ttt.colorsScoreboard["self"];
@@ -262,6 +267,7 @@ displayScoreboard()
 		else
 			self.ttt.ui["sb"]["headings"]["missing"] setParent(self.ttt.ui["sb"]["headings"]["alive"]);
 		self.ttt.ui["sb"]["headings"]["missing"] setPoint("TOP CENTER", "BOTTOM CENTER", 0, vertPadding);
+		self.ttt.ui["sb"]["headings"]["missing"].archived = false;
 		totalVertPadding += vertPadding;
 		self.ttt.ui["sb"]["headings"]["missing"] setText("MISSING IN ACTION (" + players["missing"].size + ")");
 
@@ -272,6 +278,7 @@ displayScoreboard()
 			if (i == 0) self.ttt.ui["sb"]["names"][j] setParent(self.ttt.ui["sb"]["headings"]["missing"]);
 			else self.ttt.ui["sb"]["names"][j] setParent(self.ttt.ui["sb"]["names"][j - 1]);
 			self.ttt.ui["sb"]["names"][j] setPoint("TOP CENTER", "BOTTOM CENTER", 0, 0);
+			self.ttt.ui["sb"]["names"][j].archived = false;
 			if (player.guid == self.guid)
 			{
 				self.ttt.ui["sb"]["names"][j].glowColor = level.ttt.colorsScoreboard["self"];
@@ -297,6 +304,7 @@ displayScoreboard()
 		else
 			self.ttt.ui["sb"]["headings"]["confirmed"] setParent(self.ttt.ui["sb"]["headings"]["alive"]);
 		self.ttt.ui["sb"]["headings"]["confirmed"] setPoint("TOP CENTER", "BOTTOM CENTER", 0, vertPadding);
+		self.ttt.ui["sb"]["headings"]["confirmed"].archived = false;
 		totalVertPadding += vertPadding;
 		self.ttt.ui["sb"]["headings"]["confirmed"] setText("CONFIRMED DEAD (" + players["confirmed"].size + ")");
 
@@ -307,6 +315,7 @@ displayScoreboard()
 			if (i == 0) self.ttt.ui["sb"]["names"][j] setParent(self.ttt.ui["sb"]["headings"]["confirmed"]);
 			else self.ttt.ui["sb"]["names"][j] setParent(self.ttt.ui["sb"]["names"][j - 1]);
 			self.ttt.ui["sb"]["names"][j] setPoint("TOP CENTER", "BOTTOM CENTER", 0, 0);
+			self.ttt.ui["sb"]["names"][j].archived = false;
 			if (player.guid == self.guid)
 			{
 				self.ttt.ui["sb"]["names"][j].glowColor = level.ttt.colorsScoreboard["self"];
