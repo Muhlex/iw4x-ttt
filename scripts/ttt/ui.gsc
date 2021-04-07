@@ -5,8 +5,7 @@
 
 init()
 {
-	precacheShader("specialty_copycat");
-	precacheShader("cardicon_brit_beret");
+	precacheShader("cardicon_comic_shepherd");
 	precacheShader("cardtitle_silencer");
 
 	level.ttt.ui = [];
@@ -79,19 +78,20 @@ displayHeadIcons()
 {
 	self.ttt.ui["hud"]["headicons"] = [];
 
-	livingPlayers = getLivingPlayers();
-	foreach (player in livingPlayers)
+	foreach (target in getLivingPlayers())
 	{
-		foreach (target in livingPlayers)
-		{
-			if (player == target) continue;
+		if (self == target) continue;
 
-			if (player.ttt.role == "traitor" && target.ttt.role == "traitor")
-				player displayHeadIconOnPlayer(target, game["entity_headicon_allies"]);
-			if (target.ttt.role == "detective")
-				player displayHeadIconOnPlayer(target, game["entity_headicon_axis"]);
-		}
+		if (self.ttt.role == "traitor" && target.ttt.role == "traitor")
+			self displayHeadIconOnPlayer(target, game["entity_headicon_axis"]);
+		if (target.ttt.role == "detective")
+			self displayHeadIconOnPlayer(target, game["entity_headicon_allies"]);
 	}
+}
+
+destroyHeadIcons()
+{
+	recursivelyDestroyElements(self.ttt.ui["hud"]["headicons"]);
 }
 
 displayHeadIconOnPlayer(target, image)
@@ -99,7 +99,6 @@ displayHeadIconOnPlayer(target, image)
 	i = self.ttt.ui["hud"]["headicons"].size;
 
 	self.ttt.ui["hud"]["headicons"][i] = newClientHudElem(self);
-	self.ttt.ui["hud"]["headicons"][i].archived = true;
 	self.ttt.ui["hud"]["headicons"][i] setShader(image, 8, 8);
 
 	self.ttt.ui["hud"]["headicons"][i] setWaypoint(false, false);
@@ -128,6 +127,8 @@ headIconThink(target)
 
 headIconOnDestroy(target)
 {
+	self endon("death");
+
 	target waittill_any("death", "disconnect");
 	self destroy();
 }
@@ -154,6 +155,7 @@ displayRoundEnd(winner, reason)
 
 	level.ttt.ui["hud"]["outcome"]["bg"] = createRectangle(1000, 80, (0, 0, 0), true);
 	level.ttt.ui["hud"]["outcome"]["bg"] setPoint("TOP CENTER", "TOP CENTER", 0, 40);
+	level.ttt.ui["hud"]["outcome"]["bg"].archived = false;
 	level.ttt.ui["hud"]["outcome"]["bg"].hidewheninmenu = true;
 	level.ttt.ui["hud"]["outcome"]["bg"].alpha = 0.35;
 	level.ttt.ui["hud"]["outcome"]["bg"].sort = -1;
@@ -161,14 +163,16 @@ displayRoundEnd(winner, reason)
 	level.ttt.ui["hud"]["outcome"]["title"] = createServerFontString("objective", 2.0);
 	level.ttt.ui["hud"]["outcome"]["title"] setParent(level.ttt.ui["hud"]["outcome"]["bg"]);
 	level.ttt.ui["hud"]["outcome"]["title"] setPoint("TOP CENTER", "TOP CENTER", 0, 28);
+	level.ttt.ui["hud"]["outcome"]["title"].archived = false;
+	level.ttt.ui["hud"]["outcome"]["title"].hidewheninmenu = true;
 	level.ttt.ui["hud"]["outcome"]["title"].glowColor = level.ttt.colors[winner];
 	level.ttt.ui["hud"]["outcome"]["title"].glowAlpha = 1;
-	level.ttt.ui["hud"]["outcome"]["title"].hidewheninmenu = true;
 	level.ttt.ui["hud"]["outcome"]["title"] setText(winnerText);
 
 	level.ttt.ui["hud"]["outcome"]["reason"] = createServerFontString("default", 1.5);
 	level.ttt.ui["hud"]["outcome"]["reason"] setParent(level.ttt.ui["hud"]["outcome"]["title"]);
 	level.ttt.ui["hud"]["outcome"]["reason"] setPoint("TOP CENTER", "BOTTOM CENTER", 0, 10);
+	level.ttt.ui["hud"]["outcome"]["reason"].archived = false;
 	level.ttt.ui["hud"]["outcome"]["reason"].hidewheninmenu = true;
 	level.ttt.ui["hud"]["outcome"]["reason"] setText(reasonText);
 }
@@ -211,21 +215,15 @@ displayScoreboard()
 	self.ttt.ui["sb"]["bg"].foreground = true; // gets it displayed over the crosshair
 	self.ttt.ui["sb"]["bg"].sort = -1;
 
-	self.ttt.ui["sb"]["icon"]["face"] = createIcon("specialty_copycat", 32, 32);
+	self.ttt.ui["sb"]["icon"]["face"] = createIcon("cardicon_comic_shepherd", 32, 32);
 	self.ttt.ui["sb"]["icon"]["face"] setParent(self.ttt.ui["sb"]["bg"]);
-	self.ttt.ui["sb"]["icon"]["face"] setPoint("CENTER CENTER", "TOP LEFT", 6, 0);
+	self.ttt.ui["sb"]["icon"]["face"] setPoint("BOTTOM LEFT", "TOP LEFT", 4, 2);
 	self.ttt.ui["sb"]["icon"]["face"].foreground = true;
 	self.ttt.ui["sb"]["icon"]["face"].sort = 5;
 
-	self.ttt.ui["sb"]["icon"]["hat"] = createIcon("cardicon_brit_beret", 32, 32);
-	self.ttt.ui["sb"]["icon"]["hat"] setParent(self.ttt.ui["sb"]["icon"]["face"]);
-	self.ttt.ui["sb"]["icon"]["hat"] setPoint("TOP LEFT", "TOP LEFT", -3, -16);
-	self.ttt.ui["sb"]["icon"]["hat"].foreground = true;
-	self.ttt.ui["sb"]["icon"]["hat"].sort = 10;
-
 	self.ttt.ui["sb"]["icon"]["pipe"] = createIcon("cardtitle_silencer", 20, 4);
 	self.ttt.ui["sb"]["icon"]["pipe"] setParent(self.ttt.ui["sb"]["icon"]["face"]);
-	self.ttt.ui["sb"]["icon"]["pipe"] setPoint("TOP LEFT", "TOP LEFT", 16, 20);
+	self.ttt.ui["sb"]["icon"]["pipe"] setPoint("TOP LEFT", "TOP LEFT", 14, 22);
 	self.ttt.ui["sb"]["icon"]["pipe"].foreground = true;
 	self.ttt.ui["sb"]["icon"]["pipe"].sort = 10;
 

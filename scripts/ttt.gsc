@@ -88,7 +88,7 @@ OnPreptimeEnd()
 	}
 
 	drawPlayerRoles();
-	scripts\ttt\ui::displayHeadIcons();
+	foreach (player in level.players) player scripts\ttt\ui::displayHeadIcons();
 	level.disableSpawning = true;
 	//visionSetNaked(getDvar("mapname"), 2.0);
 
@@ -109,15 +109,13 @@ OnAftertimeEnd()
 
 	wait(getDvarInt("ttt_aftertime"));
 
+	scripts\ttt\ui::destroyRoundEnd();
+
 	foreach (player in level.players) player.cancelKillcam = true;
-
 	level notify("round_end_finished"); // kicks off the final killcam
-
 	while (level.showingFinalKillcam) wait(0.05);
 
 	level.gameEnded = false;
-
-	scripts\ttt\ui::destroyRoundEnd();
 
 	game["roundsPlayed"]++;
 	if (game["roundsPlayed"] >= getDvarInt("ttt_roundlimit"))
@@ -291,12 +289,16 @@ OnPlayerScoreboard()
 	for (;;)
 	{
 		self waittill("scoreboard_open");
+		// Hide the scoreboard using a hack
 		self setClientDvar("cg_scoreboardWidth", 10000);
 		self setClientDvar("cg_scoreboardHeight", 0);
+		//self scripts\ttt\ui::destroyHeadIcons();
 		self thread scoreboardThink();
 
 		self waittill("scoreboard_close");
 		self scripts\ttt\ui::destroyScoreboard();
+		//self scripts\ttt\ui::displayHeadIcons();
+		// Restore default scoreborad settings
 		self setClientDvar("cg_scoreboardWidth", 500);
 		self setClientDvar("cg_scoreboardHeight", 435);
 	}

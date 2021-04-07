@@ -356,7 +356,7 @@ beginTeamChoice()
 	//Intricate - We put the auto assign where the actual team selection is. Also make sure that a mod isn't loaded, mainly to prevent bugs with them.
 	if( GetDvar("scr_player_forceautoassign") && GetDvar("fs_game") == ""  )
 	{
-		if (level.ttt.enabled) self notify("menuresponse", game["menu_team"], "axis");
+		if (level.ttt.enabled) self notify("menuresponse", game["menu_team"], "allies");
 		else self notify("menuresponse", game["menu_team"], "autoassign");
 	}
 	else
