@@ -31,6 +31,7 @@ initPlayer()
 	self.ttt.ui["hud"]["role"].color = (1, 1, 1);
 	self.ttt.ui["hud"]["role"].glowAlpha = 1;
 	self.ttt.ui["hud"]["role"].hidewheninmenu = true;
+	self.ttt.ui["hud"]["role"] maps\mp\gametypes\_hud::fontPulseInit(1.2);
 
 	self.ttt.ui["hud"]["health"] = self createFontString("hudbig", 0.8);
 	self.ttt.ui["hud"]["health"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -90, -8);
@@ -72,6 +73,7 @@ updatePlayerRoleDisplay(role)
 	else if (role == "traitor") text = "TRAITOR";
 	self.ttt.ui["hud"]["role"].glowColor = level.ttt.colors[role];
 	self.ttt.ui["hud"]["role"] setText(text);
+	self.ttt.ui["hud"]["role"] thread maps\mp\gametypes\_hud::fontPulse(self);
 }
 
 displayHeadIcons()
