@@ -1385,7 +1385,7 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 		{
 			prof_begin( "PlayerDamage world" );
 
-			if ( iDamage < 1 )
+			if ( iDamage < 1 && (!level.ttt.enabled || (level.ttt.enabled && !level.ttt.preparing)) )
 				iDamage = 1;
 
 			if ( isDefined( eAttacker ) && isPlayer( eAttacker ) )
