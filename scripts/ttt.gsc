@@ -145,7 +145,8 @@ OnPlayerConnect()
 		player thread OnPlayerDeath();
 		player thread OnPlayerEnemyKilled();
 		player thread OnPlayerRagdoll();
-		player thread OnPlayerScoreboard();
+		player thread OnPlayerScoreboardOpen();
+		player thread OnPlayerScoreboardClose();
 	}
 }
 
@@ -281,28 +282,45 @@ playerBodyThink(owner)
 	}
 }
 
-OnPlayerScoreboard()
+OnPlayerScoreboardOpen()
 {
 	self endon("disconnect");
 
 	self notifyOnPlayerCommand("scoreboard_open", "+scores");
-	self notifyOnPlayerCommand("scoreboard_close", "-scores");
 
 	for (;;)
 	{
 		self waittill("scoreboard_open");
+
 		// Hide the scoreboard using a hack
 		self setClientDvar("cg_scoreboardWidth", 10000);
 		self setClientDvar("cg_scoreboardHeight", 0);
+
 		//self scripts\ttt\ui::destroyHeadIcons();
 		self thread scoreboardThink();
+	}
+}
 
+OnPlayerScoreboardClose()
+{
+	self endon("disconnect");
+
+	self notifyOnPlayerCommand("scoreboard_close", "-scores");
+
+	for (;;)
+	{
 		self waittill("scoreboard_close");
+
 		self scripts\ttt\ui::destroyScoreboard();
 		//self scripts\ttt\ui::displayHeadIcons();
+
 		// Restore default scoreborad settings
 		self setClientDvar("cg_scoreboardWidth", 500);
 		self setClientDvar("cg_scoreboardHeight", 435);
+
+		// Try to destroy again a tick later (for whenever +scores and -scores are sent simultaneously)
+		wait(0.05);
+		self scripts\ttt\ui::destroyScoreboard();
 	}
 }
 
