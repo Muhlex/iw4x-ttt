@@ -445,6 +445,7 @@ buyMenuThink()
 	self notifyOnPlayerCommand("menu_right", "+moveright");
 	self notifyOnPlayerCommand("menu_activate", "+activate");
 	self notifyOnPlayerCommand("menu_activate", "+attack");
+	self notifyOnPlayerCommand("menu_activate", "+gostand");
 
 	for (;;)
 	{
