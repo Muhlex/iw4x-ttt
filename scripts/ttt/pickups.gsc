@@ -18,8 +18,6 @@ getRandomWeapon()
 	tieredWeapons[0][4] = "masada";
 	tieredWeapons[0][5] = "ump45";
 	tieredWeapons[0][6] = "aug";
-	tieredWeapons[0][7] = "spas12";
-	tieredWeapons[0][8] = "ranger";
 
 	tieredWeapons[1][0] = "m4";
 	tieredWeapons[1][1] = "m16";

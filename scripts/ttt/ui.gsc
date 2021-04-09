@@ -403,17 +403,27 @@ displayBuyMenu(role)
 		parent = undefined;
 		pointParent = undefined;
 
-		self.ttt.ui["bm"]["items_bg"][i] = self createRectangle(48, 48, level.ttt.colorsBuyMenu["item_bg"]);
+		squareLength = 48;
+		self.ttt.ui["bm"]["items_bg"][i] = self createRectangle(squareLength, squareLength, level.ttt.colorsBuyMenu["item_bg"]);
 		self.ttt.ui["bm"]["items_bg"][i].alpha = 0.8;
 		self.ttt.ui["bm"]["items_bg"][i].foreground = true;
 		self.ttt.ui["bm"]["items_bg"][i].hidewheninmenu = true;
 
-		self.ttt.ui["bm"]["items_icon"][i] = self createIcon(level.ttt.items[role][i].icon, 32, 32);
+		iconWidth = 32;
+		iconHeight = 32;
+		if (isDefined(item.iconWidth)) iconWidth = item.iconWidth;
+		if (isDefined(item.iconHeight)) iconHeight = item.iconHeight;
+		self.ttt.ui["bm"]["items_icon"][i] = self createIcon(level.ttt.items[role][i].icon, iconWidth, iconHeight);
 		self.ttt.ui["bm"]["items_icon"][i].foreground = true;
 		self.ttt.ui["bm"]["items_icon"][i].hidewheninmenu = true;
 		self.ttt.ui["bm"]["items_icon"][i].sort = 5;
 		self.ttt.ui["bm"]["items_icon"][i] setParent(self.ttt.ui["bm"]["items_bg"][i]);
-		self.ttt.ui["bm"]["items_icon"][i] setPoint("TOP LEFT", "TOP LEFT", 8, 16); // do manual positioning because rects are still weird
+		// do manual positioning because rects are still weird
+		iconOffsetX = int(squareLength / 2 - iconWidth / 2);
+		iconOffsetY = int(squareLength / 2 - iconHeight / 2) + 8;
+		if (isDefined(item.iconOffsetX)) iconOffsetX += item.iconOffsetX;
+		if (isDefined(item.iconOffsetY)) iconOffsetY += item.iconOffsetY;
+		self.ttt.ui["bm"]["items_icon"][i] setPoint("TOP LEFT", "TOP LEFT", iconOffsetX, iconOffsetY);
 
 		if (i == 0) // first element
 		{

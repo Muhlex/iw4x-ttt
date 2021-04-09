@@ -24,7 +24,37 @@ init()
 	level.ttt.items["traitor"][1].onBuy = ::OnBuyRadar;
 	level.ttt.items["traitor"][1].getIsAvailable = ::GetIsAvailablePassive;
 
+	level.ttt.items["traitor"][2] = spawnStruct();
+	level.ttt.items["traitor"][2].name = "RANGER SHOTGUN";
+	level.ttt.items["traitor"][2].description = "^3Exclusive weapon\n^7Strong close-range shotgun\nwhich can fire two shells at once.";
+	level.ttt.items["traitor"][2].icon = "weapon_ranger";
+	level.ttt.items["traitor"][2].iconWidth = 48;
+	level.ttt.items["traitor"][2].iconHeight = 24;
+	level.ttt.items["traitor"][2].iconOffsetX = -1;
+	level.ttt.items["traitor"][2].onBuy = ::OnBuyRanger;
+	level.ttt.items["traitor"][2].getIsAvailable = ::GetIsAvailableRanger;
+
 	level.ttt.items["detective"][0] = armor;
+
+	level.ttt.items["detective"][1] = spawnStruct();
+	level.ttt.items["detective"][1].name = "RIOT SHIELD";
+	level.ttt.items["detective"][1].description = "^3Exclusive weapon\n^7Blocks bullets,\neven when it is on your back.";
+	level.ttt.items["detective"][1].icon = "weapon_riotshield";
+	level.ttt.items["detective"][1].iconWidth = 64;
+	level.ttt.items["detective"][1].iconHeight = 32;
+	level.ttt.items["detective"][1].iconOffsetX = -16;
+	level.ttt.items["detective"][1].onBuy = ::OnBuyRiot;
+	level.ttt.items["detective"][1].getIsAvailable = ::GetIsAvailableRiot;
+
+	level.ttt.items["detective"][2] = spawnStruct();
+	level.ttt.items["detective"][2].name = "SPAS-12 SHOTGUN";
+	level.ttt.items["detective"][2].description = "^3Exclusive weapon\n^7Versatile shotgun with good\nperformance up to medium range.";
+	level.ttt.items["detective"][2].icon = "weapon_spas12";
+	level.ttt.items["detective"][2].iconWidth = 48;
+	level.ttt.items["detective"][2].iconHeight = 24;
+	level.ttt.items["detective"][2].iconOffsetX = 1;
+	level.ttt.items["detective"][2].onBuy = ::OnBuySpas;
+	level.ttt.items["detective"][2].getIsAvailable = ::GetIsAvailableSpas;
 
 	foreach (roleItems in level.ttt.items) foreach (item in roleItems) precacheShader(item.icon);
 }
@@ -113,4 +143,46 @@ OnBuyRadar()
 		self.hasRadar = false;
 		wait(RADAR_INTERVAL - 4);
 	}
+}
+
+OnBuyRanger()
+{
+	WEAPON_NAME = "ranger_mp";
+	self giveWeapon(WEAPON_NAME);
+	self setWeaponAmmoStock(WEAPON_NAME, 0);
+	self setWeaponAmmoClip(WEAPON_NAME, 2);
+}
+
+GetIsAvailableRanger()
+{
+	WEAPON_NAME = "ranger_mp";
+	return !self hasWeapon(WEAPON_NAME);
+}
+
+OnBuyRiot()
+{
+	WEAPON_NAME = "riotshield_mp";
+	self giveWeapon(WEAPON_NAME);
+	self.hasRiotShield = true;
+	self AttachShieldModel("weapon_riot_shield_mp", "tag_shield_back");
+}
+
+GetIsAvailableRiot()
+{
+	WEAPON_NAME = "riotshield_mp";
+	return !self hasWeapon(WEAPON_NAME);
+}
+
+OnBuySpas()
+{
+	WEAPON_NAME = "spas12_mp";
+	self giveWeapon(WEAPON_NAME);
+	self setWeaponAmmoStock(WEAPON_NAME, 0);
+	self setWeaponAmmoClip(WEAPON_NAME, 8);
+}
+
+GetIsAvailableSpas()
+{
+	WEAPON_NAME = "spas12_mp";
+	return !self hasWeapon(WEAPON_NAME);
 }
