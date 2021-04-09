@@ -77,7 +77,7 @@ awardBodyInspectCredits(victim)
 
 tryBuyItem(item)
 {
-	if (isInArray(self.ttt.items.inventory, item)) return;
+	if (![[item.getIsAvailable]](item)) return;
 	if (self.ttt.items.credits < 1) return;
 
 	self thread [[item.onBuy]]();
