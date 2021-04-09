@@ -11,6 +11,7 @@ init()
 	level.ttt.maxhealth = getDvarInt("scr_player_maxhealth");
 	level.ttt.headshotMultiplier = getDvarFloat("ttt_headshot_multiplier");
 	level.ttt.headshotMultiplierSniper = getDvarFloat("ttt_headshot_multiplier_sniper");
+	level.ttt.projectileMultiplier = getDvarFloat("ttt_projectile_multiplier");
 	level.ttt.preptime = getDvarInt("ttt_preptime");
 	if (level.ttt.preptime < 1) level.ttt.preptime = 1;
 
@@ -215,8 +216,8 @@ OnPlayerDeath()
 	{
 		self waittill("death");
 
-		self unsetPlayerBuyMenu();
 		self scripts\ttt\ui::destroySelfHud();
+		self unsetPlayerBuyMenu();
 		checkRoundWinConditions();
 	}
 }

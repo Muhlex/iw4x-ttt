@@ -1250,12 +1250,18 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 		}
 		else
 		{
+			weaponClass = getWeaponClass(sWeapon);
+
 			if (victim.ttt.incomingDamageMultiplier != 1.0)
 				iDamage = int(iDamage * victim.ttt.incomingDamageMultiplier);
+
+			if (weaponClass == "weapon_projectile")
+				iDamage = int(iDamage * level.ttt.projectileMultiplier);
+
 			if (sMeansOfDeath == "MOD_HEAD_SHOT")
 			{
 				multiplier = level.ttt.headshotMultiplier;
-				if (getWeaponClass(sWeapon) == "weapon_sniper") multiplier = level.ttt.headshotMultiplierSniper;
+				if (weaponClass == "weapon_sniper") multiplier = level.ttt.headshotMultiplierSniper;
 				iDamage = int(iDamage * multiplier);
 			}
 		}

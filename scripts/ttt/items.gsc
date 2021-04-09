@@ -34,6 +34,16 @@ init()
 	level.ttt.items["traitor"][2].onBuy = ::OnBuyRanger;
 	level.ttt.items["traitor"][2].getIsAvailable = ::GetIsAvailableRanger;
 
+	level.ttt.items["traitor"][3] = spawnStruct();
+	level.ttt.items["traitor"][3].name = "ROCKET LAUNCHER";
+	level.ttt.items["traitor"][3].description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds 2 rockets. Can't pick up ammo.";
+	level.ttt.items["traitor"][3].icon = "weapon_rpg7";
+	level.ttt.items["traitor"][3].iconWidth = 44;
+	level.ttt.items["traitor"][3].iconHeight = 22;
+	level.ttt.items["traitor"][3].iconOffsetX = 1;
+	level.ttt.items["traitor"][3].onBuy = ::OnBuyRPG;
+	level.ttt.items["traitor"][3].getIsAvailable = ::GetIsAvailableRPG;
+
 	level.ttt.items["detective"][0] = armor;
 
 	level.ttt.items["detective"][1] = spawnStruct();
@@ -156,6 +166,20 @@ OnBuyRanger()
 GetIsAvailableRanger()
 {
 	WEAPON_NAME = "ranger_mp";
+	return !self hasWeapon(WEAPON_NAME);
+}
+
+OnBuyRPG()
+{
+	WEAPON_NAME = "rpg_mp";
+	self giveWeapon(WEAPON_NAME);
+	self setWeaponAmmoStock(WEAPON_NAME, 1);
+	self setWeaponAmmoClip(WEAPON_NAME, 1);
+}
+
+GetIsAvailableRPG()
+{
+	WEAPON_NAME = "rpg_mp";
 	return !self hasWeapon(WEAPON_NAME);
 }
 

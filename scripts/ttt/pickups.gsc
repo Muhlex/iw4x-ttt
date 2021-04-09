@@ -99,6 +99,9 @@ ammoModelThink()
 			if (distanceSquared(player.origin, self.origin) > pickupDistanceSq) continue;
 
 			weapon = player getCurrentWeapon();
+
+			if (weapon == "rpg_mp") continue;
+
 			maxClip = weaponClipSize(weapon);
 			currentStock = player getWeaponAmmoStock(weapon);
 			maxStock = int(weaponMaxAmmo(weapon) / 4);
