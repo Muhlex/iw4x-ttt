@@ -33,28 +33,36 @@ initPlayer()
 {
 	self.ttt.ui = [];
 	self.ttt.ui["hud"] = [];
+	self.ttt.ui["hud"]["self"] = [];
+}
 
-	self.ttt.ui["hud"]["role"] = self createFontString("hudbig", 0.8);
-	self.ttt.ui["hud"]["role"] setPoint("TOP RIGHT", "TOP RIGHT", -20, 10);
-	self.ttt.ui["hud"]["role"].color = (1, 1, 1);
-	self.ttt.ui["hud"]["role"].glowAlpha = 1;
-	self.ttt.ui["hud"]["role"].hidewheninmenu = true;
-	self.ttt.ui["hud"]["role"] maps\mp\gametypes\_hud::fontPulseInit(1.2);
+displaySelfHud()
+{
+	self.ttt.ui["hud"]["self"]["role"] = self createFontString("hudbig", 0.8);
+	self.ttt.ui["hud"]["self"]["role"] setPoint("TOP RIGHT", "TOP RIGHT", -20, 10);
+	self.ttt.ui["hud"]["self"]["role"].color = (1, 1, 1);
+	self.ttt.ui["hud"]["self"]["role"].glowAlpha = 1;
+	self.ttt.ui["hud"]["self"]["role"].hidewheninmenu = true;
+	self.ttt.ui["hud"]["self"]["role"] maps\mp\gametypes\_hud::fontPulseInit(1.25);
 
-	self.ttt.ui["hud"]["health"] = self createFontString("hudbig", 0.8);
-	self.ttt.ui["hud"]["health"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -90, -8);
-	self.ttt.ui["hud"]["health"].hidewheninmenu = true;
-	self.ttt.ui["hud"]["health"].glowAlpha = 1;
+	self.ttt.ui["hud"]["self"]["health"] = self createFontString("hudbig", 0.8);
+	self.ttt.ui["hud"]["self"]["health"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -90, -8);
+	self.ttt.ui["hud"]["self"]["health"].hidewheninmenu = true;
+	self.ttt.ui["hud"]["self"]["health"].glowAlpha = 1;
 
-	for (;;)
-	{
-		wait(0.05);
-		self updatePlayerHealthDisplay();
-	}
+	self updatePlayerRoleDisplay();
+	self updatePlayerHealthDisplay();
+}
+
+destroySelfHud()
+{
+	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]);
 }
 
 updatePlayerHealthDisplay()
 {
+	if (!isDefined(self.ttt.ui["hud"]["self"]["health"])) return;
+
 	text = "";
 	if (isAlive(self))
 	{
@@ -62,14 +70,17 @@ updatePlayerHealthDisplay()
 		healthPct = self.health / level.ttt.maxhealth;
 		healthProxToHalf = (1 - abs(healthPct - 0.5)) * 2;
 
-		self.ttt.ui["hud"]["health"].color = ((1 - healthPct) + healthProxToHalf * 0.5, healthPct + healthProxToHalf * 0.5, 0.5);
-		self.ttt.ui["hud"]["health"].glowColor = ((1 - healthPct) * 0.6 + healthProxToHalf * 0.3, healthPct * 0.6 + healthProxToHalf * 0.3, 0.3);
+		self.ttt.ui["hud"]["self"]["health"].color = ((1 - healthPct) + healthProxToHalf * 0.5, healthPct + healthProxToHalf * 0.5, 0.5);
+		self.ttt.ui["hud"]["self"]["health"].glowColor = ((1 - healthPct) * 0.6 + healthProxToHalf * 0.3, healthPct * 0.6 + healthProxToHalf * 0.3, 0.3);
 	}
-	self.ttt.ui["hud"]["health"] setText(text);
+	self.ttt.ui["hud"]["self"]["health"] setText(text);
 }
 
-updatePlayerRoleDisplay(role)
+updatePlayerRoleDisplay(doPulse)
 {
+	if (!isDefined(doPulse)) doPulse = false;
+	role = self.ttt.role;
+
 	text = "";
 	if (!isDefined(role))
 	{
@@ -79,9 +90,22 @@ updatePlayerRoleDisplay(role)
 	else if (role == "innocent") text = "INNOCENT";
 	else if (role == "detective") text = "DETECTIVE";
 	else if (role == "traitor") text = "TRAITOR";
-	self.ttt.ui["hud"]["role"].glowColor = level.ttt.colors[role];
-	self.ttt.ui["hud"]["role"] setText(text);
-	self.ttt.ui["hud"]["role"] thread maps\mp\gametypes\_hud::fontPulse(self);
+	self.ttt.ui["hud"]["self"]["role"].glowColor = level.ttt.colors[role];
+	self.ttt.ui["hud"]["self"]["role"] setText(text);
+
+	if ((role == "traitor" || role == "detective") && !isDefined(self.ttt.ui["hud"]["self"]["shop_hint"]))
+	{
+		self.ttt.ui["hud"]["self"]["shop_hint"] = self createFontString("default", 0.8);
+		self.ttt.ui["hud"]["self"]["shop_hint"] setParent(self.ttt.ui["hud"]["self"]["role"]);
+		self.ttt.ui["hud"]["self"]["shop_hint"] setPoint("TOP RIGHT", "BOTTOM RIGHT", 0, 10);
+		self.ttt.ui["hud"]["self"]["shop_hint"].color = (1, 1, 1);
+		self.ttt.ui["hud"]["self"]["shop_hint"].alpha = 0.5;
+		self.ttt.ui["hud"]["self"]["shop_hint"].archived = false;
+		self.ttt.ui["hud"]["self"]["shop_hint"].hidewheninmenu = true;
+		self.ttt.ui["hud"]["self"]["shop_hint"].label = &"Press ^3[{+actionslot 2}]^7 to open shop";
+	}
+
+	if (doPulse) self.ttt.ui["hud"]["self"]["role"] thread maps\mp\gametypes\_hud::fontPulse(self);
 }
 
 displayHeadIcons()

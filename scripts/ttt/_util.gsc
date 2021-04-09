@@ -68,7 +68,11 @@ recursivelyDestroyElements(array)
 	foreach(element in array)
 	{
 		if (isArray(element)) recursivelyDestroyElements(element);
-		else element destroy();
+		else
+		{
+			element destroy();
+			element = undefined;
+		}
 	}
 }
 

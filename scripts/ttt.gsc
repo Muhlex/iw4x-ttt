@@ -159,7 +159,7 @@ OnPlayerConnect()
 {
 	level endon("game_ended");
 
-	for(;;)
+	for (;;)
 	{
 		level waittill("connected", player);
 
@@ -186,7 +186,7 @@ OnPlayerSpawn()
 {
 	self endon("disconnect");
 
-	for(;;)
+	for (;;)
 	{
 		self waittill("spawned_player");
 
@@ -200,13 +200,10 @@ OnPlayerSpawn()
 		self SetWeaponAmmoStock(spawnWeapon, 0);
 		self setSpawnWeapon(spawnWeapon);
 
-		if (level.ttt.preparing)
-		{
-			//if (!level.ttt.prematch) self visionSetNakedForPlayer("sepia", 0);
-			self scripts\ttt\ui::updatePlayerRoleDisplay();
-		}
+		self scripts\ttt\ui::displaySelfHud();
 
 		self thread OnPlayerBuyMenu();
+		self thread OnPlayerHealthUpdate();
 	}
 }
 
@@ -214,11 +211,12 @@ OnPlayerDeath()
 {
 	self endon("disconnect");
 
-	for(;;)
+	for (;;)
 	{
 		self waittill("death");
 
 		self unsetPlayerBuyMenu();
+		self scripts\ttt\ui::destroySelfHud();
 		checkRoundWinConditions();
 	}
 }
@@ -227,7 +225,7 @@ OnPlayerEnemyKilled()
 {
 	self endon("disconnect");
 
-	for(;;)
+	for (;;)
 	{
 		self waittill("killed_enemy", victim);
 
@@ -239,7 +237,7 @@ OnPlayerRagdoll()
 {
 	self endon("disconnect");
 
-	for(;;)
+	for (;;)
 	{
 		self waittill("start_ragdoll");
 
@@ -291,6 +289,18 @@ playerBodyThink(owner)
 			}
 		}
 		else player iPrintLnBold("This is the body of ^3" + ownerName + "^7. They were " + roleTextColor + owner.ttt.role + "^7.");
+	}
+}
+
+OnPlayerHealthUpdate()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	for (;;)
+	{
+		self scripts\ttt\ui::updatePlayerHealthDisplay();
+		wait(0.1);
 	}
 }
 
@@ -388,6 +398,7 @@ setPlayerBuyMenu()
 
 	self setBlurForPlayer(6, 1.5);
 	self freezeControls(true);
+	self scripts\ttt\ui::destroySelfHud();
 	self scripts\ttt\ui::destroyBuyMenu();
 	self scripts\ttt\ui::displayBuyMenu(self.ttt.role);
 	self thread buyMenuThink();
@@ -404,6 +415,7 @@ unsetPlayerBuyMenu(switchToLastWeapon)
 	if (switchToLastWeapon) self switchToWeapon(self getLastWeapon());
 	self setBlurForPlayer(0, 0.75);
 	self scripts\ttt\ui::destroyBuyMenu();
+	self scripts\ttt\ui::displaySelfHud();
 }
 
 buyMenuThinkLaptop(weaponName)
@@ -413,7 +425,7 @@ buyMenuThinkLaptop(weaponName)
 	self endon("buymenu_toggle");
 	self endon("buymenu_close");
 
-	for(;;)
+	for (;;)
 	{
 		if (self getCurrentWeapon() != weaponName) self notify("buymenu_close");
 		wait(0.2);
@@ -494,7 +506,7 @@ drawPlayerRoles()
 	{
 		if (traitorCount == 1) player iPrintLnBold("There is ^1" + traitorCount + "^7 traitor among us");
 		else player iPrintLnBold("There are ^1" + traitorCount + "^7 traitors among us");
-		if (isDefined(player.ttt.role)) player scripts\ttt\ui::updatePlayerRoleDisplay(player.ttt.role);
+		player scripts\ttt\ui::updatePlayerRoleDisplay(true);
 	}
 }
 
