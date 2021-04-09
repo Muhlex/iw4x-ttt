@@ -80,7 +80,7 @@ tryBuyItem(item)
 	if (isInArray(self.ttt.items.inventory, item)) return;
 	if (self.ttt.items.credits < 1) return;
 
-	self [[item.onBuy]]();
+	self thread [[item.onBuy]]();
 	self.ttt.items.credits--;
 	self.ttt.items.inventory[self.ttt.items.inventory.size] = item;
 	self iPrintLn("^3" + item.name + "^7 received");
@@ -100,6 +100,17 @@ OnBuyArmor()
 
 OnBuyRadar()
 {
+	self endon("disconnect");
+	self endon("death");
+
 	self.isRadarBlocked = false;
-	self.hasRadar = true;
+	RADAR_INTERVAL = 10;
+
+	for (;;)
+	{
+		self.hasRadar = true;
+		wait(4);
+		self.hasRadar = false;
+		wait(RADAR_INTERVAL - 4);
+	}
 }
