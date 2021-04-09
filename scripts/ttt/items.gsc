@@ -8,23 +8,23 @@ init()
 	level.ttt.items["traitor"] = [];
 	level.ttt.items["detective"] = [];
 
-	level.ttt.items["traitor"][0] = spawnStruct();
-	level.ttt.items["traitor"][0].name = "ARMOR";
-	level.ttt.items["traitor"][0].description = "^3Passive item\n^7Reduces incoming damage by\n30 percent.";
-	level.ttt.items["traitor"][0].icon = "cardicon_vest_1";
-	level.ttt.items["traitor"][0].onBuy = ::OnBuyArmor;
+	armor = spawnStruct();
+	armor.name = "ARMOR";
+	armor.description = "^3Passive item\n^7Reduces incoming damage by\n30 percent.";
+	armor.icon = "cardicon_vest_1";
+	armor.onBuy = ::OnBuyArmor;
+	armor.getIsAvailable = ::GetIsAvailablePassive;
+
+	level.ttt.items["traitor"][0] = armor;
 
 	level.ttt.items["traitor"][1] = spawnStruct();
 	level.ttt.items["traitor"][1].name = "RADAR";
 	level.ttt.items["traitor"][1].description = "^3Passive item\n^7Periodically shows the location\nof all players on the minimap.";
 	level.ttt.items["traitor"][1].icon = "specialty_uav";
 	level.ttt.items["traitor"][1].onBuy = ::OnBuyRadar;
+	level.ttt.items["traitor"][1].getIsAvailable = ::GetIsAvailablePassive;
 
-	level.ttt.items["detective"][0] = spawnStruct();
-	level.ttt.items["detective"][0].name = "ARMOR";
-	level.ttt.items["detective"][0].description = "^3Passive item\n^7Reduces incoming damage by\n30 percent.";
-	level.ttt.items["detective"][0].icon = "cardicon_vest_1";
-	level.ttt.items["detective"][0].onBuy = ::OnBuyArmor;
+	level.ttt.items["detective"][0] = armor;
 
 	foreach (roleItems in level.ttt.items) foreach (item in roleItems) precacheShader(item.icon);
 }
@@ -86,6 +86,11 @@ tryBuyItem(item)
 	self iPrintLn("^3" + item.name + "^7 received");
 
 	self scripts\ttt\ui::updateBuyMenu(self.ttt.role);
+}
+
+GetIsAvailablePassive(item)
+{
+	return !isInArray(self.ttt.items.inventory, item);
 }
 
 OnBuyArmor()

@@ -471,7 +471,7 @@ updateBuyMenu(role, moveDown, moveRight)
 	{
 		itemIcon.alpha = 1.0;
 		item = level.ttt.items[role][i];
-		if (isInArray(self.ttt.items.inventory, item)) itemIcon.alpha = 0.25;
+		if (![[item.getIsAvailable]](item)) itemIcon.alpha = 0.25;
 	}
 
 	// Update credit count
