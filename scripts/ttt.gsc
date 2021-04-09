@@ -1,6 +1,6 @@
 #include common_scripts\utility;
 #include maps\mp\_utility;
-#include scripts\ttt\ui_util;
+#include scripts\ttt\_util;
 
 init()
 {
@@ -38,6 +38,7 @@ init()
 		map_restart();
 	}
 
+	scripts\ttt\items::init();
 	scripts\ttt\pickups::init();
 	scripts\ttt\ui::init();
 
@@ -45,6 +46,27 @@ init()
 	thread OnRoundRestart();
 
 	thread OnPlayerConnect();
+}
+
+initPlayer()
+{
+	self.ttt = spawnStruct();
+	self.ttt.role = undefined;
+	self.ttt.bodyFound = false;
+	self.ttt.inBuyMenu = false;
+	self.ttt.incomingDamageMultiplier = 1.0;
+
+	self scripts\ttt\items::initPlayer();
+	self scripts\ttt\ui::initPlayer();
+
+	wait(0.05);
+	self setClientDvars(
+		"cg_deadChatWithDead", 1,
+		"cg_deadChatWithTeam", 0,
+		"cg_deadHearTeamLiving", 1,
+		"cg_deadHearAllLiving", 1,
+		"cg_everyoneHearsEveryone", 0
+	);
 }
 
 OnPrematchOver()
@@ -81,15 +103,18 @@ OnPreptimeEnd()
 	wait(level.ttt.preptime);
 	level.ttt.preparing = false;
 
+	drawPlayerRoles();
+
 	foreach(player in getLivingPlayers())
 	{
 		player.maxhealth = level.ttt.maxhealth;
 		player.health = player.maxhealth;
 
 		player.isRadarBlocked = true;
+
+		player scripts\ttt\items::setStartingCredits();
 	}
 
-	drawPlayerRoles();
 	foreach (player in level.players) player scripts\ttt\ui::displayHeadIcons();
 	level.disableSpawning = true;
 	//visionSetNaked(getDvar("mapname"), 2.0);
@@ -150,24 +175,6 @@ OnPlayerConnect()
 	}
 }
 
-initPlayer()
-{
-	self setClientDvars(
-		"g_deadChat", 0,
-		"cg_deadChatWithDead", 1,
-		"cg_deadChatWithTeam", 0,
-		"cg_deadHearTeamLiving", 1,
-		"cg_deadHearAllLiving", 1,
-		"cg_everyoneHearsEveryone", 0
-	);
-
-	self.ttt = spawnStruct();
-	self.ttt.role = undefined;
-	self.ttt.bodyFound = false;
-
-	self scripts\ttt\ui::initPlayer();
-}
-
 OnPlayerDisconnect()
 {
 	self waittill ("disconnect");
@@ -198,6 +205,8 @@ OnPlayerSpawn()
 			//if (!level.ttt.prematch) self visionSetNakedForPlayer("sepia", 0);
 			self scripts\ttt\ui::updatePlayerRoleDisplay();
 		}
+
+		self thread OnPlayerBuyMenu();
 	}
 }
 
@@ -209,6 +218,7 @@ OnPlayerDeath()
 	{
 		self waittill("death");
 
+		self unsetPlayerBuyMenu();
 		checkRoundWinConditions();
 	}
 }
@@ -219,9 +229,9 @@ OnPlayerEnemyKilled()
 
 	for(;;)
 	{
-		self waittill("killed_enemy");
+		self waittill("killed_enemy", victim);
 
-		// award Traitor point if traitor here
+		self scripts\ttt\items::awardKillCredits(victim);
 	}
 }
 
@@ -250,6 +260,8 @@ playerBodyThink(owner)
 	while (isDefined(self))
 	{
 		self waittill ("trigger", player);
+
+		player scripts\ttt\items::awardBodyInspectCredits(owner);
 
 		roleTextColor = "";
 		switch (owner.ttt.role)
@@ -337,6 +349,109 @@ scoreboardThink()
 	}
 }
 
+OnPlayerBuyMenu()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	self notifyOnPlayerCommand("buymenu_toggle", "+actionslot 2");
+	self notifyOnPlayerCommand("buymenu_close", "weapnext");
+
+	for (;;)
+	{
+		eventName = self waittill_any_return("buymenu_toggle", "buymenu_close");
+
+		if (!self.ttt.inBuyMenu && eventName == "buymenu_close") continue;
+		if (!isAlive(self) || !isDefined(self.ttt.role) || (self.ttt.role != "traitor" && self.ttt.role != "detective")) continue;
+
+		if (self.ttt.inBuyMenu) self thread unsetPlayerBuyMenu(true);
+		else self thread setPlayerBuyMenu();
+	}
+}
+
+setPlayerBuyMenu()
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("buymenu_toggle");
+	self endon("buymenu_close");
+
+	self.ttt.inBuyMenu = true;
+
+	LAPTOP_WEAPON = "killstreak_ac130_mp";
+
+	self giveWeapon(LAPTOP_WEAPON);
+	self switchToWeapon(LAPTOP_WEAPON);
+
+	while (self getCurrentWeapon() != LAPTOP_WEAPON) wait(0.05); // wait for laptop to open
+	while (!self isOnGround()) wait(0.05); // wait for player to land (if falling)
+
+	self setBlurForPlayer(6, 1.5);
+	self freezeControls(true);
+	self scripts\ttt\ui::destroyBuyMenu();
+	self scripts\ttt\ui::displayBuyMenu(self.ttt.role);
+	self thread buyMenuThink();
+	self thread buyMenuThinkLaptop(LAPTOP_WEAPON);
+}
+
+unsetPlayerBuyMenu(switchToLastWeapon)
+{
+	if (!isDefined(switchToLastWeapon)) switchToLastWeapon = false;
+
+	self.ttt.inBuyMenu = false;
+
+	self freezeControls(false);
+	if (switchToLastWeapon) self switchToWeapon(self getLastWeapon());
+	self setBlurForPlayer(0, 0.75);
+	self scripts\ttt\ui::destroyBuyMenu();
+}
+
+buyMenuThinkLaptop(weaponName)
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("buymenu_toggle");
+	self endon("buymenu_close");
+
+	for(;;)
+	{
+		if (self getCurrentWeapon() != weaponName) self notify("buymenu_close");
+		wait(0.2);
+	}
+}
+
+buyMenuThink()
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("buymenu_toggle");
+	self endon("buymenu_close");
+
+	self notifyOnPlayerCommand("menu_up", "+forward");
+	self notifyOnPlayerCommand("menu_down", "+back");
+	self notifyOnPlayerCommand("menu_left", "+moveleft");
+	self notifyOnPlayerCommand("menu_right", "+moveright");
+	self notifyOnPlayerCommand("menu_activate", "+activate");
+	self notifyOnPlayerCommand("menu_activate", "+attack");
+
+	for (;;)
+	{
+		eventName = self waittill_any_return("menu_up", "menu_down", "menu_left", "menu_right", "menu_activate");
+		moveDown = 0;
+		moveRight = 0;
+		if (eventName == "menu_up") moveDown = -1;
+		else if (eventName == "menu_down") moveDown = 1;
+		else if (eventName == "menu_left") moveRight = -1;
+		else if (eventName == "menu_right") moveRight = 1;
+
+		if (moveDown != 0 || moveRight != 0)
+			self scripts\ttt\ui::updateBuyMenu(self.ttt.role, moveDown, moveRight);
+
+		if (eventName == "menu_activate")
+			self scripts\ttt\items::tryBuyItem(level.ttt.items[self.ttt.role][self.ttt.items.selectedIndex]);
+	}
+}
+
 checkRoundWinConditions()
 {
 	if (level.ttt.preparing) return;
@@ -347,17 +462,6 @@ checkRoundWinConditions()
 	aliveCounts["detective"] = 0;
 	aliveCounts["traitor"] = 0;
 	foreach (player in getLivingPlayers()) aliveCounts[player.ttt.role]++;
-
-	// TEMP --START-- (delete this)
-	if (aliveCounts["traitor"] == 1)
-	{
-		foreach (player in getLivingPlayers()) if (player.ttt.role == "traitor")
-		{
-			player.isRadarBlocked = false;
-			player.hasRadar = true;
-		}
-	}
-	// TEMP --END--
 
 	if ((aliveCounts["innocent"] + aliveCounts["detective"]) == 0) endRound("traitor", "death");
 	if (aliveCounts["traitor"] == 0) endRound("innocent", "death");
