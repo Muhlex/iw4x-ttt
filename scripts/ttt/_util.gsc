@@ -14,12 +14,16 @@ createRectangle(w, h, color, showToAll)
 	rect.yOffset = 0;
 	rect.width = w;
 	rect.height = h;
-	rect setShader("progress_bar_fill", w, int(h * 4 / 3));
+	rect.baseWidth = w;
+	rect.baseHeight = h;
 	rect.color = color;
 	rect.alpha = 1.0;
 	rect.children = [];
 	rect setParent(level.uiParent);
 	rect.hidden = false;
+
+	rect setShader("progress_bar_fill", w, int(h * 4 / 3));
+	rect.shader = "progress_bar_fill";
 
 	return rect;
 }
@@ -64,11 +68,28 @@ recursivelyDestroyElements(array)
 	foreach(element in array)
 	{
 		if (isArray(element)) recursivelyDestroyElements(element);
-		else element destroy();
+		else
+		{
+			element destroy();
+			element = undefined;
+		}
 	}
 }
 
 isArray(array)
 {
 	return isDefined(getArrayKeys(array));
+}
+
+isInArray(array, searchValue)
+{
+	foreach (value in array) if (value == searchValue) return true;
+	return false;
+}
+
+intUp(value)
+{
+	result = int(value);
+	if (result == value) return result;
+	else return result + 1;
 }

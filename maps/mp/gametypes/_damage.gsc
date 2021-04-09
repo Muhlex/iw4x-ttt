@@ -311,7 +311,7 @@ handleNormalDeath( lifeId, attacker, eInflictor, sWeapon, sMeansOfDeath )
 	if ( isAlive( attacker ) )
 		attacker thread maps\mp\killstreaks\_killstreaks::checkKillstreakReward( attacker.pers["cur_kill_streak"] );
 
-	attacker notify ( "killed_enemy" );
+	attacker notify ( "killed_enemy", self );
 
 	if ( !level.teamBased )
 	{
@@ -1250,6 +1250,8 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 		}
 		else
 		{
+			if (victim.ttt.incomingDamageMultiplier != 1.0)
+				iDamage = int(iDamage * victim.ttt.incomingDamageMultiplier);
 			if (sMeansOfDeath == "MOD_HEAD_SHOT")
 			{
 				multiplier = level.ttt.headshotMultiplier;
