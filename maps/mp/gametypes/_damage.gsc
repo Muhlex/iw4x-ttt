@@ -1255,8 +1255,8 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 			if (victim.ttt.incomingDamageMultiplier != 1.0)
 				iDamage = int(iDamage * victim.ttt.incomingDamageMultiplier);
 
-			if (weaponClass == "weapon_projectile")
-				iDamage = int(iDamage * level.ttt.projectileMultiplier);
+			if (isExplosiveDamage(sMeansOfDeath))
+				iDamage = int(iDamage * level.ttt.explosiveMultiplier);
 
 			if (sMeansOfDeath == "MOD_HEAD_SHOT")
 			{

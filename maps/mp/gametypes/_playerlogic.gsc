@@ -719,6 +719,8 @@ handleReshowPerks()
 	for (;;)
 	{
 		self waittill("reshow_perks");
+
+		if (!getDvarInt("scr_scoreboard_reshows_perks")) continue;
 		self openMenu("perks_hidden");
 		wait(0.1);
 		self openMenu("perk_display");

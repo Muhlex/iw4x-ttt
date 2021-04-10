@@ -11,7 +11,7 @@ init()
 	level.ttt.maxhealth = getDvarInt("scr_player_maxhealth");
 	level.ttt.headshotMultiplier = getDvarFloat("ttt_headshot_multiplier");
 	level.ttt.headshotMultiplierSniper = getDvarFloat("ttt_headshot_multiplier_sniper");
-	level.ttt.projectileMultiplier = getDvarFloat("ttt_projectile_multiplier");
+	level.ttt.explosiveMultiplier = getDvarFloat("ttt_explosive_multiplier");
 	level.ttt.preptime = getDvarInt("ttt_preptime");
 	if (level.ttt.preptime < 1) level.ttt.preptime = 1;
 
@@ -114,6 +114,7 @@ OnPreptimeEnd()
 		player.isRadarBlocked = true;
 
 		player scripts\ttt\items::setStartingCredits();
+		player scripts\ttt\items::setStartingPerks();
 	}
 
 	foreach (player in level.players) player scripts\ttt\ui::displayHeadIcons();
@@ -166,7 +167,7 @@ OnPlayerConnect()
 
 		player thread initPlayer();
 
-		if (!level.ttt.preparing && level.players.size <= 1) map_restart(true);
+		if (getLivingPlayers().size <= 1 && !level.gameEnded && !level.ttt.preparing) map_restart(true);
 
 		player thread OnPlayerDisconnect();
 		player thread OnPlayerSpawn();
@@ -195,7 +196,9 @@ OnPlayerSpawn()
 
 		self takeAllWeapons();
 		self _clearPerks();
+		self SetOffhandPrimaryClass("other");
 		self _SetActionSlot(1, ""); // disable nightvision
+		self scripts\ttt\items::resetPlayerEquipment();
 
 		spawnWeapon = "usp_tactical_mp";
 
@@ -309,7 +312,7 @@ OnPlayerDropWeapon()
 		self waittill("drop_weapon");
 
 		weapon = self getCurrentWeapon();
-		if (!isDefined(weapon)) continue;
+		if (!isDefined(weapon) || weapon == "killstreak_ac130_mp") continue;
 		if (self getWeaponsListPrimaries().size <= 1) continue; // actually gets all regular guns
 		item = self dropItem(weapon);
 		lastWeapon = self getLastWeapon();
@@ -413,8 +416,6 @@ setPlayerBuyMenu()
 	self endon("buymenu_toggle");
 	self endon("buymenu_close");
 
-	self.ttt.inBuyMenu = true;
-
 	LAPTOP_WEAPON = "killstreak_ac130_mp";
 
 	self giveWeapon(LAPTOP_WEAPON);
@@ -422,6 +423,8 @@ setPlayerBuyMenu()
 
 	while (self getCurrentWeapon() != LAPTOP_WEAPON) wait(0.05); // wait for laptop to open
 	while (!self isOnGround()) wait(0.05); // wait for player to land (if falling)
+
+	self.ttt.inBuyMenu = true;
 
 	self setBlurForPlayer(6, 1.5);
 	self freezeControls(true);
@@ -496,7 +499,7 @@ checkRoundWinConditions()
 {
 	if (level.ttt.preparing) return;
 
-	if (level.players.size <= 1) return; // DEBUG
+	if (level.players.size <= 1 && getLivingPlayers().size == 1) return;
 	aliveCounts = [];
 	aliveCounts["innocent"] = 0;
 	aliveCounts["detective"] = 0;

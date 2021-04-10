@@ -13,7 +13,7 @@ init()
 	armor.description = "^3Passive item\n^7Reduces incoming damage by\n^230 percent^7.";
 	armor.icon = "cardicon_vest_1";
 	armor.onBuy = ::OnBuyArmor;
-	armor.getIsAvailable = ::GetIsAvailablePassive;
+	armor.getIsAvailable = ::getIsAvailablePassive;
 
 	level.ttt.items["traitor"][0] = armor;
 
@@ -22,7 +22,7 @@ init()
 	level.ttt.items["traitor"][1].description = "^3Passive item\n^7Periodically shows the location\nof all players on the minimap.";
 	level.ttt.items["traitor"][1].icon = "specialty_uav";
 	level.ttt.items["traitor"][1].onBuy = ::OnBuyRadar;
-	level.ttt.items["traitor"][1].getIsAvailable = ::GetIsAvailablePassive;
+	level.ttt.items["traitor"][1].getIsAvailable = ::getIsAvailablePassive;
 
 	level.ttt.items["traitor"][2] = spawnStruct();
 	level.ttt.items["traitor"][2].name = "RANGER SHOTGUN";
@@ -32,24 +32,33 @@ init()
 	level.ttt.items["traitor"][2].iconHeight = 24;
 	level.ttt.items["traitor"][2].iconOffsetX = -1;
 	level.ttt.items["traitor"][2].onBuy = ::OnBuyRanger;
-	level.ttt.items["traitor"][2].getIsAvailable = ::GetIsAvailableRanger;
+	level.ttt.items["traitor"][2].getIsAvailable = ::getIsAvailableRanger;
 
 	level.ttt.items["traitor"][3] = spawnStruct();
 	level.ttt.items["traitor"][3].name = "ROCKET LAUNCHER";
-	level.ttt.items["traitor"][3].description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds 2 rockets. ^1Can't pick up ammo.";
+	level.ttt.items["traitor"][3].description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds 2 rockets. ^1Can't pick up ammo^7.";
 	level.ttt.items["traitor"][3].icon = "weapon_rpg7";
 	level.ttt.items["traitor"][3].iconWidth = 44;
 	level.ttt.items["traitor"][3].iconHeight = 22;
 	level.ttt.items["traitor"][3].iconOffsetX = 1;
 	level.ttt.items["traitor"][3].onBuy = ::OnBuyRPG;
-	level.ttt.items["traitor"][3].getIsAvailable = ::GetIsAvailableRPG;
+	level.ttt.items["traitor"][3].getIsAvailable = ::getIsAvailableRPG;
 
 	level.ttt.items["traitor"][4] = spawnStruct();
 	level.ttt.items["traitor"][4].name = "THROWING KNIFE";
-	level.ttt.items["traitor"][4].description = "^3Exclusive equipment\n^7Kills ^2silently^7.\nCan be ^2picked up ^7after throwing.";
+	level.ttt.items["traitor"][4].description = "^3Exclusive equipment\n^7Kills ^2silently^7. Can be ^2picked up\n^7by anyone after throwing.";
 	level.ttt.items["traitor"][4].icon = "equipment_throwing_knife";
+	level.ttt.items["traitor"][4].iconOffsetX = 1;
 	level.ttt.items["traitor"][4].onBuy = ::OnBuyKnife;
-	level.ttt.items["traitor"][4].getIsAvailable = ::GetIsAvailableKnife;
+	level.ttt.items["traitor"][4].getIsAvailable = ::getIsAvailableEquipment;
+
+	level.ttt.items["traitor"][5] = spawnStruct();
+	level.ttt.items["traitor"][5].name = "CLAYMORE";
+	level.ttt.items["traitor"][5].description = "^3Exclusive equipment\n^7Triggers for ^1any player^7.\n^2Highlighted to other traitors^7.";
+	level.ttt.items["traitor"][5].icon = "equipment_claymore";
+	level.ttt.items["traitor"][5].iconOffsetX = 1;
+	level.ttt.items["traitor"][5].onBuy = ::OnBuyClaymore;
+	level.ttt.items["traitor"][5].getIsAvailable = ::getIsAvailableEquipment;
 
 	level.ttt.items["detective"][0] = armor;
 
@@ -61,7 +70,7 @@ init()
 	level.ttt.items["detective"][1].iconHeight = 32;
 	level.ttt.items["detective"][1].iconOffsetX = -16;
 	level.ttt.items["detective"][1].onBuy = ::OnBuyRiot;
-	level.ttt.items["detective"][1].getIsAvailable = ::GetIsAvailableRiot;
+	level.ttt.items["detective"][1].getIsAvailable = ::getIsAvailableRiot;
 
 	level.ttt.items["detective"][2] = spawnStruct();
 	level.ttt.items["detective"][2].name = "SPAS-12 SHOTGUN";
@@ -71,7 +80,7 @@ init()
 	level.ttt.items["detective"][2].iconHeight = 24;
 	level.ttt.items["detective"][2].iconOffsetX = 1;
 	level.ttt.items["detective"][2].onBuy = ::OnBuySpas;
-	level.ttt.items["detective"][2].getIsAvailable = ::GetIsAvailableSpas;
+	level.ttt.items["detective"][2].getIsAvailable = ::getIsAvailableSpas;
 
 	foreach (roleItems in level.ttt.items) foreach (item in roleItems) precacheShader(item.icon);
 }
@@ -82,6 +91,20 @@ initPlayer()
 	self.ttt.items.selectedIndex = 0;
 	self.ttt.items.credits = 0;
 	self.ttt.items.inventory = [];
+}
+
+resetPlayerEquipment()
+{
+	// Make anyone able to pick up throwing knives:
+	self giveWeapon("throwingknife_mp");
+	self setWeaponAmmoClip("throwingknife_mp", 0); // remove the '1' ammo from the throwing knife weapon
+	self SetOffhandPrimaryClass("throwingknife"); // set throwing knife as 'active' equipment so it can be used once picked up
+}
+
+setStartingPerks()
+{
+	if (!isDefined(self.ttt.role) || self.ttt.role != "traitor") return;
+	self _setPerk("specialty_detectexplosive");
 }
 
 setStartingCredits()
@@ -135,9 +158,34 @@ tryBuyItem(item)
 	self scripts\ttt\ui::updateBuyMenu(self.ttt.role);
 }
 
-GetIsAvailablePassive(item)
+getIsAvailablePassive(item)
 {
 	return !isInArray(self.ttt.items.inventory, item);
+}
+
+getCanPlayerBuyWeapons()
+{
+	return self getWeaponsListPrimaries().size < 3;
+}
+
+getIsAvailableEquipment()
+{
+	EQUIPMENT_ITEMS = [];
+	EQUIPMENT_ITEMS[0] = "frag_grenade_mp";
+	EQUIPMENT_ITEMS[1] = "semtex_mp";
+	EQUIPMENT_ITEMS[2] = "throwingknife_mp";
+	EQUIPMENT_ITEMS[3] = "specialty_tacticalinsertion";
+	EQUIPMENT_ITEMS[4] = "specialty_blastshield";
+	EQUIPMENT_ITEMS[5] = "claymore_mp";
+	EQUIPMENT_ITEMS[6] = "c4_mp";
+
+	foreach (equipment in EQUIPMENT_ITEMS)
+	{
+		if (!self hasWeapon(equipment)) continue;
+		if (self getWeaponAmmoClip(equipment) > 0) return false;
+	}
+
+	return true;
 }
 
 OnBuyArmor()
@@ -170,10 +218,9 @@ OnBuyRanger()
 	self setWeaponAmmoClip(WEAPON_NAME, 2);
 }
 
-GetIsAvailableRanger()
+getIsAvailableRanger()
 {
-	WEAPON_NAME = "ranger_mp";
-	return !self hasWeapon(WEAPON_NAME);
+	return self getCanPlayerBuyWeapons() && !self hasWeapon("ranger_mp");
 }
 
 OnBuyRPG()
@@ -184,22 +231,34 @@ OnBuyRPG()
 	self setWeaponAmmoClip(WEAPON_NAME, 1);
 }
 
-GetIsAvailableRPG()
+getIsAvailableRPG()
 {
-	WEAPON_NAME = "rpg_mp";
-	return !self hasWeapon(WEAPON_NAME);
+	return self getCanPlayerBuyWeapons() && !self hasWeapon("rpg_mp");
 }
 
 OnBuyKnife()
 {
-	PERK_NAME = "throwingknife_mp";
-	self maps\mp\perks\_perks::givePerk(PERK_NAME);
+	WEAPON_NAME = "throwingknife_mp";
+	self setWeaponAmmoClip(WEAPON_NAME, 1);
 }
 
-GetIsAvailableKnife()
+OnBuyClaymore()
 {
-	PERK_NAME = "throwingknife_mp";
-	return !self hasWeapon(PERK_NAME);
+	self endon("disconnect");
+	self endon("death");
+
+	WEAPON_NAME = "claymore_mp";
+
+	self takeWeapon("throwingknife_mp");
+	self setOffhandPrimaryClass("other");
+	self maps\mp\perks\_perks::givePerk(WEAPON_NAME);
+
+	for (;;)
+	{
+		self waittill("grenade_fire", claymore, grenadeWeaponName);
+		if (grenadeWeaponName != WEAPON_NAME) continue;
+		self resetPlayerEquipment();
+	}
 }
 
 OnBuyRiot()
@@ -210,10 +269,9 @@ OnBuyRiot()
 	self AttachShieldModel("weapon_riot_shield_mp", "tag_shield_back");
 }
 
-GetIsAvailableRiot()
+getIsAvailableRiot()
 {
-	WEAPON_NAME = "riotshield_mp";
-	return !self hasWeapon(WEAPON_NAME);
+	return self getCanPlayerBuyWeapons() && !self hasWeapon("riotshield_mp");
 }
 
 OnBuySpas()
@@ -224,8 +282,7 @@ OnBuySpas()
 	self setWeaponAmmoClip(WEAPON_NAME, 8);
 }
 
-GetIsAvailableSpas()
+getIsAvailableSpas()
 {
-	WEAPON_NAME = "spas12_mp";
-	return !self hasWeapon(WEAPON_NAME);
+	return self getCanPlayerBuyWeapons() && !self hasWeapon("spas12_mp");
 }
