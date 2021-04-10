@@ -46,7 +46,7 @@ displaySelfHud()
 	self.ttt.ui["hud"]["self"]["role"] maps\mp\gametypes\_hud::fontPulseInit(1.25);
 
 	self.ttt.ui["hud"]["self"]["health"] = self createFontString("hudbig", 0.8);
-	self.ttt.ui["hud"]["self"]["health"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -90, -8);
+	self.ttt.ui["hud"]["self"]["health"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -130, -14);
 	self.ttt.ui["hud"]["self"]["health"].hidewheninmenu = true;
 	self.ttt.ui["hud"]["self"]["health"].glowAlpha = 1;
 
@@ -505,7 +505,7 @@ updateBuyMenu(role, moveDown, moveRight)
 	{
 		itemIcon.alpha = 1.0;
 		item = level.ttt.items[role][i];
-		if (![[item.getIsAvailable]](item)) itemIcon.alpha = 0.25;
+		if (![[item.getIsAvailable]](item) || self.ttt.items.credits <= 0) itemIcon.alpha = 0.25;
 	}
 
 	// Update credit count

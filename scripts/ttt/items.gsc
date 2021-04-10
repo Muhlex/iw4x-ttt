@@ -10,7 +10,7 @@ init()
 
 	armor = spawnStruct();
 	armor.name = "ARMOR";
-	armor.description = "^3Passive item\n^7Reduces incoming damage by\n30 percent.";
+	armor.description = "^3Passive item\n^7Reduces incoming damage by\n^230 percent^7.";
 	armor.icon = "cardicon_vest_1";
 	armor.onBuy = ::OnBuyArmor;
 	armor.getIsAvailable = ::GetIsAvailablePassive;
@@ -26,7 +26,7 @@ init()
 
 	level.ttt.items["traitor"][2] = spawnStruct();
 	level.ttt.items["traitor"][2].name = "RANGER SHOTGUN";
-	level.ttt.items["traitor"][2].description = "^3Exclusive weapon\n^7Strong close-range shotgun\nwhich can fire two shells at once.";
+	level.ttt.items["traitor"][2].description = "^3Exclusive weapon\n^7Strong close-range shotgun\nwhich can fire ^2two shells at once^7.";
 	level.ttt.items["traitor"][2].icon = "weapon_ranger";
 	level.ttt.items["traitor"][2].iconWidth = 48;
 	level.ttt.items["traitor"][2].iconHeight = 24;
@@ -36,7 +36,7 @@ init()
 
 	level.ttt.items["traitor"][3] = spawnStruct();
 	level.ttt.items["traitor"][3].name = "ROCKET LAUNCHER";
-	level.ttt.items["traitor"][3].description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds 2 rockets. Can't pick up ammo.";
+	level.ttt.items["traitor"][3].description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds 2 rockets. ^1Can't pick up ammo.";
 	level.ttt.items["traitor"][3].icon = "weapon_rpg7";
 	level.ttt.items["traitor"][3].iconWidth = 44;
 	level.ttt.items["traitor"][3].iconHeight = 22;
@@ -44,11 +44,18 @@ init()
 	level.ttt.items["traitor"][3].onBuy = ::OnBuyRPG;
 	level.ttt.items["traitor"][3].getIsAvailable = ::GetIsAvailableRPG;
 
+	level.ttt.items["traitor"][4] = spawnStruct();
+	level.ttt.items["traitor"][4].name = "THROWING KNIFE";
+	level.ttt.items["traitor"][4].description = "^3Exclusive equipment\n^7Kills ^2silently^7.\nCan be ^2picked up ^7after throwing.";
+	level.ttt.items["traitor"][4].icon = "equipment_throwing_knife";
+	level.ttt.items["traitor"][4].onBuy = ::OnBuyKnife;
+	level.ttt.items["traitor"][4].getIsAvailable = ::GetIsAvailableKnife;
+
 	level.ttt.items["detective"][0] = armor;
 
 	level.ttt.items["detective"][1] = spawnStruct();
 	level.ttt.items["detective"][1].name = "RIOT SHIELD";
-	level.ttt.items["detective"][1].description = "^3Exclusive weapon\n^7Blocks bullets,\neven when it is on your back.";
+	level.ttt.items["detective"][1].description = "^3Exclusive weapon\n^2Blocks bullets^7,\neven when it is on your back.";
 	level.ttt.items["detective"][1].icon = "weapon_riotshield";
 	level.ttt.items["detective"][1].iconWidth = 64;
 	level.ttt.items["detective"][1].iconHeight = 32;
@@ -58,7 +65,7 @@ init()
 
 	level.ttt.items["detective"][2] = spawnStruct();
 	level.ttt.items["detective"][2].name = "SPAS-12 SHOTGUN";
-	level.ttt.items["detective"][2].description = "^3Exclusive weapon\n^7Versatile shotgun with good\nperformance up to medium range.";
+	level.ttt.items["detective"][2].description = "^3Exclusive weapon\n^7Versatile shotgun with good\nperformance ^2up to medium range^7.";
 	level.ttt.items["detective"][2].icon = "weapon_spas12";
 	level.ttt.items["detective"][2].iconWidth = 48;
 	level.ttt.items["detective"][2].iconHeight = 24;
@@ -181,6 +188,18 @@ GetIsAvailableRPG()
 {
 	WEAPON_NAME = "rpg_mp";
 	return !self hasWeapon(WEAPON_NAME);
+}
+
+OnBuyKnife()
+{
+	PERK_NAME = "throwingknife_mp";
+	self maps\mp\perks\_perks::givePerk(PERK_NAME);
+}
+
+GetIsAvailableKnife()
+{
+	PERK_NAME = "throwingknife_mp";
+	return !self hasWeapon(PERK_NAME);
 }
 
 OnBuyRiot()
