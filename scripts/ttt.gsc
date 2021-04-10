@@ -166,6 +166,8 @@ OnPlayerConnect()
 
 		player thread initPlayer();
 
+		if (!level.ttt.preparing && level.players.size <= 1) map_restart(true);
+
 		player thread OnPlayerDisconnect();
 		player thread OnPlayerSpawn();
 		player thread OnPlayerDeath();
