@@ -155,7 +155,7 @@ tryBuyItem(item)
 	self.ttt.items.inventory[self.ttt.items.inventory.size] = item;
 	self iPrintLn("^3" + item.name + "^7 received");
 
-	self scripts\ttt\ui::updateBuyMenu(self.ttt.role);
+	self scripts\ttt\ui::updateBuyMenu(self.ttt.role, undefined, undefined, true);
 }
 
 getIsAvailablePassive(item)
@@ -227,7 +227,7 @@ OnBuyRPG()
 {
 	WEAPON_NAME = "rpg_mp";
 	self giveWeapon(WEAPON_NAME);
-	self setWeaponAmmoStock(WEAPON_NAME, 1);
+	self setWeaponAmmoStock(WEAPON_NAME, 0);
 	self setWeaponAmmoClip(WEAPON_NAME, 1);
 }
 

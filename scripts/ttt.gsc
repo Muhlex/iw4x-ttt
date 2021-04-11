@@ -396,6 +396,7 @@ OnPlayerBuyMenu()
 
 	self notifyOnPlayerCommand("buymenu_toggle", "+actionslot 2");
 	self notifyOnPlayerCommand("buymenu_close", "weapnext");
+	self notifyOnPlayerCommand("buymenu_close", "weapprev");
 
 	for (;;)
 	{

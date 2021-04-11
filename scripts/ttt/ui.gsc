@@ -471,19 +471,26 @@ displayBuyMenu(role)
 	self updateBuyMenu(role);
 }
 
-updateBuyMenu(role, moveDown, moveRight)
+updateBuyMenu(role, moveDown, moveRight, buySelected)
 {
+	if (!isDefined(role)) return;
+	if (!isDefined(moveDown)) moveDown = 0;
+	if (!isDefined(moveRight)) moveRight = 0;
+	if (!isDefined(buySelected)) buySelected = false;
+
 	COLUMNS = level.ttt.buyMenu["columns"];
 	rowCount = intUp(level.ttt.items[role].size / COLUMNS);
 	columnCount = level.ttt.items[role].size;
 	if (level.ttt.items[role].size > COLUMNS) columnCount = COLUMNS;
 
+	prevSelectedIndex = self.ttt.items.selectedIndex;
+
 	selectedIndexHoriz = self.ttt.items.selectedIndex % columnCount;
 	selectedIndexVert = int(self.ttt.items.selectedIndex / columnCount);
 
-	if (isDefined(moveDown) && selectedIndexVert + moveDown >= 0 && selectedIndexVert + moveDown < rowCount)
+	if (selectedIndexVert + moveDown >= 0 && selectedIndexVert + moveDown < rowCount)
 		selectedIndexVert += moveDown;
-	if (isDefined(moveRight) && selectedIndexHoriz + moveRight >= 0 && selectedIndexHoriz + moveRight < columnCount)
+	if (selectedIndexHoriz + moveRight >= 0 && selectedIndexHoriz + moveRight < columnCount)
 		selectedIndexHoriz += moveRight;
 	self.ttt.items.selectedIndex = selectedIndexHoriz + selectedIndexVert * columnCount;
 	if (self.ttt.items.selectedIndex < 0)
@@ -509,6 +516,10 @@ updateBuyMenu(role, moveDown, moveRight)
 
 	// Update credit count
 	self.ttt.ui["bm"]["credits"] setValue(self.ttt.items.credits);
+
+	// Play sounds
+	if (buySelected) self playLocalSound("oldschool_pickup");
+	else if (prevSelectedIndex != self.ttt.items.selectedIndex) self playLocalSound("mouse_over");
 }
 
 destroyBuyMenu()
