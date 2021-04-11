@@ -1,4 +1,4 @@
-# iw4x-mods
+# iw4-mods
 
 ## Trouble in Terrorist Town
 
@@ -11,7 +11,6 @@
   * Bomb (C4 from TTT)
   * Silent AWP
   * Trash Disguiser (Ninja Pro only & Cold-Blooded Pro only)
-  * Throwing Knife
   * "Jihad Bomb"
 * Detective Items (Ideas)
   * Kevlar by default?
