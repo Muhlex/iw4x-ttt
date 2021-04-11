@@ -31,8 +31,6 @@ init()
 	setDvar("scr_dm_numlives", "0");
 	setDvar("scr_dm_winlimit", "0");
 
-	setDvar("g_deadChat", "0");
-
 	if (getDvar("g_gametype") != "dm")
 	{
 		setDvar("g_gametype", "dm");
@@ -47,6 +45,9 @@ init()
 	thread OnRoundRestart();
 
 	thread OnPlayerConnect();
+
+	wait(0.05); // wait for the dm script to execute
+	setDvar("g_deadChat", "0");
 }
 
 initPlayer()

@@ -4,17 +4,14 @@
 
 ### To-Do
 
-* Fix Dead-Chat
 * Traitor-only Chat
 * Traitor Items (Ideas)
-  * Predator (nerfed)?
   * Bomb (C4 from TTT)
-  * Silent AWP
-  * Trash Disguiser (Ninja Pro only & Cold-Blooded Pro only)
-  * "Jihad Bomb"
+  * Powerful Sniper Rifle w/ laser downside
+  * Ninja Pro only & Cold-Blooded Pro only
+  * Predator (nerfed)?
 * Detective Items (Ideas)
   * Kevlar by default?
-  * Stun / Flashbang
-  * One-Shot Deagle (vs Traitors)
   * Heal-Station
-  * Blast-Shield
+  * One-Shot Deagle (vs Traitors, otherwise kills yourself)
+  * Blast-Shield (passive)

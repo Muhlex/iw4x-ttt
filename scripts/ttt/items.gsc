@@ -10,7 +10,7 @@ init()
 
 	armor = spawnStruct();
 	armor.name = "ARMOR";
-	armor.description = "^3Passive item\n^7Reduces incoming damage by\n^230 percent^7.";
+	armor.description = "^3Passive item\n^7Reduces incoming bullet damage\nby ^220 percent^7.";
 	armor.icon = "cardicon_vest_1";
 	armor.onBuy = ::OnBuyArmor;
 	armor.getIsAvailable = ::getIsAvailablePassive;
@@ -36,7 +36,7 @@ init()
 
 	level.ttt.items["traitor"][3] = spawnStruct();
 	level.ttt.items["traitor"][3].name = "ROCKET LAUNCHER";
-	level.ttt.items["traitor"][3].description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds 2 rockets. ^1Can't pick up ammo^7.";
+	level.ttt.items["traitor"][3].description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds 1 rocket. ^1Can't pick up ammo^7.";
 	level.ttt.items["traitor"][3].icon = "weapon_rpg7";
 	level.ttt.items["traitor"][3].iconWidth = 44;
 	level.ttt.items["traitor"][3].iconHeight = 22;
@@ -54,17 +54,24 @@ init()
 
 	level.ttt.items["traitor"][5] = spawnStruct();
 	level.ttt.items["traitor"][5].name = "CLAYMORE";
-	level.ttt.items["traitor"][5].description = "^3Exclusive equipment\n^7Triggers for ^1any player^7.\n^2Highlighted to other traitors^7.";
+	level.ttt.items["traitor"][5].description = "^3Exclusive equipment\n^7Triggers for anyone (^1includes yourself^7).\n^2Highlighted to other traitors^7.";
 	level.ttt.items["traitor"][5].icon = "equipment_claymore";
 	level.ttt.items["traitor"][5].iconOffsetX = 1;
 	level.ttt.items["traitor"][5].onBuy = ::OnBuyClaymore;
 	level.ttt.items["traitor"][5].getIsAvailable = ::getIsAvailableEquipment;
 
+	level.ttt.items["traitor"][6] = spawnStruct();
+	level.ttt.items["traitor"][6].name = "FLASHBANG";
+	level.ttt.items["traitor"][6].description = "^3Exclusive special grenade\n^2Blinds ^7anyone who is caught in\nor looking at the explosion.";
+	level.ttt.items["traitor"][6].icon = "weapon_flashbang";
+	level.ttt.items["traitor"][6].onBuy = ::OnBuyFlash;
+	level.ttt.items["traitor"][6].getIsAvailable = ::getIsAvailableOffhand;
+
 	level.ttt.items["detective"][0] = armor;
 
 	level.ttt.items["detective"][1] = spawnStruct();
 	level.ttt.items["detective"][1].name = "RIOT SHIELD";
-	level.ttt.items["detective"][1].description = "^3Exclusive weapon\n^2Blocks bullets^7,\neven when it is on your back.";
+	level.ttt.items["detective"][1].description = "^3Exclusive weapon\n^2Blocks bullets^7, even when\nit is on your back.";
 	level.ttt.items["detective"][1].icon = "weapon_riotshield";
 	level.ttt.items["detective"][1].iconWidth = 64;
 	level.ttt.items["detective"][1].iconHeight = 32;
@@ -81,6 +88,13 @@ init()
 	level.ttt.items["detective"][2].iconOffsetX = 1;
 	level.ttt.items["detective"][2].onBuy = ::OnBuySpas;
 	level.ttt.items["detective"][2].getIsAvailable = ::getIsAvailableSpas;
+
+	level.ttt.items["detective"][3] = spawnStruct();
+	level.ttt.items["detective"][3].name = "STUN GRENADE";
+	level.ttt.items["detective"][3].description = "^3Exclusive special grenade\n^2Disorients ^7and ^2slows ^7targets\ncaught in the explosion.";
+	level.ttt.items["detective"][3].icon = "weapon_concgrenade";
+	level.ttt.items["detective"][3].onBuy = ::OnBuyConcussion;
+	level.ttt.items["detective"][3].getIsAvailable = ::getIsAvailableOffhand;
 
 	foreach (roleItems in level.ttt.items) foreach (item in roleItems) precacheShader(item.icon);
 }
@@ -188,9 +202,25 @@ getIsAvailableEquipment()
 	return true;
 }
 
+getIsAvailableOffhand()
+{
+	OFFHAND_ITEMS = [];
+	OFFHAND_ITEMS[0] = "smoke_grenade_mp";
+	OFFHAND_ITEMS[1] = "flash_grenade_mp";
+	OFFHAND_ITEMS[2] = "concussion_grenade_mp";
+
+	foreach (offhand in OFFHAND_ITEMS)
+	{
+		if (!self hasWeapon(offhand)) continue;
+		if (self getWeaponAmmoClip(offhand) > 0) return false;
+	}
+
+	return true;
+}
+
 OnBuyArmor()
 {
-	self.ttt.incomingDamageMultiplier = 0.7;
+	self.ttt.incomingDamageMultiplier = 0.8;
 }
 
 OnBuyRadar()
@@ -261,6 +291,14 @@ OnBuyClaymore()
 	}
 }
 
+OnBuyFlash()
+{
+	WEAPON_NAME = "flash_grenade_mp";
+	self giveWeapon(WEAPON_NAME);
+	self setWeaponAmmoClip(WEAPON_NAME, 1);
+	self SetOffhandSecondaryClass("flash");
+}
+
 OnBuyRiot()
 {
 	WEAPON_NAME = "riotshield_mp";
@@ -285,4 +323,12 @@ OnBuySpas()
 getIsAvailableSpas()
 {
 	return self getCanPlayerBuyWeapons() && !self hasWeapon("spas12_mp");
+}
+
+OnBuyConcussion()
+{
+	WEAPON_NAME = "concussion_grenade_mp";
+	self giveWeapon(WEAPON_NAME);
+	self setWeaponAmmoClip(WEAPON_NAME, 1);
+	self SetOffhandSecondaryClass("smoke");
 }

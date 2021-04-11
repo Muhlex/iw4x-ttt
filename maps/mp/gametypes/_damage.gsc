@@ -1252,7 +1252,7 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 		{
 			weaponClass = getWeaponClass(sWeapon);
 
-			if (victim.ttt.incomingDamageMultiplier != 1.0)
+			if ((sMeansOfDeath == "MOD_PISTOL_BULLET" || sMeansOfDeath == "MOD_RIFLE_BULLET") && victim.ttt.incomingDamageMultiplier != 1.0)
 				iDamage = int(iDamage * victim.ttt.incomingDamageMultiplier);
 
 			if (isExplosiveDamage(sMeansOfDeath))
@@ -1264,6 +1264,9 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 				if (weaponClass == "weapon_sniper") multiplier = level.ttt.headshotMultiplierSniper;
 				iDamage = int(iDamage * multiplier);
 			}
+
+			if (sWeapon == "throwingknife_mp")
+				iDamage = int(level.ttt.maxhealth);
 		}
 	}
 

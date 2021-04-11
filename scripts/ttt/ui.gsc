@@ -46,7 +46,7 @@ displaySelfHud()
 	self.ttt.ui["hud"]["self"]["role"] maps\mp\gametypes\_hud::fontPulseInit(1.25);
 
 	self.ttt.ui["hud"]["self"]["health"] = self createFontString("hudbig", 0.8);
-	self.ttt.ui["hud"]["self"]["health"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -130, -14);
+	self.ttt.ui["hud"]["self"]["health"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -132, -14);
 	self.ttt.ui["hud"]["self"]["health"].hidewheninmenu = true;
 	self.ttt.ui["hud"]["self"]["health"].glowAlpha = 1;
 
@@ -234,7 +234,7 @@ displayScoreboard()
 
 		if (!isAlive(player) && player.ttt.bodyFound)
 			players["confirmed"][players["confirmed"].size] = player;
-		else if (!isAlive(player) && (self.ttt.role == "traitor" || level.gameEnded))
+		else if (!isAlive(player) && (self.ttt.role == "traitor" || level.gameEnded || !isAlive(self)))
 			players["missing"][players["missing"].size] = player;
 		else
 			players["alive"][players["alive"].size] = player;
@@ -270,7 +270,7 @@ displayScoreboard()
 	self.ttt.ui["sb"]["headings"]["alive"] setParent(self.ttt.ui["sb"]["bg"]);
 	self.ttt.ui["sb"]["headings"]["alive"] setPoint("TOP CENTER", "TOP CENTER", 0, vertPadding);
 	self.ttt.ui["sb"]["headings"]["alive"].archived = false;
-	self.ttt.ui["sb"]["headings"]["alive"] setText("TERRORISTS (" + players["alive"].size + ")");
+	self.ttt.ui["sb"]["headings"]["alive"] setText("PLAYERS (" + players["alive"].size + ")");
 
 	foreach (i, player in players["alive"])
 	{
