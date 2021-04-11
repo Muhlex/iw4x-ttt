@@ -353,8 +353,7 @@ displayScoreboard()
 				self.ttt.ui["sb"]["names"][j].glowColor = level.ttt.colorsScoreboard["self"];
 				self.ttt.ui["sb"]["names"][j].glowAlpha = 1;
 			}
-			if (player.ttt.role == "detective" || self.ttt.role == "traitor" || level.gameEnded || !isAlive(self))
-				self.ttt.ui["sb"]["names"][j].color = level.ttt.colorsScoreboard[player.ttt.role];
+			self.ttt.ui["sb"]["names"][j].color = level.ttt.colorsScoreboard[player.ttt.role];
 			self.ttt.ui["sb"]["names"][j] setText(removeColorsFromString(player.name));
 		}
 	}
