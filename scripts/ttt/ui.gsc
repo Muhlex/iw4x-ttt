@@ -130,13 +130,15 @@ destroyHeadIcons()
 
 displayHeadIconOnPlayer(target, image)
 {
-	TAG = "tag_stowed_back";
+	TAG = "j_head";
 	i = self.ttt.ui["hud"]["headicons"].size;
 
 	// create a target entity to be able to give the headicon an offset from the player's head
-	stowedBackPos = target getTagOrigin(TAG);
-	stowedBackAngles = target getTagAngles(TAG);
-	headiconPos = stowedBackPos + anglesToForward(stowedBackAngles) * -32.0;
+	headPos = target getTagOrigin(TAG);
+	headAngles = target getTagAngles(TAG);
+	headiconPos = headPos;
+	headiconPos += anglesToForward(headAngles) * 20.0;
+	headiconPos += anglesToRight(headAngles) * 4.0;
 	headiconAnchor = spawn("script_model", headiconPos);
 	headiconAnchor setModel("tag_origin");
 	headiconAnchor linkTo(target, TAG);
