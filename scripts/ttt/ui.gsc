@@ -132,36 +132,26 @@ displayHeadIconOnPlayer(target, image)
 {
 	i = self.ttt.ui["hud"]["headicons"].size;
 
+	headiconPos = target getEye();
+	headiconPos = (headiconPos[0], headiconPos[1], headiconPos[2] + 16.0);
+	// create a target entity to be able to give the headicon an offset from the player's head
+	headiconTarget = spawn("script_model", headiconPos);
+	headiconTarget setModel("tag_origin");
+	headiconTarget linkTo(target, "tag_eye");
+
 	self.ttt.ui["hud"]["headicons"][i] = newClientHudElem(self);
 	self.ttt.ui["hud"]["headicons"][i] setShader(image, 8, 8);
-
+	self.ttt.ui["hud"]["headicons"][i].color = level.ttt.colors[target.ttt.role];
+	self.ttt.ui["hud"]["headicons"][i].alpha = 0.75;
 	self.ttt.ui["hud"]["headicons"][i] setWaypoint(false, false);
-	self.ttt.ui["hud"]["headicons"][i] thread headIconThink(target);
-	self.ttt.ui["hud"]["headicons"][i] thread headIconOnDestroy(target);
+	self.ttt.ui["hud"]["headicons"][i] setTargetEnt(headiconTarget);
+	self.ttt.ui["hud"]["headicons"][i] thread OnHeadIconDestroy(self, target);
 }
 
-headIconThink(target)
+OnHeadIconDestroy(selfPlayer, target)
 {
-	self endon("death");
-	target endon("death");
-	target endon("disconnect");
-
-	offset = (0, 0, 20);
-
-	for(;;)
-	{
-		eyePos = target getEye();
-		self.x = eyePos[0] + offset[0];
-		self.y = eyePos[1] + offset[1];
-		self.z = eyePos[2] + offset[2];
-
-		wait(0.05);
-	}
-}
-
-headIconOnDestroy(target)
-{
-	self endon("death");
+	//self endon("death"); // apparently this always fires instantly
+	selfPlayer endon("disconnect");
 
 	target waittill_any("death", "disconnect");
 	self destroy();
