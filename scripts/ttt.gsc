@@ -202,12 +202,12 @@ OnPlayerSpawn()
 		self _SetActionSlot(1, ""); // disable nightvision
 		self scripts\ttt\items::resetPlayerEquipment();
 
-		spawnWeapon = "usp_tactical_mp";
+		//spawnWeapon = "usp_tactical_mp";
 
-		self giveWeapon(spawnWeapon);
-		self SetWeaponAmmoClip(spawnWeapon, 0);
-		self SetWeaponAmmoStock(spawnWeapon, 0);
-		self setSpawnWeapon(spawnWeapon);
+		//self giveWeapon(spawnWeapon);
+		//self SetWeaponAmmoClip(spawnWeapon, 0);
+		//self SetWeaponAmmoStock(spawnWeapon, 0);
+		//self setSpawnWeapon(spawnWeapon);
 
 		self scripts\ttt\ui::displaySelfHud();
 
