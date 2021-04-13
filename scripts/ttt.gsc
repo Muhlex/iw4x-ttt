@@ -142,6 +142,7 @@ OnAftertimeEnd()
 	scripts\ttt\ui::destroyRoundEnd();
 
 	foreach (player in level.players) player.cancelKillcam = true;
+	wait(0.05);
 	level notify("round_end_finished"); // kicks off the final killcam
 	while (level.showingFinalKillcam) wait(0.05);
 
