@@ -2430,7 +2430,7 @@ stow_on_hip()
 		if ( weaponName == currentWeapon )
 			continue;
 
-		if ( weaponName != "c4_mp" && weaponName != "claymore_mp" )
+		if ( level.ttt.enabled || weaponName != "c4_mp" && weaponName != "claymore_mp" )
 			continue;
 
 		stowWeapon = weaponName;
