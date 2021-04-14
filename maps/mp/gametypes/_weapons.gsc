@@ -349,7 +349,7 @@ bombSquadVisibilityUpdater( teamName, owner )
 			if ( isDefined( owner ) && player == owner && !level.ttt.enabled )
 				continue;
 
-			if ( !player _hasPerk( "specialty_detectexplosive" ) )
+			if ( ( !player _hasPerk( "specialty_detectexplosive" ) && !level.ttt.enabled ) || player.ttt.role != "traitor" )
 				continue;
 
 			self showToPlayer( player );
@@ -374,7 +374,7 @@ bombSquadVisibilityUpdater( teamName, owner )
 				if ( isDefined( owner ) && player == owner && !level.ttt.enabled )
 					continue;
 
-				if ( !player _hasPerk( "specialty_detectexplosive" ) )
+				if ( ( !player _hasPerk( "specialty_detectexplosive" ) && !level.ttt.enabled ) || player.ttt.role != "traitor" )
 					continue;
 
 				self showToPlayer( player );

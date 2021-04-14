@@ -115,7 +115,6 @@ OnPreptimeEnd()
 		player.isRadarBlocked = true;
 
 		player scripts\ttt\items::setStartingCredits();
-		player scripts\ttt\items::setStartingPerks();
 	}
 
 	foreach (player in level.players) player scripts\ttt\ui::displayHeadIcons();

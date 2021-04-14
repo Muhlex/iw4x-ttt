@@ -115,12 +115,6 @@ resetPlayerEquipment()
 	self SetOffhandPrimaryClass("throwingknife"); // set throwing knife as 'active' equipment so it can be used once picked up
 }
 
-setStartingPerks()
-{
-	if (!isDefined(self.ttt.role) || self.ttt.role != "traitor") return;
-	self _setPerk("specialty_detectexplosive");
-}
-
 setStartingCredits()
 {
 	if (!isDefined(self.ttt.role)) return;
