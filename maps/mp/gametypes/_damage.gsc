@@ -575,7 +575,17 @@ PlayerKilled_internal( eInflictor, attacker, victim, iDamage, sMeansOfDeath, sWe
 	//prof_begin( " PlayerKilled_3_drop" );
 	// drop weapons from killed player
 	victim maps\mp\gametypes\_weapons::dropScavengerForDeath( attacker );	// must be done before dropWeaponForDeath, since we use some weapon information
-	if (!level.randomizer.enabled) victim maps\mp\gametypes\_weapons::dropWeaponForDeath( attacker );
+	if (!level.randomizer.enabled && !level.ttt.enabled) victim maps\mp\gametypes\_weapons::dropWeaponForDeath( attacker );
+	if (level.ttt.enabled)
+	{
+		foreach (victimWeaponName in victim getWeaponsListPrimaries())
+		{
+			scripts\ttt\pickups::dropWeapon(
+				victimWeaponName,
+				anglesToForward((0, randomInt(360), 0)) * 48 + (0, 0, 64)
+			);
+		}
+	}
 	//prof_end( " PlayerKilled_3_drop" );
 
 	if ( !isFauxDeath )

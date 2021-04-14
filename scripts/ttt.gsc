@@ -211,7 +211,7 @@ OnPlayerSpawn()
 
 		self scripts\ttt\ui::displaySelfHud();
 
-		self thread OnPlayerDropWeapon();
+		self thread scripts\ttt\pickups::OnPlayerDropWeapon();
 		self thread OnPlayerBuyMenu();
 		self thread OnPlayerHealthUpdate();
 	}
@@ -299,28 +299,6 @@ playerBodyThink(owner)
 			}
 		}
 		else player iPrintLnBold("This is the body of ^3" + ownerName + "^7. They were " + roleTextColor + owner.ttt.role + "^7.");
-	}
-}
-
-OnPlayerDropWeapon()
-{
-	self endon("disconnect");
-	self endon("death");
-
-	self notifyOnPlayerCommand("drop_weapon", "+actionslot 1");
-
-	for (;;)
-	{
-		self waittill("drop_weapon");
-
-		weapon = self getCurrentWeapon();
-		if (!isDefined(weapon) || weapon == "killstreak_ac130_mp") continue;
-		if (self getWeaponsListPrimaries().size <= 1) continue; // actually gets all regular guns
-		item = self dropItem(weapon);
-		lastWeapon = self getLastWeapon();
-		if (!isDefined(lastWeapon) || !self hasWeapon(lastWeapon))
-			lastWeapon = self getWeaponsListPrimaries()[0];
-		self switchToWeapon(lastWeapon);
 	}
 }
 

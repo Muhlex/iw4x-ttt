@@ -41,9 +41,121 @@ getRandomWeapon()
 	tieredWeapons[2][9] = "glock";
 
 	weighting = randomInt(100);
-	if (weighting < 20) return tieredWeapons[0][randomInt(tieredWeapons[0].size)];
-	else if (weighting < 50) return tieredWeapons[1][randomInt(tieredWeapons[1].size)];
-	else return tieredWeapons[2][randomInt(tieredWeapons[2].size)];
+	result = undefined;
+	if (weighting < 20) result = tieredWeapons[0][randomInt(tieredWeapons[0].size)];
+	else if (weighting < 50) result = tieredWeapons[1][randomInt(tieredWeapons[1].size)];
+	else result = tieredWeapons[2][randomInt(tieredWeapons[2].size)];
+
+	return result + "_mp";
+}
+
+createWeaponEnt(weaponName, ammoClip, ammoStock, origin, angles, velocity, pickupDelay)
+{
+	if (!isDefined(weaponName)) return;
+	if (!isDefined(ammoClip)) ammoClip = 0;
+	if (!isDefined(ammoStock)) ammoStock = 0;
+	if (!isDefined(origin)) origin = (0, 0, 0);
+	if (!isDefined(angles)) angles = (0, 0, 0);
+	if (!isDefined(velocity)) velocity = (0, 0, 0);
+	if (!isDefined(pickupDelay)) pickupDelay = 0;
+
+	/**
+	 * Some weapons have weird models that always fall straight to the ground
+	 * even when velocity is applied. Some weapons seem to not be able to have physics
+	 * at all (coltanaconda). Due to this an invisible physicsEnt is used that has the
+	 * model of a weapon that works correctly.
+	 */
+
+	physicsEnt = spawn("script_model", origin);
+	physicsEnt.angles = angles + (0, 90, 0);
+	physicsEnt setModel(getWeaponModel("p90_mp"));
+	physicsEnt hide();
+
+	weaponEnt = spawn("script_model", origin);
+	weaponEnt.angles = angles + (0, 90, 0);
+	weaponEnt linkTo(physicsEnt);
+	weaponEnt setModel(getWeaponModel(weaponName));
+	weaponParts = getWeaponHideTags(weaponName);
+	foreach (part in weaponParts) weaponEnt hidePart(part);
+
+	useEnt = spawn("script_origin", origin);
+
+	weaponEnt.physicsEnt = physicsEnt;
+	weaponEnt.useEnt = useEnt;
+	weaponEnt.weaponName = weaponName;
+	weaponEnt.ammoClip = ammoClip;
+	weaponEnt.ammoStock = ammoStock;
+
+	launchOffset = 0 * anglesToRight(angles) + -10 * anglesToForward(angles) + 10 * anglesToUp(angles);
+
+	physicsEnt physicsLaunchServer(origin + launchOffset, velocity); // this takes an absolute position!
+
+	wait(pickupDelay);
+
+
+	// Unfortunately there is a max limit of different strings, so this needs to be a generic text:
+	//localizedName = tableLookupIString("mp/statsTable.csv", 4, getSubStr(weaponName, 0, weaponName.size - 3), 3);
+	useEnt setHintString("[ ^3[{+activate}] ^7] pick up weapon");
+	useEnt makeUsable();
+	foreach (player in level.players) useEnt enablePlayerUse(player);
+
+	weaponEnt thread weaponEntThink();
+	weaponEnt thread OnWeaponPickupTrigger();
+}
+
+dropWeapon(weaponName, velocity)
+{
+	if (!isDefined(weaponName)) return;
+
+	weaponWasActive = (weaponName == self getCurrentWeapon());
+
+	ammoClip = self getWeaponAmmoClip(weaponName);
+	ammoStock = self getWeaponAmmoStock(weaponName);
+
+	eyePos = self getEye();
+	spawnPos = physicsTrace(
+		eyePos,
+		eyePos + anglesToForward(self.angles) * 32
+	);
+	spawnPos -= anglesToForward(self.angles) * 24;
+	spawnPos += (0, 0, -16);
+
+	thread createWeaponEnt(weaponName, ammoClip, ammoStock, spawnPos, self getPlayerAngles(), velocity, 1);
+	if (!isAlive(self)) return;
+	self takeWeapon(weaponName);
+
+	if (!weaponWasActive) return;
+
+	lastWeaponName = self getLastWeapon();
+	if (!isDefined(lastWeaponName) || !self hasWeapon(lastWeaponName))
+		lastWeaponName = self getWeaponsListPrimaries()[0];
+	if (!isDefined(lastWeaponName) || !self hasWeapon(lastWeaponName))
+		return;
+	self switchToWeapon(lastWeaponName);
+}
+
+tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
+{
+	if (!isDefined(pickupOnFullInventory)) pickupOnFullInventory = false;
+
+	if (self hasWeapon(weaponEnt.weaponName)) return;
+	weaponCount = self getWeaponsListPrimaries().size;
+	if (weaponCount >= 2)
+	{
+		if (pickupOnFullInventory) self dropWeapon(self getCurrentWeapon());
+		else return;
+	}
+
+	self giveWeapon(weaponEnt.weaponName);
+	self setWeaponAmmoClip(weaponEnt.weaponName, weaponEnt.ammoClip);
+	self setWeaponAmmoStock(weaponEnt.weaponName, weaponEnt.ammoStock);
+	self playLocalSound("weap_pickup");
+
+	if (weaponCount == 0 || pickupOnFullInventory) self switchToWeapon(weaponEnt.weaponName);
+
+	weaponEnt.physicsEnt delete();
+	weaponEnt.useEnt delete();
+	weaponEnt delete();
 }
 
 spawnWorldPickups()
@@ -51,35 +163,93 @@ spawnWorldPickups()
 	spawnPoints = maps\mp\gametypes\_spawnlogic::getSpawnpointArray("mp_dm_spawn");
 	spawnPoints = array_randomize(spawnPoints);
 
-	for (i = 0; i < spawnPoints.size; i++)
+	foreach (spawnPoint in spawnPoints)
 	{
 		// Spawn weapons
-		origin = spawnPoints[i].origin;
-		moveForwardBy = anglesToForward(spawnPoints[i].angles) * randomIntRange(80, 160);
-		origin += (0, 0, 32);
-		origin += moveForwardBy;
-		weaponName = "weapon_" + getRandomWeapon() + "_mp";
-		weapon = spawn(weaponName, origin);
-		weapon itemWeaponSetAmmo(0, 0, 0);
+		origin = spawnPoint.origin + (0, 0, 48); // put up to about half of the player's height
+		origin = physicsTrace(
+			origin,
+			origin + anglesToForward(spawnPoint.angles) * randomIntRange(96, 256)
+		);
+		origin -= anglesToForward(spawnPoint.angles) * 24; // prevent weapons from spawning in walls
+
+		origin = physicsTrace(origin, origin + (0, 0, -1024)) + (0, 0, 4);
+
+		weaponName = getRandomWeapon();
+
+		thread createWeaponEnt(weaponName, 0, weaponClipSize(weaponName), origin, (0, randomInt(360), 0));
 
 		// Spawn ammo
-		for (j = 0; j < 3; j++)
+		AMMO_COUNT = 3;
+		for (i = 0; i < AMMO_COUNT; i++)
 		{
-			ammoOrigin = origin + (randomIntRange(-35, 36), randomIntRange(-35, 36), 8 * (j+1));
+			ammoForwardVector = anglesToForward((0, 360 / AMMO_COUNT * i, 0));
+			ammoOrigin = physicsTrace(
+				origin + (0, 0, 48),
+				origin + ammoForwardVector * randomIntRange(48, 96)
+			);
+			ammoOrigin -= ammoForwardVector * 16;
+			ammoOrigin = physicsTrace(ammoOrigin, ammoOrigin + (0, 0, -1024)) + (0, 0, 0);
 			ammoModel = spawn("script_model", ammoOrigin);
 			ammoModel setModel("weapon_scavenger_grenadebag");
-			ammoModel.angles = (0, 0, 90);
-			ammoModel physicsLaunchServer((0, 0, 0), (0, 0, 0));
+			ammoModel.angles = (0, randomInt(360), 90);
 
-			// ammoModel setCursorHint("HINT_NOICON");
-			// ammoModel setHintString(&"MP_AMMO_PICKUP");
-			// ammoModel makeUsable();
-			// foreach (player in level.players) ammoModel enablePlayerUse(player);
-			// ammoTrigger = spawn("trigger_radius", ammoOrigin, 0, 16, 128);
-			// ammoTrigger linkTo(ammoModel, "tag_origin", (0, 0, 0), (0, 0, 0));
-			// ammoTrigger thread ammoTriggerThink(ammoModel);
 			ammoModel thread ammoModelThink();
 		}
+	}
+}
+
+OnPlayerDropWeapon()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	self notifyOnPlayerCommand("drop_weapon", "+actionslot 1");
+
+	for (;;)
+	{
+		self waittill("drop_weapon");
+
+		if (self getWeaponsListPrimaries().size < 1) continue;
+		weaponName = self getCurrentWeapon();
+		if (weaponName == "killstreak_ac130_mp") continue;
+
+		self dropWeapon(weaponName, self getVelocity() * 0.5 + anglesToForward(self getPlayerAngles()) * 64 + (0, 0, 64));
+	}
+}
+
+OnWeaponPickupTrigger()
+{
+	self endon("death");
+
+	for (;;)
+	{
+		self.useEnt waittill ("trigger", player);
+
+		player tryPickUpWeapon(self, true);
+	}
+}
+
+weaponEntThink()
+{
+	self endon("death");
+
+	pickupDistanceSq = 32 * 32;
+
+	for (;;)
+	{
+		// update usable entity to never be stuck in the ground
+		self.useEnt.origin = self.origin + (0, 0, 24);
+
+		// check if anyone is trying to implicitly pick up the weapon (walking over it)
+		foreach (player in getLivingPlayers())
+		{
+			if (distanceSquared(player.origin, self.origin) > pickupDistanceSq) continue;
+
+			player tryPickUpWeapon(self);
+		}
+
+		wait(0.1);
 	}
 }
 
@@ -89,32 +259,37 @@ ammoModelThink()
 
 	pickupDistanceSq = 32 * 32;
 
-	for(;;)
+	for (;;)
 	{
-		// self waittill("trigger", player);
-		wait(0.1);
-
 		foreach (player in getLivingPlayers())
 		{
 			if (distanceSquared(player.origin, self.origin) > pickupDistanceSq) continue;
 
-			weapon = player getCurrentWeapon();
-
-			if (weapon == "rpg_mp") continue;
-
-			maxClip = weaponClipSize(weapon);
-			currentStock = player getWeaponAmmoStock(weapon);
-			maxStock = int(weaponMaxAmmo(weapon) / 4);
-			if (maxStock < maxClip) maxStock = maxClip;
-
-			if (currentStock >= maxStock) continue;
-
-			newStock = currentStock + maxClip;
-			if (newStock > maxStock) newStock = maxStock;
-
-			player setWeaponAmmoStock(weapon, newStock);
-			player playLocalSound("scavenger_pack_pickup");
-			self delete();
+			currentWeaponName = player getCurrentWeapon();
+			player tryPickUpAmmo(self, currentWeaponName);
+			foreach (weaponName in player getWeaponsListPrimaries())
+				player tryPickUpAmmo(self, weaponName);
 		}
+
+		wait(0.1);
 	}
+}
+
+tryPickUpAmmo(ammoEnt, weaponName)
+{
+	if (weaponName == "rpg_mp") return;
+
+	maxClip = weaponClipSize(weaponName);
+	currentStock = self getWeaponAmmoStock(weaponName);
+	maxStock = maxClip * int(weaponMaxAmmo(weaponName) / maxClip / 3);
+	if (maxStock < maxClip) maxStock = maxClip;
+
+	if (currentStock >= maxStock) return;
+
+	newStock = currentStock + maxClip;
+	if (newStock > maxStock) newStock = maxStock;
+
+	self setWeaponAmmoStock(weaponName, newStock);
+	self playLocalSound("scavenger_pack_pickup");
+	ammoEnt delete();
 }
