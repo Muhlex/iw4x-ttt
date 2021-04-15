@@ -424,10 +424,25 @@ unsetPlayerBuyMenu(switchToLastWeapon)
 	self.ttt.inBuyMenu = false;
 
 	self freezeControls(false);
-	if (switchToLastWeapon) self switchToWeapon(self getLastWeapon());
+	if (switchToLastWeapon)
+	{
+		self switchToWeapon(self getLastWeapon());
+		self thread playLaptopSound();
+	}
 	self setBlurForPlayer(0, 0.75);
 	self scripts\ttt\ui::destroyBuyMenu();
 	if (isAlive(self)) self scripts\ttt\ui::displaySelfHud();
+}
+
+playLaptopSound()
+{
+	/**
+	 * Stowing the laptop makes a distinct sound that only other players can hear.
+	 * We recreate this sound for the local player here. The wait is needed
+	 * because the sound otherwise sometimes doesn't play.
+	 */
+	wait (0.05);
+	self playLocalSound("weap_c4detpack_safety_plr");
 }
 
 buyMenuThinkLaptop(weaponName)
