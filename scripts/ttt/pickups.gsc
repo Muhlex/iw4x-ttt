@@ -118,7 +118,7 @@ dropWeapon(weaponName, velocity)
 		eyePos + anglesToForward(self.angles) * 32
 	);
 	spawnPos -= anglesToForward(self.angles) * 24;
-	spawnPos += (0, 0, -16);
+	spawnPos = physicsTrace(spawnPos, spawnPos + (0, 0, -16)) + (0, 0, 8);
 
 	thread createWeaponEnt(weaponName, ammoClip, ammoStock, spawnPos, self getPlayerAngles(), velocity, 1);
 	if (!isAlive(self)) return;
