@@ -426,7 +426,7 @@ unsetPlayerBuyMenu(switchToLastWeapon)
 	if (switchToLastWeapon) self switchToWeapon(self getLastWeapon());
 	self setBlurForPlayer(0, 0.75);
 	self scripts\ttt\ui::destroyBuyMenu();
-	self scripts\ttt\ui::displaySelfHud();
+	if (isAlive(self)) self scripts\ttt\ui::displaySelfHud();
 }
 
 buyMenuThinkLaptop(weaponName)

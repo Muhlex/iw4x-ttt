@@ -125,7 +125,7 @@ setStartingCredits()
 setStartingItems()
 {
 	if (!isDefined(self.ttt.role)) return;
-	if (self.ttt.role == "detective") self giveItem(level.ttt.items["traitor"][0]);
+	if (self.ttt.role == "detective") self giveItem(level.ttt.items["detective"][0]);
 }
 
 awardCredits(amount)
