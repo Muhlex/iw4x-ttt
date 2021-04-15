@@ -10,7 +10,7 @@ init()
 
 	armor = spawnStruct();
 	armor.name = "ARMOR";
-	armor.description = "^3Passive item\n^7Reduces incoming bullet damage\nby ^220 percent^7.";
+	armor.description = "^3Passive item\n^7Reduces incoming bullet damage\nby ^220 percent^7.\n\nDefault equipment for detectives.";
 	armor.icon = "cardicon_vest_1";
 	armor.onBuy = ::OnBuyArmor;
 	armor.getIsAvailable = ::getIsAvailablePassive;
@@ -54,7 +54,7 @@ init()
 
 	level.ttt.items["traitor"][5] = spawnStruct();
 	level.ttt.items["traitor"][5].name = "CLAYMORE";
-	level.ttt.items["traitor"][5].description = "^3Exclusive equipment\n^7Triggers for anyone (^1includes yourself^7).\n^2Highlighted to other traitors^7.";
+	level.ttt.items["traitor"][5].description = "^3Exclusive equipment\n^7Triggers for anyone (^1for yourself too^7).\n^2Highlighted to other traitors^7.";
 	level.ttt.items["traitor"][5].icon = "equipment_claymore";
 	level.ttt.items["traitor"][5].iconOffsetX = 1;
 	level.ttt.items["traitor"][5].onBuy = ::OnBuyClaymore;
@@ -122,6 +122,12 @@ setStartingCredits()
 	if (self.ttt.role == "detective") self.ttt.items.credits = getDvarInt("ttt_detective_start_credits");
 }
 
+setStartingItems()
+{
+	if (!isDefined(self.ttt.role)) return;
+	if (self.ttt.role == "detective") self giveItem(level.ttt.items["traitor"][0]);
+}
+
 awardCredits(amount)
 {
 	if (amount < 1) return;
@@ -153,15 +159,20 @@ awardBodyInspectCredits(victim)
 	}
 }
 
+giveItem(item)
+{
+	self thread [[item.onBuy]]();
+	self.ttt.items.inventory[self.ttt.items.inventory.size] = item;
+	self iPrintLn("^3" + item.name + "^7 received");
+}
+
 tryBuyItem(item)
 {
 	if (![[item.getIsAvailable]](item)) return;
 	if (self.ttt.items.credits < 1) return;
 
-	self thread [[item.onBuy]]();
+	self giveItem(item);
 	self.ttt.items.credits--;
-	self.ttt.items.inventory[self.ttt.items.inventory.size] = item;
-	self iPrintLn("^3" + item.name + "^7 received");
 
 	self scripts\ttt\ui::updateBuyMenu(self.ttt.role, undefined, undefined, true);
 }
