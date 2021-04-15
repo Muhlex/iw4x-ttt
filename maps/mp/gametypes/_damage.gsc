@@ -1260,7 +1260,8 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 		}
 		else
 		{
-			weaponClass = getWeaponClass(sWeapon);
+			if (sWeapon == "model1887_mp")
+				iDamage = int(iDamage * 1.2);
 
 			if ((sMeansOfDeath == "MOD_PISTOL_BULLET" || sMeansOfDeath == "MOD_RIFLE_BULLET") && victim.ttt.incomingDamageMultiplier != 1.0)
 				iDamage = int(iDamage * victim.ttt.incomingDamageMultiplier);
@@ -1271,7 +1272,7 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 			if (sMeansOfDeath == "MOD_HEAD_SHOT")
 			{
 				multiplier = level.ttt.headshotMultiplier;
-				if (weaponClass == "weapon_sniper") multiplier = level.ttt.headshotMultiplierSniper;
+				if (getWeaponClass(sWeapon) == "weapon_sniper") multiplier = level.ttt.headshotMultiplierSniper;
 				iDamage = int(iDamage * multiplier);
 			}
 
