@@ -6,6 +6,11 @@ init()
 	precacheModel("weapon_scavenger_grenadebag");
 }
 
+initPlayer()
+{
+	self.ttt.dropVelocity = 64;
+}
+
 getRandomWeapon()
 {
 	tieredWeapons = [];
@@ -214,7 +219,10 @@ OnPlayerDropWeapon()
 		weaponName = self getCurrentWeapon();
 		if (weaponName == "killstreak_ac130_mp") continue;
 
-		self dropWeapon(weaponName, self getVelocity() * 0.5 + anglesToForward(self getPlayerAngles()) * 64 + (0, 0, 64));
+		self dropWeapon(
+			weaponName,
+			self getVelocity() * 0.5 + anglesToForward(self getPlayerAngles()) * self.ttt.dropVelocity + (0, 0, 64)
+		);
 	}
 }
 

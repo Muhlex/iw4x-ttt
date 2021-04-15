@@ -58,6 +58,7 @@ initPlayer()
 	self.ttt.inBuyMenu = false;
 	self.ttt.incomingDamageMultiplier = 1.0;
 
+	self scripts\ttt\pickups::initPlayer();
 	self scripts\ttt\items::initPlayer();
 	self scripts\ttt\ui::initPlayer();
 

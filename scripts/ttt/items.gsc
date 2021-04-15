@@ -96,6 +96,13 @@ init()
 	level.ttt.items["detective"][3].onBuy = ::OnBuyConcussion;
 	level.ttt.items["detective"][3].getIsAvailable = ::getIsAvailableOffhand;
 
+	level.ttt.items["detective"][3] = spawnStruct();
+	level.ttt.items["detective"][3].name = "INSANE BICEPS";
+	level.ttt.items["detective"][3].description = "^3Passive item\n^7Allows you to ^2lob weapons\n^7like crazy.";
+	level.ttt.items["detective"][3].icon = "specialty_onemanarmy_upgrade";
+	level.ttt.items["detective"][3].onBuy = ::OnBuyLob;
+	level.ttt.items["detective"][3].getIsAvailable = ::getIsAvailablePassive;
+
 	foreach (roleItems in level.ttt.items) foreach (item in roleItems) precacheShader(item.icon);
 }
 
@@ -336,4 +343,9 @@ OnBuyConcussion()
 	self giveWeapon(WEAPON_NAME);
 	self setWeaponAmmoClip(WEAPON_NAME, 1);
 	self SetOffhandSecondaryClass("smoke");
+}
+
+OnBuyLob()
+{
+	self.ttt.dropVelocity = 512;
 }
