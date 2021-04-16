@@ -25,16 +25,17 @@ getRandomWeapon()
 	tieredWeapons[0][6] = "aug";
 
 	tieredWeapons[1][0] = "m4";
-	tieredWeapons[1][1] = "m16";
-	tieredWeapons[1][2] = "ak47";
-	tieredWeapons[1][3] = "mp5k";
-	tieredWeapons[1][4] = "p90";
+	tieredWeapons[1][1] = "ak47";
+	tieredWeapons[1][2] = "mp5k";
+	tieredWeapons[1][3] = "p90";
+	tieredWeapons[1][4] = "uzi";
 	tieredWeapons[1][5] = "kriss";
-	tieredWeapons[1][6] = "m240";
+	tieredWeapons[1][6] = "rpd";
 	tieredWeapons[1][7] = "m1014";
 	tieredWeapons[1][8] = "beretta393";
+	tieredWeapons[1][9] = "glock";
 
-	tieredWeapons[2][0] = "uzi";
+	tieredWeapons[2][0] = "fn2000";
 	tieredWeapons[2][1] = "mg4";
 	tieredWeapons[2][2] = "m40a3";
 	tieredWeapons[2][3] = "m40a3"; // generate more sniper rifles as this is the only one in the pool
@@ -43,7 +44,6 @@ getRandomWeapon()
 	tieredWeapons[2][6] = "pp2000";
 	tieredWeapons[2][7] = "tmp";
 	tieredWeapons[2][8] = "model1887";
-	tieredWeapons[2][9] = "glock";
 
 	weighting = randomInt(100);
 	result = undefined;

@@ -1262,6 +1262,10 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 		{
 			if (sWeapon == "model1887_mp")
 				iDamage = int(iDamage * 1.2);
+			if (sWeapon == "m1014_mp")
+				iDamage = int(iDamage * 0.7);
+			if (sWeapon == "deserteagle_mp" || sWeapon == "coltanaconda_mp")
+				iDamage = int(iDamage * 1.4);
 
 			if ((sMeansOfDeath == "MOD_PISTOL_BULLET" || sMeansOfDeath == "MOD_RIFLE_BULLET") && victim.ttt.incomingDamageMultiplier != 1.0)
 				iDamage = int(iDamage * victim.ttt.incomingDamageMultiplier);
