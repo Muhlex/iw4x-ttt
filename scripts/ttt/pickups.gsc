@@ -78,6 +78,7 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, origin, angles, velocity, picku
 
 	weaponEnt = spawn("script_model", origin);
 	weaponEnt.angles = angles + (0, 90, 0);
+	if (weaponName == "riotshield_mp") weaponEnt.angles += (0, 90, 0);
 	weaponEnt linkTo(physicsEnt);
 	weaponEnt setModel(getWeaponModel(weaponName));
 	weaponParts = getWeaponHideTags(weaponName);
@@ -94,11 +95,11 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, origin, angles, velocity, picku
 
 	wait(pickupDelay);
 
-	// Unfortunately there is a max limit of different strings, so this needs to be a generic text:
-	//localizedName = tableLookupIString("mp/statsTable.csv", 4, getSubStr(weaponName, 0, weaponName.size - 3), 3);
-	//useEnt setHintString("[ ^3[{+activate}] ^7] pick up weapon");
-
-	weaponEnt scripts\ttt\use::makeUsableCustom(::OnWeaponPickupTrigger);
+	weaponEnt scripts\ttt\use::makeUsableCustom(
+		::OnWeaponPickupTrigger,
+		::OnWeaponPickupAvailable,
+		::OnWeaponPickupAvailableEnd
+	);
 	weaponEnt thread weaponEntThink();
 }
 
@@ -222,6 +223,16 @@ OnPlayerDropWeapon()
 OnWeaponPickupTrigger(ent, player)
 {
 	player tryPickUpWeapon(ent, true);
+}
+OnWeaponPickupAvailable(ent, player)
+{
+	player scripts\ttt\ui::destroyUseAvailableHint();
+	localizedWeaponName = tableLookupIString("mp/statsTable.csv", 4, getSubStr(ent.weaponName, 0, ent.weaponName.size - 3), 3);
+	player scripts\ttt\ui::displayUseAvailableHint(&"[ ^3[{+activate}] ^7] for ^3", localizedWeaponName);
+}
+OnWeaponPickupAvailableEnd(ent, player)
+{
+	player scripts\ttt\ui::destroyUseAvailableHint();
 }
 
 weaponEntThink()

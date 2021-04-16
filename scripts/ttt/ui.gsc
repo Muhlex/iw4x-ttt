@@ -108,6 +108,24 @@ updatePlayerRoleDisplay(doPulse)
 	if (doPulse) self.ttt.ui["hud"]["self"]["role"] thread maps\mp\gametypes\_hud::fontPulse(self);
 }
 
+displayUseAvailableHint(label, text)
+{
+	self.ttt.ui["hud"]["self"]["use_hint"] = [];
+	self.ttt.ui["hud"]["self"]["use_hint"]["text"] = self createFontString("default", 1.5);
+	self.ttt.ui["hud"]["self"]["use_hint"]["text"] setPoint("BOTTOM CENTER", "BOTTOM CENTER", 0, -120);
+	self.ttt.ui["hud"]["self"]["use_hint"]["text"].color = (1, 1, 1);
+	self.ttt.ui["hud"]["self"]["use_hint"]["text"].alpha = 0.85;
+	self.ttt.ui["hud"]["self"]["use_hint"]["text"].archived = false;
+	self.ttt.ui["hud"]["self"]["use_hint"]["text"].hidewheninmenu = true;
+	self.ttt.ui["hud"]["self"]["use_hint"]["text"].label = label;
+	self.ttt.ui["hud"]["self"]["use_hint"]["text"] setText(text);
+}
+
+destroyUseAvailableHint()
+{
+	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["use_hint"]);
+}
+
 displayHeadIcons()
 {
 	self.ttt.ui["hud"]["headicons"] = [];

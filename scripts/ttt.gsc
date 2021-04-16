@@ -59,6 +59,7 @@ initPlayer()
 	self.ttt.inBuyMenu = false;
 	self.ttt.incomingDamageMultiplier = 1.0;
 
+	self scripts\ttt\use::initPlayer();
 	self scripts\ttt\pickups::initPlayer();
 	self scripts\ttt\items::initPlayer();
 	self scripts\ttt\ui::initPlayer();
@@ -214,6 +215,7 @@ OnPlayerSpawn()
 		self scripts\ttt\ui::displaySelfHud();
 
 		self thread scripts\ttt\use::OnPlayerUse();
+		self thread scripts\ttt\use::playerUseEntsThink();
 		self thread scripts\ttt\pickups::OnPlayerDropWeapon();
 		self thread OnPlayerBuyMenu();
 		self thread OnPlayerHealthUpdate();
@@ -228,6 +230,7 @@ OnPlayerDeath()
 	{
 		self waittill("death");
 
+		if (isDefined(self.ttt.use.availableEnt)) self scripts\ttt\use::unsetPlayerAvailableUseEnt();
 		self scripts\ttt\ui::destroySelfHud();
 		self unsetPlayerBuyMenu();
 		checkRoundWinConditions();
