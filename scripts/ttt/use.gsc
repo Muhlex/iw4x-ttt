@@ -5,13 +5,15 @@ init() {
 	level.ttt.use.ents = [];
 }
 
-makeUsableCustom(onUse, useRange, useThroughSolids)
+makeUsableCustom(onUse, useRange, useAngle, useThroughSolids)
 {
 	if (!isDefined(onUse)) return;
 	if (!isDefined(useRange)) useRange = 128;
+	if (!isDefined(useAngle)) useAngle = 70;
 	if (!isDefined(useThroughSolids)) useThroughSolids = false;
 
 	self.useRange = useRange;
+	self.useAngle = useAngle;
 	self.useThroughSolids = useThroughSolids;
 	self.onUse = onUse;
 
@@ -37,30 +39,37 @@ OnPlayerUse()
 		self waittill("activate");
 		if (self.ttt.inBuyMenu) continue;
 
-		closestEnt = undefined;
-		closestDistanceSq = undefined;
+		lowestAngle = undefined;
+		useEnt = undefined;
 
 		foreach (ent in level.ttt.use.ents)
 		{
 			playerEyeOrigin = self getEye();
-			distanceSq = distanceSquared(ent.origin, playerEyeOrigin);
+			vecEntPlayer = ent.origin - playerEyeOrigin;
+			distanceSq = lengthSquared(vecEntPlayer);
 
 			if (distanceSq > ent.useRange * ent.useRange) continue;
+
+			dirEntPlayer = vectorNormalize(vecEntPlayer);
+			angleFromView = lengthSquared(dirEntPlayer - anglesToForward(self getPlayerAngles())) * 45;
+
+			if (angleFromView > ent.useAngle) continue;
+
 			if (!ent.useThroughSolids)
 			{
-				targetPos = ent.origin + (0, 0, 4);
+				targetPos = ent.origin + (0, 0, 4); // make sure the position is never below the ground
 				tracedPos = physicsTrace(playerEyeOrigin, targetPos);
 				if (tracedPos != targetPos) continue;
 			}
 
-			if (!isDefined(closestDistanceSq) || closestDistanceSq > distanceSq)
+			if (!isDefined(lowestAngle) || lowestAngle > angleFromView)
 			{
-				closestEnt = ent;
-				closestDistanceSq = distanceSq;
+				useEnt = ent;
+				lowestAngle = angleFromView;
 			}
 		}
 
-		if (!isDefined(closestEnt)) continue;
-		[[closestEnt.onUse]](closestEnt, self);
+		if (!isDefined(useEnt)) continue;
+		[[useEnt.onUse]](useEnt, self);
 	}
 }
