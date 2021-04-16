@@ -83,10 +83,7 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, origin, angles, velocity, picku
 	weaponParts = getWeaponHideTags(weaponName);
 	foreach (part in weaponParts) weaponEnt hidePart(part);
 
-	useEnt = spawn("script_origin", origin);
-
 	weaponEnt.physicsEnt = physicsEnt;
-	weaponEnt.useEnt = useEnt;
 	weaponEnt.weaponName = weaponName;
 	weaponEnt.ammoClip = ammoClip;
 	weaponEnt.ammoStock = ammoStock;
@@ -97,15 +94,12 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, origin, angles, velocity, picku
 
 	wait(pickupDelay);
 
-
 	// Unfortunately there is a max limit of different strings, so this needs to be a generic text:
 	//localizedName = tableLookupIString("mp/statsTable.csv", 4, getSubStr(weaponName, 0, weaponName.size - 3), 3);
-	useEnt setHintString("[ ^3[{+activate}] ^7] pick up weapon");
-	useEnt makeUsable();
-	foreach (player in level.players) useEnt enablePlayerUse(player);
+	//useEnt setHintString("[ ^3[{+activate}] ^7] pick up weapon");
 
+	weaponEnt scripts\ttt\use::makeUsableCustom(::OnWeaponPickupTrigger);
 	weaponEnt thread weaponEntThink();
-	weaponEnt thread OnWeaponPickupTrigger();
 }
 
 dropWeapon(weaponName, velocity)
@@ -159,7 +153,6 @@ tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
 	if (weaponCount == 0 || pickupOnFullInventory) self switchToWeapon(weaponEnt.weaponName);
 
 	weaponEnt.physicsEnt delete();
-	weaponEnt.useEnt delete();
 	weaponEnt delete();
 }
 
@@ -178,7 +171,7 @@ spawnWorldPickups()
 		);
 		origin -= anglesToForward(spawnPoint.angles) * 24; // prevent weapons from spawning in walls
 
-		origin = physicsTrace(origin, origin + (0, 0, -1024)) + (0, 0, 4);
+		origin = physicsTrace(origin, origin + (0, 0, -1024)) + (0, 0, 8);
 
 		weaponName = getRandomWeapon();
 
@@ -226,16 +219,9 @@ OnPlayerDropWeapon()
 	}
 }
 
-OnWeaponPickupTrigger()
+OnWeaponPickupTrigger(ent, player)
 {
-	self endon("death");
-
-	for (;;)
-	{
-		self.useEnt waittill ("trigger", player);
-
-		player tryPickUpWeapon(self, true);
-	}
+	player tryPickUpWeapon(ent, true);
 }
 
 weaponEntThink()
@@ -246,9 +232,6 @@ weaponEntThink()
 
 	for (;;)
 	{
-		// update usable entity to never be stuck in the ground
-		self.useEnt.origin = self.origin + (0, 0, 24);
-
 		// check if anyone is trying to implicitly pick up the weapon (walking over it)
 		foreach (player in getLivingPlayers())
 		{

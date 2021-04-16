@@ -37,6 +37,7 @@ init()
 		map_restart();
 	}
 
+	scripts\ttt\use::init();
 	scripts\ttt\items::init();
 	scripts\ttt\pickups::init();
 	scripts\ttt\ui::init();
@@ -212,6 +213,7 @@ OnPlayerSpawn()
 
 		self scripts\ttt\ui::displaySelfHud();
 
+		self thread scripts\ttt\use::OnPlayerUse();
 		self thread scripts\ttt\pickups::OnPlayerDropWeapon();
 		self thread OnPlayerBuyMenu();
 		self thread OnPlayerHealthUpdate();
