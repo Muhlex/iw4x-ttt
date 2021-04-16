@@ -546,6 +546,13 @@ endRound(winner, reason)
 	level.gameEnded = true;
 
 	scripts\ttt\ui::displayRoundEnd(winner, reason);
+	foreach (player in level.players)
+	{
+		playerTeam = "innocent";
+		if (isDefined(player.ttt.role) && player.ttt.role == "traitor") playerTeam = "traitor";
+		if (winner == playerTeam) player playLocalSound("mp_bonus_start");
+		else player playLocalSound("mp_bonus_end");
+	}
 
 	visionSetNaked("mpOutro", 2.0);
 
