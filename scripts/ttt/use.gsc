@@ -1,4 +1,5 @@
 #include common_scripts\utility;
+#include maps\mp\_utility;
 
 init() {
 	level.ttt.use = spawnStruct();
@@ -94,6 +95,7 @@ playerUseEntsThink()
 	{
 		wait(0.1);
 
+		if (self isInKillcam()) continue;
 		if (self.ttt.inBuyMenu) continue;
 
 		useEnt = self getAvailableUseEnt();
@@ -126,6 +128,7 @@ OnPlayerUse()
 	for (;;)
 	{
 		self waittill("activate");
+		if (self isInKillcam()) continue;
 		if (self.ttt.inBuyMenu) continue;
 
 		useEnt = self getAvailableUseEnt();

@@ -144,8 +144,11 @@ OnAftertimeEnd()
 
 	scripts\ttt\ui::destroyRoundEnd();
 
-	foreach (player in level.players) player.cancelKillcam = true;
-	wait(0.05);
+	foreach (player in level.players)
+	{
+		player.cancelKillcam = true;
+		player scripts\ttt\use::unsetPlayerAvailableUseEnt();
+	}
 	level notify("round_end_finished"); // kicks off the final killcam
 	while (level.showingFinalKillcam) wait(0.05);
 
@@ -230,7 +233,7 @@ OnPlayerDeath()
 	{
 		self waittill("death");
 
-		if (isDefined(self.ttt.use.availableEnt)) self scripts\ttt\use::unsetPlayerAvailableUseEnt();
+		self scripts\ttt\use::unsetPlayerAvailableUseEnt();
 		self scripts\ttt\ui::destroySelfHud();
 		self unsetPlayerBuyMenu();
 		checkRoundWinConditions();
