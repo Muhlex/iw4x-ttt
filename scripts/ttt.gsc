@@ -260,52 +260,56 @@ OnPlayerRagdoll()
 		if (level.ttt.preparing) continue;
 
 		body = spawn("script_model", self.body.origin);
-		body linkTo(self.body, "tag_origin", (0, 0, 32), (0, 0, 0));
-		body setCursorHint("HINT_NOICON");
-		body setHintString("^3Unidentified body^7\nPress ^3[{+activate}]^7 to inspect");
-		body makeUsable();
-		foreach (player in level.players) body enablePlayerUse(player);
-		body thread playerBodyThink(self);
+		body.owner = self;
+		body linkTo(self.body, "tag_origin", (0, 0, 16), (0, 0, 0));
+		body scripts\ttt\use::makeUsableCustom(
+			::OnBodyInspectTrigger,
+			::OnBodyInspectAvailable,
+			::OnBodyInspectAvailableEnd,
+			undefined,
+			undefined,
+			10
+		);
 	}
 }
 
-playerBodyThink(owner)
+OnBodyInspectTrigger(ent, player)
 {
-	while (isDefined(self))
+	player scripts\ttt\items::awardBodyInspectCredits(ent.owner);
+
+	playerName = removeColorsFromString(player.name);
+	ownerName = removeColorsFromString(ent.owner.name);
+	ownerRoleColor = getRoleStringColor(ent.owner.ttt.role);
+
+	if (!ent.owner.ttt.bodyFound)
 	{
-		self waittill ("trigger", player);
-
-		player scripts\ttt\items::awardBodyInspectCredits(owner);
-
-		roleTextColor = "";
-		switch (owner.ttt.role)
+		ent.owner.ttt.bodyFound = true;
+		player scripts\ttt\ui::updateUseAvailableHint(undefined, ownerRoleColor + ownerName + "^7\n[ ^3[{+activate}]^7 ] to inspect");
+		foreach (p in level.players)
 		{
-			case "innocent":
-				roleTextColor = "^2";
-				break;
-			case "traitor":
-				roleTextColor = "^1";
-				break;
-			case "detective":
-				roleTextColor = "^4";
-				break;
+			if (p == player) p iPrintLnBold("You found the body of ^3" + ownerName + "^7. They were " + ownerRoleColor + ent.owner.ttt.role + "^7.");
+			else p iPrintLnBold(playerName + "^7 found the body of ^3" + ownerName + "^7. They were " + ownerRoleColor + ent.owner.ttt.role + "^7.");
+			p playLocalSound("copycat_steal_class");
 		}
-
-		playerName = removeColorsFromString(player.name);
-		ownerName = removeColorsFromString(owner.name);
-
-		if (!owner.ttt.bodyFound)
-		{
-			owner.ttt.bodyFound = true;
-			self setHintString(roleTextColor + ownerName + "^7\nPress ^3[{+activate}]^7 to inspect");
-			foreach (p in level.players)
-			{
-				if (p == player) p iPrintLnBold("You found the body of ^3" + ownerName + "^7. They were " + roleTextColor + owner.ttt.role + "^7.");
-				else p iPrintLnBold(playerName + "^7 found the body of ^3" + ownerName + "^7. They were " + roleTextColor + owner.ttt.role + "^7.");
-			}
-		}
-		else player iPrintLnBold("This is the body of ^3" + ownerName + "^7. They were " + roleTextColor + owner.ttt.role + "^7.");
 	}
+	else player iPrintLnBold("This is the body of ^3" + ownerName + "^7. They were " + ownerRoleColor + ent.owner.ttt.role + "^7.");
+}
+OnBodyInspectAvailable(ent, player)
+{
+	player scripts\ttt\ui::destroyUseAvailableHint();
+
+	if (ent.owner.ttt.bodyFound)
+	{
+		ownerName = removeColorsFromString(ent.owner.name);
+		ownerRoleColor = getRoleStringColor(ent.owner.ttt.role);
+		player scripts\ttt\ui::displayUseAvailableHint(undefined, ownerRoleColor + ownerName + "^7\n[ ^3[{+activate}]^7 ] to inspect");
+	}
+	else
+		player scripts\ttt\ui::displayUseAvailableHint(undefined, "^3Unidentified body^7\n[ ^3[{+activate}]^7 ] to inspect");
+}
+OnBodyInspectAvailableEnd(ent, player)
+{
+	player scripts\ttt\ui::destroyUseAvailableHint();
 }
 
 OnPlayerHealthUpdate()

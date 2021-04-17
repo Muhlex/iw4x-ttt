@@ -11,11 +11,12 @@ initPlayer()
 	self.ttt.use.availableEnt = undefined;
 }
 
-makeUsableCustom(onUse, onAvailable, onAvailableEnd, useRange, useAngle, useThroughSolids)
+makeUsableCustom(onUse, onAvailable, onAvailableEnd, useRange, useAngle, usePriority, useThroughSolids)
 {
 	if (!isDefined(onUse)) return;
 	if (!isDefined(useRange)) useRange = 128;
 	if (!isDefined(useAngle)) useAngle = 45;
+	if (!isDefined(usePriority)) usePriority = 0;
 	if (!isDefined(useThroughSolids)) useThroughSolids = false;
 
 	self.onUse = onUse;
@@ -23,6 +24,7 @@ makeUsableCustom(onUse, onAvailable, onAvailableEnd, useRange, useAngle, useThro
 	self.onAvailableEnd = onAvailableEnd;
 	self.useRange = useRange;
 	self.useAngle = useAngle;
+	self.usePriority = usePriority;
 	self.useThroughSolids = useThroughSolids;
 
 	level.ttt.use.ents[level.ttt.use.ents.size] = self;
@@ -31,6 +33,7 @@ makeUsableCustom(onUse, onAvailable, onAvailableEnd, useRange, useAngle, useThro
 
 getAvailableUseEnt()
 {
+	highestPriority = undefined;
 	lowestAngle = undefined;
 	result = undefined;
 
@@ -54,10 +57,17 @@ getAvailableUseEnt()
 			if (tracedPos != targetPos) continue;
 		}
 
-		if (!isDefined(lowestAngle) || lowestAngle > angleFromView)
+		if (!isDefined(highestPriority) || highestPriority < ent.usePriority)
 		{
-			result = ent;
+			highestPriority = ent.usePriority;
 			lowestAngle = angleFromView;
+			result = ent;
+		}
+
+		if ((!isDefined(lowestAngle) || lowestAngle > angleFromView))
+		{
+			lowestAngle = angleFromView;
+			result = ent;
 		}
 	}
 

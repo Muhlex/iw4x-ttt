@@ -117,8 +117,13 @@ displayUseAvailableHint(label, text)
 	self.ttt.ui["hud"]["self"]["use_hint"]["text"].alpha = 0.85;
 	self.ttt.ui["hud"]["self"]["use_hint"]["text"].archived = false;
 	self.ttt.ui["hud"]["self"]["use_hint"]["text"].hidewheninmenu = true;
+	updateUseAvailableHint(label, text);
+}
+
+updateUseAvailableHint(label, text)
+{
 	self.ttt.ui["hud"]["self"]["use_hint"]["text"].label = label;
-	self.ttt.ui["hud"]["self"]["use_hint"]["text"] setText(text);
+	if (isDefined(text)) self.ttt.ui["hud"]["self"]["use_hint"]["text"] setText(text);
 }
 
 destroyUseAvailableHint()

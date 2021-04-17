@@ -63,6 +63,25 @@ removeColorsFromString(str)
 	return result;
 }
 
+getRoleStringColor(role)
+{
+	result = "";
+	switch (role)
+	{
+		case "innocent":
+			result = "^2";
+			break;
+		case "traitor":
+			result = "^1";
+			break;
+		case "detective":
+			result = "^4";
+			break;
+	}
+
+	return result;
+}
+
 recursivelyDestroyElements(array)
 {
 	foreach(element in array)
