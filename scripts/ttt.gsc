@@ -152,8 +152,6 @@ OnAftertimeEnd()
 	level notify("round_end_finished"); // kicks off the final killcam
 	while (level.showingFinalKillcam) wait(0.05);
 
-	level.gameEnded = false;
-
 	game["roundsPlayed"]++;
 	if (game["roundsPlayed"] >= getDvarInt("ttt_roundlimit"))
 	{
@@ -161,6 +159,7 @@ OnAftertimeEnd()
 		return;
 	}
 
+	game["state"] = "playing";
 	map_restart(true);
 	level notify("restarting");
 }
@@ -554,6 +553,8 @@ endRound(winner, reason)
 {
 	if (level.gameEnded) return;
 	level.gameEnded = true;
+	game["state"] = "postgame";
+	if (reason == "death") setDvar("scr_gameended", 2); // primarily sets "Round Winning Kill" in killcam
 
 	scripts\ttt\ui::displayRoundEnd(winner, reason);
 	foreach (player in level.players)
