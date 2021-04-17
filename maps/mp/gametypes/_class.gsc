@@ -485,7 +485,7 @@ giveLoadout( team, class, allowCopycat )
 		self maps\mp\perks\_perks::givePerk( "specialty_pistoldeath" );
 
 	// only give the deathstreak for the initial spawn for this life.
-	if ( loadoutDeathStreak != "specialty_null" && getTime() == self.spawnTime )
+	if ( loadoutDeathStreak != "specialty_null" && getTime() == self.spawnTime && !level.ttt.enabled)
 	{
 		deathVal = int( tableLookup( "mp/perkTable.csv", 1, loadoutDeathStreak, 6 ) );
 
