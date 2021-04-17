@@ -1268,6 +1268,8 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 				iDamage = int(iDamage * 1.4);
 			if (sWeapon == "deserteagle_mp")
 				iDamage = int(iDamage * 1.6);
+			if (sWeapon == "claymore_mp")
+				iDamage = int(iDamage * 1.2);
 
 			if ((sMeansOfDeath == "MOD_PISTOL_BULLET" || sMeansOfDeath == "MOD_RIFLE_BULLET") && victim.ttt.incomingDamageMultiplier != 1.0)
 				iDamage = int(iDamage * victim.ttt.incomingDamageMultiplier);
