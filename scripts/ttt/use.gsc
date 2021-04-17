@@ -65,7 +65,7 @@ getAvailableUseEnt()
 			result = ent;
 		}
 
-		if ((!isDefined(lowestAngle) || lowestAngle > angleFromView))
+		if ((!isDefined(lowestAngle) || lowestAngle > angleFromView) && highestPriority == ent.usePriority)
 		{
 			lowestAngle = angleFromView;
 			result = ent;

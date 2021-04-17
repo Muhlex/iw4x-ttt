@@ -286,6 +286,7 @@ OnBodyInspectTrigger(ent, player)
 	if (!ent.owner.ttt.bodyFound)
 	{
 		ent.owner.ttt.bodyFound = true;
+		ent.usePriority = 0;
 		player scripts\ttt\ui::updateUseAvailableHint(undefined, ownerRoleColor + ownerName + "^7\n[ ^3[{+activate}]^7 ] to inspect");
 		foreach (p in level.players)
 		{
@@ -554,6 +555,7 @@ endRound(winner, reason)
 	if (level.gameEnded) return;
 	level.gameEnded = true;
 	game["state"] = "postgame";
+	setDvar("g_deadChat", "1");
 	if (reason == "death") setDvar("scr_gameended", 2); // primarily sets "Round Winning Kill" in killcam
 
 	scripts\ttt\ui::displayRoundEnd(winner, reason);
