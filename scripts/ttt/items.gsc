@@ -67,6 +67,13 @@ init()
 	level.ttt.items["traitor"][6].onBuy = ::OnBuyFlash;
 	level.ttt.items["traitor"][6].getIsAvailable = ::getIsAvailableOffhand;
 
+	level.ttt.items["traitor"][7] = spawnStruct();
+	level.ttt.items["traitor"][7].name = "SILENT DISGUISE";
+	level.ttt.items["traitor"][7].description = "^3Passive Item\n^2Removes ^7your nametag.\n^2Silences ^7your footsteps.";
+	level.ttt.items["traitor"][7].icon = "specialty_quieter_upgrade";
+	level.ttt.items["traitor"][7].onBuy = ::OnBuyDisguise;
+	level.ttt.items["traitor"][7].getIsAvailable = ::getIsAvailablePassive;
+
 	level.ttt.items["detective"][0] = armor;
 
 	level.ttt.items["detective"][1] = spawnStruct();
@@ -309,6 +316,12 @@ OnBuyFlash()
 	self giveWeapon(WEAPON_NAME);
 	self setWeaponAmmoClip(WEAPON_NAME, 1);
 	self SetOffhandSecondaryClass("flash");
+}
+
+OnBuyDisguise()
+{
+	self maps\mp\perks\_perks::givePerk("specialty_quieter");
+	self maps\mp\perks\_perks::givePerk("specialty_spygame");
 }
 
 OnBuyRiot()
