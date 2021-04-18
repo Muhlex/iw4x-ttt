@@ -118,7 +118,7 @@ initPlayer()
 	self.ttt.items = spawnStruct();
 	self.ttt.items.selectedIndex = 0;
 	self.ttt.items.credits = 0;
-	self.ttt.items.inventory = [];
+	self.ttt.items.boughtItems = [];
 }
 
 resetPlayerEquipment()
@@ -175,8 +175,8 @@ awardBodyInspectCredits(victim)
 
 giveItem(item)
 {
+	self.ttt.items.boughtItems[self.ttt.items.boughtItems.size] = item;
 	self thread [[item.onBuy]]();
-	self.ttt.items.inventory[self.ttt.items.inventory.size] = item;
 	self iPrintLn("^3" + item.name + "^7 received");
 }
 
@@ -193,7 +193,7 @@ tryBuyItem(item)
 
 getIsAvailablePassive(item)
 {
-	return !isInArray(self.ttt.items.inventory, item);
+	return !isInArray(self.ttt.items.boughtItems, item);
 }
 
 getCanPlayerBuyWeapons()
@@ -240,6 +240,7 @@ getIsAvailableOffhand()
 OnBuyArmor()
 {
 	self.ttt.incomingDamageMultiplier = 0.8;
+	self scripts\ttt\ui::updatePlayerArmorDisplay();
 }
 
 OnBuyRadar()

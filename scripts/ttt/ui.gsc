@@ -5,6 +5,8 @@
 
 init()
 {
+	precacheShader("cardicon_vest_1");
+
 	precacheShader("cardicon_comic_shepherd");
 	precacheShader("cardtitle_silencer");
 
@@ -46,12 +48,19 @@ displaySelfHud()
 	self.ttt.ui["hud"]["self"]["role"] maps\mp\gametypes\_hud::fontPulseInit(1.25);
 
 	self.ttt.ui["hud"]["self"]["health"] = self createFontString("hudbig", 0.8);
-	self.ttt.ui["hud"]["self"]["health"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -132, -14);
+	self.ttt.ui["hud"]["self"]["health"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -150, -14);
 	self.ttt.ui["hud"]["self"]["health"].hidewheninmenu = true;
 	self.ttt.ui["hud"]["self"]["health"].glowAlpha = 1;
 
+	self.ttt.ui["hud"]["self"]["armor"] = self createIcon("cardicon_vest_1", 16, 16);
+	self.ttt.ui["hud"]["self"]["armor"] setParent(self.ttt.ui["hud"]["self"]["health"]);
+	self.ttt.ui["hud"]["self"]["armor"] setPoint("LEFT TOP", "RIGHT TOP", 8, -8);
+	self.ttt.ui["hud"]["self"]["armor"].hidewheninmenu = true;
+	self.ttt.ui["hud"]["self"]["armor"].alpha = isInArray(self.ttt.items.boughtItems, level.ttt.items["traitor"][0]);
+
 	self updatePlayerRoleDisplay();
 	self updatePlayerHealthDisplay();
+	self updatePlayerArmorDisplay();
 }
 
 destroySelfHud()
@@ -74,6 +83,13 @@ updatePlayerHealthDisplay()
 		self.ttt.ui["hud"]["self"]["health"].glowColor = ((1 - healthPct) * 0.6 + healthProxToHalf * 0.3, healthPct * 0.6 + healthProxToHalf * 0.3, 0.3);
 	}
 	self.ttt.ui["hud"]["self"]["health"] setText(text);
+}
+
+updatePlayerArmorDisplay()
+{
+	if (!isDefined(self.ttt.ui["hud"]["self"]["armor"])) return;
+
+	self.ttt.ui["hud"]["self"]["armor"].alpha = isInArray(self.ttt.items.boughtItems, level.ttt.items["traitor"][0]);
 }
 
 updatePlayerRoleDisplay(doPulse)
