@@ -1260,6 +1260,9 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 		}
 		else
 		{
+			if (sMeansOfDeath == "MOD_FALLING")
+				iDamage = int(iDamage * 0.66);
+
 			if (sWeapon == "model1887_mp")
 				iDamage = int(iDamage * 1.2);
 			if (sWeapon == "m1014_mp")
