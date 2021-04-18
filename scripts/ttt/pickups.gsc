@@ -227,8 +227,7 @@ OnWeaponPickupTrigger(ent, player)
 OnWeaponPickupAvailable(ent, player)
 {
 	player scripts\ttt\ui::destroyUseAvailableHint();
-	localizedWeaponName = tableLookupIString("mp/statsTable.csv", 4, getSubStr(ent.weaponName, 0, ent.weaponName.size - 3), 3);
-	player scripts\ttt\ui::displayUseAvailableHint(&"[ ^3[{+activate}] ^7] for ^3", localizedWeaponName);
+	player scripts\ttt\ui::displayUseAvailableHint(&"[ ^3[{+activate}] ^7] for ^3", level.ttt.localizedWeaponNames[ent.weaponName]);
 }
 OnWeaponPickupAvailableEnd(ent, player)
 {

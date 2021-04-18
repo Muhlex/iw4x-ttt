@@ -37,6 +37,7 @@ init()
 		map_restart();
 	}
 
+	scripts\ttt\_weaponnames::init();
 	scripts\ttt\use::init();
 	scripts\ttt\items::init();
 	scripts\ttt\pickups::init();
