@@ -1,5 +1,6 @@
 #include common_scripts\utility;
 #include maps\mp\_utility;
+#include scripts\ttt\_util;
 
 init()
 {
@@ -54,11 +55,12 @@ getRandomWeapon()
 	return result + "_mp";
 }
 
-createWeaponEnt(weaponName, ammoClip, ammoStock, origin, angles, velocity, pickupDelay)
+createWeaponEnt(weaponName, ammoClip, ammoStock, item, origin, angles, velocity, pickupDelay)
 {
 	if (!isDefined(weaponName)) return;
 	if (!isDefined(ammoClip)) ammoClip = 0;
 	if (!isDefined(ammoStock)) ammoStock = 0;
+	if (!isDefined(item)) item = undefined;
 	if (!isDefined(origin)) origin = (0, 0, 0);
 	if (!isDefined(angles)) angles = (0, 0, 0);
 	if (!isDefined(velocity)) velocity = (0, 0, 0);
@@ -88,7 +90,9 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, origin, angles, velocity, picku
 	weaponEnt.weaponName = weaponName;
 	weaponEnt.ammoClip = ammoClip;
 	weaponEnt.ammoStock = ammoStock;
+	weaponEnt.item = item;
 
+	// magic numbers to make the item receive velocity around it's center of mass
 	launchOffset = 0 * anglesToRight(angles) + -10 * anglesToForward(angles) + 10 * anglesToUp(angles);
 
 	physicsEnt physicsLaunchServer(origin + launchOffset, velocity); // this takes an absolute position!
@@ -111,6 +115,13 @@ dropWeapon(weaponName, velocity)
 
 	ammoClip = self getWeaponAmmoClip(weaponName);
 	ammoStock = self getWeaponAmmoStock(weaponName);
+	item = undefined;
+
+	if (scripts\ttt\items::isRoleWeapon(weaponName))
+	{
+		item = self.ttt.items.roleInventory.item;
+		self scripts\ttt\items::resetRoleInventory();
+	}
 
 	eyePos = self getEye();
 	spawnPos = physicsTrace(
@@ -120,15 +131,22 @@ dropWeapon(weaponName, velocity)
 	spawnPos -= anglesToForward(self.angles) * 24;
 	spawnPos = physicsTrace(spawnPos, spawnPos + (0, 0, -16)) + (0, 0, 8);
 
-	thread createWeaponEnt(weaponName, ammoClip, ammoStock, spawnPos, self getPlayerAngles(), velocity, 1);
-	if (!isAlive(self)) return;
-	self takeWeapon(weaponName);
+	thread createWeaponEnt(weaponName, ammoClip, ammoStock, item, spawnPos, self getPlayerAngles(), velocity, 1);
 
+	if (!isAlive(self)) return;
+
+	self takeWeapon(weaponName);
 	if (!weaponWasActive) return;
 
+	primariesList = self getWeaponsListPrimaries();
+	hasDefaultWeapon = self hasWeapon(level.ttt.defaultWeapon);
+	weaponCount = primariesList.size - int(hasDefaultWeapon);
+
+	if (weaponCount <= 1 && !hasDefaultWeapon) self giveDefaultWeapon();
+
 	lastWeaponName = self getLastWeapon();
-	if (!isDefined(lastWeaponName) || !self hasWeapon(lastWeaponName))
-		lastWeaponName = self getWeaponsListPrimaries()[0];
+	if (!isDefined(lastWeaponName) || !self hasWeapon(lastWeaponName) || lastWeaponName == level.ttt.defaultWeapon)
+		lastWeaponName = primariesList[0];
 	if (!isDefined(lastWeaponName) || !self hasWeapon(lastWeaponName))
 		return;
 	self switchToWeapon(lastWeaponName);
@@ -138,20 +156,39 @@ tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
 {
 	if (!isDefined(pickupOnFullInventory)) pickupOnFullInventory = false;
 
-	if (self hasWeapon(weaponEnt.weaponName)) return;
-	weaponCount = self getWeaponsListPrimaries().size;
-	if (weaponCount >= 2)
+	hasRoleWeapon = self scripts\ttt\items::hasRoleWeapon();
+	isRoleWeaponEquipped = self scripts\ttt\items::isRoleWeaponEquipped();
+	newIsRoleWeapon = scripts\ttt\items::isRoleWeapon(weaponEnt.weaponName);
+
+	if (self hasWeapon(weaponEnt.weaponName) || (hasRoleWeapon && newIsRoleWeapon)) return;
+
+	currentWeapon = self getCurrentWeapon();
+
+	if (newIsRoleWeapon)
 	{
-		if (pickupOnFullInventory) self dropWeapon(self getCurrentWeapon());
-		else return;
+		scripts\ttt\items::setRoleInventory(weaponEnt.item, weaponEnt.ammoClip, weaponEnt.ammoStock);
+		if (isDefined(weaponEnt.item.onPickUp)) self thread [[weaponEnt.item.onPickUp]](weaponEnt.item);
+		self playLocalSound("weap_pickup");
 	}
+	else
+	{
+		hasDefaultWeapon = self hasWeapon(level.ttt.defaultWeapon);
+		weaponCount = self getWeaponsListPrimaries().size - int(hasDefaultWeapon) - int(isRoleWeaponEquipped);
 
-	self giveWeapon(weaponEnt.weaponName);
-	self setWeaponAmmoClip(weaponEnt.weaponName, weaponEnt.ammoClip);
-	self setWeaponAmmoStock(weaponEnt.weaponName, weaponEnt.ammoStock);
-	self playLocalSound("weap_pickup");
+		if (weaponCount >= 2 && !pickupOnFullInventory) return;
 
-	if (weaponCount == 0 || pickupOnFullInventory) self switchToWeapon(weaponEnt.weaponName);
+		self giveWeapon(weaponEnt.weaponName);
+		self setWeaponAmmoClip(weaponEnt.weaponName, weaponEnt.ammoClip);
+		self setWeaponAmmoStock(weaponEnt.weaponName, weaponEnt.ammoStock);
+		if (hasDefaultWeapon && weaponCount == 1) self takeWeapon(level.ttt.defaultWeapon);
+		self thread maps\mp\gametypes\_weapons::stowedWeaponsRefresh();
+		self playLocalSound("weap_pickup");
+
+		if (weaponCount >= 2 && pickupOnFullInventory) self dropWeapon(currentWeapon);
+
+		if (weaponCount == 0 || pickupOnFullInventory || currentWeapon == level.ttt.defaultWeapon)
+			self switchToWeapon(weaponEnt.weaponName);
+	}
 
 	weaponEnt.physicsEnt delete();
 	weaponEnt delete();
@@ -176,7 +213,7 @@ spawnWorldPickups()
 
 		weaponName = getRandomWeapon();
 
-		thread createWeaponEnt(weaponName, 0, weaponClipSize(weaponName), origin, (0, randomInt(360), 0));
+		thread createWeaponEnt(weaponName, 0, weaponClipSize(weaponName), undefined, origin, (0, randomInt(360), 0));
 
 		// Spawn ammo
 		AMMO_COUNT = 3;
@@ -198,6 +235,13 @@ spawnWorldPickups()
 	}
 }
 
+giveDefaultWeapon()
+{
+	self giveWeapon(level.ttt.defaultWeapon);
+	self SetWeaponAmmoClip(level.ttt.defaultWeapon, 0);
+	self SetWeaponAmmoStock(level.ttt.defaultWeapon, 0);
+}
+
 OnPlayerDropWeapon()
 {
 	self endon("disconnect");
@@ -209,9 +253,10 @@ OnPlayerDropWeapon()
 	{
 		self waittill("drop_weapon");
 
-		if (self getWeaponsListPrimaries().size < 1) continue;
+		// if (self getWeaponsListPrimaries().size < 1) continue;
 		weaponName = self getCurrentWeapon();
-		if (weaponName == "killstreak_ac130_mp") continue;
+		if (weaponName == level.ttt.defaultWeapon) continue;
+		if (!maps\mp\gametypes\_weapons::mayDropWeapon(weaponName)) continue;
 
 		self dropWeapon(
 			weaponName,
@@ -278,6 +323,7 @@ ammoModelThink()
 
 tryPickUpAmmo(ammoEnt, weaponName)
 {
+	if (weaponName == level.ttt.defaultWeapon) return;
 	if (weaponName == "rpg_mp") return;
 
 	maxClip = weaponClipSize(weaponName);

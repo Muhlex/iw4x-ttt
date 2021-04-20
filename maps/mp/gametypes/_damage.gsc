@@ -580,10 +580,25 @@ PlayerKilled_internal( eInflictor, attacker, victim, iDamage, sMeansOfDeath, sWe
 	{
 		foreach (victimWeaponName in victim getWeaponsListPrimaries())
 		{
-			scripts\ttt\pickups::dropWeapon(
+			if (victimWeaponName == level.ttt.defaultWeapon) continue;
+			if (!maps\mp\gametypes\_weapons::mayDropWeapon(victimWeaponName)) continue;
+
+			victim scripts\ttt\pickups::dropWeapon(
 				victimWeaponName,
-				anglesToForward((0, randomInt(360), 0)) * 48 + (0, 0, 64)
+				anglesToForward((0, randomInt(360), 0)) * 64 + (0, 0, 64)
 			);
+		}
+		if (victim scripts\ttt\items::hasRoleWeapon() && !victim scripts\ttt\items::isRoleWeaponEquipped())
+		{
+			inv = victim.ttt.items.roleInventory;
+
+			if (victim scripts\ttt\items::hasRoleWeapon("riotshield_mp") && !victim.hasRiotShieldEquipped)
+				victim DetachShieldModel("weapon_riot_shield_mp", "tag_shield_back");
+
+			victim giveWeapon(inv.item.weaponName);
+			victim setWeaponAmmoClip(inv.item.weaponName, inv.ammoClip);
+			victim setWeaponAmmoStock(inv.item.weaponName, inv.ammoStock);
+			victim scripts\ttt\pickups::dropWeapon(inv.item.weaponName, anglesToForward((0, randomInt(360), 0)) * 64 + (0, 0, 64));
 		}
 	}
 	//prof_end( " PlayerKilled_3_drop" );
@@ -1261,7 +1276,7 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 		else
 		{
 			if (sMeansOfDeath == "MOD_FALLING")
-				iDamage = int(iDamage * 0.66);
+				iDamage = int(iDamage / victim.health * 80); // make it linear damage
 
 			if (sWeapon == "model1887_mp")
 				iDamage = int(iDamage * 1.2);

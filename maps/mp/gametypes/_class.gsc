@@ -640,7 +640,7 @@ trackRiotShield()
 	self endon ( "death" );
 	self endon ( "disconnect" );
 
-	self.hasRiotShield = self hasWeapon( "riotshield_mp" );
+	self.hasRiotShield = self hasWeapon( "riotshield_mp" ) || (level.ttt.enabled && self scripts\ttt\items::hasRoleWeapon("riotshield_mp"));
 	self.hasRiotShieldEquipped = (self.currentWeaponAtSpawn == "riotshield_mp");
 
 	// note this function must play nice with _detachAll().
@@ -682,7 +682,7 @@ trackRiotShield()
 		else if ( self.hasRiotShieldEquipped )
 		{
 			assert( self.hasRiotShield );
-			self.hasRiotShield = self hasWeapon( "riotshield_mp" );
+			self.hasRiotShield = self hasWeapon( "riotshield_mp" ) || (level.ttt.enabled && self scripts\ttt\items::hasRoleWeapon("riotshield_mp"));
 
 			if ( self.hasRiotShield )
 				self MoveShieldModel( "weapon_riot_shield_mp", "tag_weapon_left", "tag_shield_back" );
@@ -693,7 +693,7 @@ trackRiotShield()
 		}
 		else if ( self.hasRiotShield )
 		{
-			if ( !self hasWeapon( "riotshield_mp" ) )
+			if ( !self hasWeapon( "riotshield_mp" ) && ( !level.ttt.enabled || !self scripts\ttt\items::hasRoleWeapon("riotshield_mp") ) )
 			{
 				// we probably just lost all of our weapons (maybe switched classes)
 				self DetachShieldModel( "weapon_riot_shield_mp", "tag_shield_back" );

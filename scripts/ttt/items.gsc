@@ -26,23 +26,25 @@ init()
 
 	level.ttt.items["traitor"][2] = spawnStruct();
 	level.ttt.items["traitor"][2].name = "RANGER SHOTGUN";
-	level.ttt.items["traitor"][2].description = "^3Exclusive weapon\n^7Strong close-range shotgun\nwhich can fire ^2two shells at once^7.";
+	level.ttt.items["traitor"][2].description = "^3Exclusive weapon\n^7Strong close-range shotgun\nwhich can fire ^2two shells at once^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip";
 	level.ttt.items["traitor"][2].icon = "weapon_ranger";
 	level.ttt.items["traitor"][2].iconWidth = 48;
 	level.ttt.items["traitor"][2].iconHeight = 24;
 	level.ttt.items["traitor"][2].iconOffsetX = -1;
 	level.ttt.items["traitor"][2].onBuy = ::OnBuyRanger;
-	level.ttt.items["traitor"][2].getIsAvailable = ::getIsAvailableRanger;
+	level.ttt.items["traitor"][2].getIsAvailable = ::getIsAvailableRoleWeapon;
+	level.ttt.items["traitor"][2].weaponName = "ranger_mp";
 
 	level.ttt.items["traitor"][3] = spawnStruct();
 	level.ttt.items["traitor"][3].name = "ROCKET LAUNCHER";
-	level.ttt.items["traitor"][3].description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds 1 rocket. ^1Can't pick up ammo^7.";
+	level.ttt.items["traitor"][3].description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds 1 rocket. ^1Can't pick up ammo^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip";
 	level.ttt.items["traitor"][3].icon = "weapon_rpg7";
 	level.ttt.items["traitor"][3].iconWidth = 44;
 	level.ttt.items["traitor"][3].iconHeight = 22;
 	level.ttt.items["traitor"][3].iconOffsetX = 1;
 	level.ttt.items["traitor"][3].onBuy = ::OnBuyRPG;
-	level.ttt.items["traitor"][3].getIsAvailable = ::getIsAvailableRPG;
+	level.ttt.items["traitor"][3].getIsAvailable = ::getIsAvailableRoleWeapon;
+	level.ttt.items["traitor"][3].weaponName = "rpg_mp";
 
 	level.ttt.items["traitor"][4] = spawnStruct();
 	level.ttt.items["traitor"][4].name = "THROWING KNIFE";
@@ -78,23 +80,26 @@ init()
 
 	level.ttt.items["detective"][1] = spawnStruct();
 	level.ttt.items["detective"][1].name = "RIOT SHIELD";
-	level.ttt.items["detective"][1].description = "^3Exclusive weapon\n^2Blocks bullets^7, even when\nit is on your back.";
+	level.ttt.items["detective"][1].description = "^3Exclusive weapon\n^2Blocks bullets^7, even when\nit is on your back.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip";
 	level.ttt.items["detective"][1].icon = "weapon_riotshield";
 	level.ttt.items["detective"][1].iconWidth = 64;
 	level.ttt.items["detective"][1].iconHeight = 32;
 	level.ttt.items["detective"][1].iconOffsetX = -16;
 	level.ttt.items["detective"][1].onBuy = ::OnBuyRiot;
-	level.ttt.items["detective"][1].getIsAvailable = ::getIsAvailableRiot;
+	level.ttt.items["detective"][1].onPickup = ::OnPickupRiot;
+	level.ttt.items["detective"][1].getIsAvailable = ::getIsAvailableRoleWeapon;
+	level.ttt.items["detective"][1].weaponName = "riotshield_mp";
 
 	level.ttt.items["detective"][2] = spawnStruct();
 	level.ttt.items["detective"][2].name = "SPAS-12 SHOTGUN";
-	level.ttt.items["detective"][2].description = "^3Exclusive weapon\n^7Versatile shotgun with good\nperformance ^2up to medium range^7.";
+	level.ttt.items["detective"][2].description = "^3Exclusive weapon\n^7Versatile shotgun with good\nperformance ^2up to medium range^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip";
 	level.ttt.items["detective"][2].icon = "weapon_spas12";
 	level.ttt.items["detective"][2].iconWidth = 48;
 	level.ttt.items["detective"][2].iconHeight = 24;
 	level.ttt.items["detective"][2].iconOffsetX = 1;
 	level.ttt.items["detective"][2].onBuy = ::OnBuySpas;
-	level.ttt.items["detective"][2].getIsAvailable = ::getIsAvailableSpas;
+	level.ttt.items["detective"][2].getIsAvailable = ::getIsAvailableRoleWeapon;
+	level.ttt.items["detective"][2].weaponName = "spas12_mp";
 
 	level.ttt.items["detective"][3] = spawnStruct();
 	level.ttt.items["detective"][3].name = "STUN GRENADE";
@@ -119,6 +124,132 @@ initPlayer()
 	self.ttt.items.selectedIndex = 0;
 	self.ttt.items.credits = 0;
 	self.ttt.items.boughtItems = [];
+	self resetRoleInventory();
+}
+
+resetRoleInventory()
+{
+	self.ttt.items.roleInventory = spawnStruct();
+}
+setRoleInventory(item, ammoClip, ammoStock)
+{
+	if (!isDefined(item)) return;
+	if (!isDefined(ammoClip)) ammoClip = 1;
+	if (!isDefined(ammoStock)) ammoStock = 0;
+
+	self.ttt.items.roleInventory.item = item;
+	self.ttt.items.roleInventory.ammoClip = ammoClip;
+	self.ttt.items.roleInventory.ammoStock = ammoStock;
+}
+isRoleWeapon(weaponName)
+{
+	foreach (roleItems in level.ttt.items)
+		foreach (item in roleItems)
+			if (isDefined(item.weaponName) && item.weaponName == weaponName) return true;
+
+	return false;
+}
+hasRoleWeapon(weaponName)
+{
+	hasAnyRoleWeapon = isDefined(self.ttt.items.roleInventory.item.weaponName);
+	if (!isDefined(weaponName)) return hasAnyRoleWeapon;
+	else return hasAnyRoleWeapon && self.ttt.items.roleInventory.item.weaponName == weaponName;
+}
+isRoleWeaponEquipped()
+{
+	return self hasRoleWeapon() && self hasWeapon(self.ttt.items.roleInventory.item.weaponName);
+}
+giveRoleWeapon()
+{
+	inv = self.ttt.items.roleInventory;
+	if (!isDefined(inv.item.weaponName)) return;
+
+	self giveWeapon(inv.item.weaponName);
+	self setWeaponAmmoClip(inv.item.weaponName, inv.ammoClip);
+	self setWeaponAmmoStock(inv.item.weaponName, inv.ammoStock);
+
+	return inv.item.weaponName;
+}
+takeRoleWeapon()
+{
+	weaponName = self.ttt.items.roleInventory.item.weaponName;
+	if (!self isRoleWeaponEquipped()) return;
+
+	self.ttt.items.roleInventory.ammoClip = self getWeaponAmmoClip(weaponName);
+	self.ttt.items.roleInventory.ammoStock = self getWeaponAmmoStock(weaponName);
+	self takeWeapon(weaponName);
+
+	self thread maps\mp\gametypes\_weapons::stowedWeaponsRefresh();
+	self notify("role_weapon_taken");
+
+	return weaponName;
+}
+
+OnPlayerRoleWeapon()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	self notifyOnPlayerCommand("roleweapon_toggle", "+actionslot 3");
+
+	for (;;)
+	{
+		self waittill("roleweapon_toggle");
+
+		if (!self hasRoleWeapon()) continue;
+
+		if (self isRoleWeaponEquipped()) self switchFromRoleWeapon();
+		else self equipRoleWeapon();
+	}
+}
+
+switchFromRoleWeapon()
+{
+	if (!self isRoleWeaponEquipped()) return;
+
+	switchToWeaponName = getLastWeapon();
+	if (!isDefined(switchToWeaponName) || switchToWeaponName == self.ttt.items.roleInventory.item.weaponName)
+		switchToWeaponName = self getWeaponsListPrimaries()[0];
+
+	self switchToWeapon(switchToWeaponName);
+}
+
+equipRoleWeapon()
+{
+	if (self isRoleWeaponEquipped()) return;
+
+	weaponName = self giveRoleWeapon();
+	self switchToWeapon(weaponName);
+	self thread OnRoleWeaponEquipCancel();
+	self thread OnRoleWeaponStow();
+}
+
+OnRoleWeaponEquipCancel()
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("weapon_change");
+	self endon("role_weapon_taken");
+
+	self waittill("weapon_switch_cancelled");
+
+	self takeRoleWeapon();
+}
+
+OnRoleWeaponStow()
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("role_weapon_taken");
+
+	for (;;)
+	{
+		self waittill("weapon_change", newWeaponName);
+		if (newWeaponName == self.ttt.items.roleInventory.item.weaponName) continue;
+
+		self takeRoleWeapon();
+		break;
+	}
 }
 
 resetPlayerEquipment()
@@ -176,13 +307,13 @@ awardBodyInspectCredits(victim)
 giveItem(item)
 {
 	self.ttt.items.boughtItems[self.ttt.items.boughtItems.size] = item;
-	self thread [[item.onBuy]]();
+	self thread [[item.onBuy]](item);
 	self iPrintLn("^3" + item.name + "^7 received");
 }
 
 tryBuyItem(item)
 {
-	if (![[item.getIsAvailable]](item)) return;
+	if (!self [[item.getIsAvailable]](item)) return;
 	if (self.ttt.items.credits < 1) return;
 
 	self giveItem(item);
@@ -196,9 +327,9 @@ getIsAvailablePassive(item)
 	return !isInArray(self.ttt.items.boughtItems, item);
 }
 
-getCanPlayerBuyWeapons()
+getIsAvailableRoleWeapon(item)
 {
-	return self getWeaponsListPrimaries().size < 3;
+	return !isInArray(self.ttt.items.boughtItems, item);
 }
 
 getIsAvailableEquipment()
@@ -260,30 +391,14 @@ OnBuyRadar()
 	}
 }
 
-OnBuyRanger()
+OnBuyRanger(item)
 {
-	WEAPON_NAME = "ranger_mp";
-	self giveWeapon(WEAPON_NAME);
-	self setWeaponAmmoStock(WEAPON_NAME, 0);
-	self setWeaponAmmoClip(WEAPON_NAME, 2);
+	self setRoleInventory(item, 2, 0);
 }
 
-getIsAvailableRanger()
+OnBuyRPG(item)
 {
-	return self getCanPlayerBuyWeapons() && !self hasWeapon("ranger_mp");
-}
-
-OnBuyRPG()
-{
-	WEAPON_NAME = "rpg_mp";
-	self giveWeapon(WEAPON_NAME);
-	self setWeaponAmmoStock(WEAPON_NAME, 0);
-	self setWeaponAmmoClip(WEAPON_NAME, 1);
-}
-
-getIsAvailableRPG()
-{
-	return self getCanPlayerBuyWeapons() && !self hasWeapon("rpg_mp");
+	self setRoleInventory(item, 1, 0);
 }
 
 OnBuyKnife()
@@ -325,30 +440,20 @@ OnBuyDisguise()
 	self maps\mp\perks\_perks::givePerk("specialty_spygame");
 }
 
-OnBuyRiot()
+OnBuyRiot(item)
 {
-	WEAPON_NAME = "riotshield_mp";
-	self giveWeapon(WEAPON_NAME);
+	self setRoleInventory(item);
+	self OnPickupRiot();
+}
+OnPickupRiot(item)
+{
 	self.hasRiotShield = true;
 	self AttachShieldModel("weapon_riot_shield_mp", "tag_shield_back");
 }
 
-getIsAvailableRiot()
+OnBuySpas(item)
 {
-	return self getCanPlayerBuyWeapons() && !self hasWeapon("riotshield_mp");
-}
-
-OnBuySpas()
-{
-	WEAPON_NAME = "spas12_mp";
-	self giveWeapon(WEAPON_NAME);
-	self setWeaponAmmoStock(WEAPON_NAME, 0);
-	self setWeaponAmmoClip(WEAPON_NAME, 8);
-}
-
-getIsAvailableSpas()
-{
-	return self getCanPlayerBuyWeapons() && !self hasWeapon("spas12_mp");
+	self setRoleInventory(item, 8, 0);
 }
 
 OnBuyConcussion()

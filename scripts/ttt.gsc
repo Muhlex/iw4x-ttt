@@ -13,6 +13,7 @@ init()
 	level.ttt.headshotMultiplierSniper = getDvarFloat("ttt_headshot_multiplier_sniper");
 	level.ttt.explosiveMultiplier = getDvarFloat("ttt_explosive_multiplier");
 	level.ttt.preptime = getDvarInt("ttt_preptime");
+	level.ttt.defaultWeapon = "beretta_tactical_mp";
 	if (level.ttt.preptime < 1) level.ttt.preptime = 1;
 
 	level.ttt.prematch = true;
@@ -20,11 +21,16 @@ init()
 
 	level.inGracePeriod = false;
 
+	makeDvarServerInfo("cg_overheadIconSize", 0);
+	makeDvarServerInfo("cg_overheadRankSize", 0);
+	makeDvarServerInfo("cg_overheadNamesSize", 0.8);
+
 	setDvar("scr_player_forceautoassign", "1");
 	setDvar("scr_player_forcerespawn", "1");
 	setDvar("scr_game_hardpoints", "0");
 	setDvar("scr_teambalance", "0");
 	setDvar("scr_game_spectatetype", "2");
+	setDvar("scr_showperksonspawn", 0);
 
 	setDvar("scr_dm_scorelimit", "0");
 	setDvar("scr_dm_timelimit", (getDvarFloat("ttt_roundtime") + level.ttt.preptime / 60));
@@ -156,6 +162,9 @@ OnAftertimeEnd()
 	game["roundsPlayed"]++;
 	if (game["roundsPlayed"] >= getDvarInt("ttt_roundlimit"))
 	{
+		// reset these because endGame expects them to be
+		game["state"] = "playing";
+		level.gameEnded = false;
 		thread maps\mp\gametypes\_gamelogic::endGame("tie", "Round limit reached");
 		return;
 	}
@@ -182,6 +191,7 @@ OnPlayerConnect()
 		player thread OnPlayerDeath();
 		player thread OnPlayerEnemyKilled();
 		player thread OnPlayerRagdoll();
+		player thread OnPlayerWeaponSwitchStart();
 		player thread OnPlayerScoreboardOpen();
 		player thread OnPlayerScoreboardClose();
 	}
@@ -208,18 +218,14 @@ OnPlayerSpawn()
 		self _SetActionSlot(1, ""); // disable nightvision
 		self scripts\ttt\items::resetPlayerEquipment();
 
-		//spawnWeapon = "usp_tactical_mp";
-
-		//self giveWeapon(spawnWeapon);
-		//self SetWeaponAmmoClip(spawnWeapon, 0);
-		//self SetWeaponAmmoStock(spawnWeapon, 0);
-		//self setSpawnWeapon(spawnWeapon);
-
+		self scripts\ttt\pickups::giveDefaultWeapon();
+		self setSpawnWeapon(level.ttt.defaultWeapon);
 		self scripts\ttt\ui::displaySelfHud();
 
 		self thread scripts\ttt\use::OnPlayerUse();
 		self thread scripts\ttt\use::playerUseEntsThink();
 		self thread scripts\ttt\pickups::OnPlayerDropWeapon();
+		self thread scripts\ttt\items::OnPlayerRoleWeapon();
 		self thread OnPlayerBuyMenu();
 		self thread OnPlayerHealthUpdate();
 	}
@@ -314,6 +320,32 @@ OnBodyInspectAvailable(ent, player)
 OnBodyInspectAvailableEnd(ent, player)
 {
 	player scripts\ttt\ui::destroyUseAvailableHint();
+}
+
+OnPlayerWeaponSwitchStart()
+{
+	self endon("disconnect");
+
+	for (;;)
+	{
+		self waittill("weapon_switch_started", weaponName);
+
+		self thread OnPlayerWeaponSwitchCancel(weaponName);
+	}
+}
+
+OnPlayerWeaponSwitchCancel(weaponName)
+{
+	self endon("disconnect");
+	self endon("weapon_change");
+
+	for (;;)
+	{
+		while (self isSwitchingWeapon()) wait(0.05);
+
+		self notify("weapon_switch_cancelled", weaponName);
+		break;
+	}
 }
 
 OnPlayerHealthUpdate()
