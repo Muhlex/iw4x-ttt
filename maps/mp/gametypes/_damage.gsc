@@ -1276,7 +1276,7 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 		else
 		{
 			if (sMeansOfDeath == "MOD_FALLING")
-				iDamage = int(iDamage / victim.health * 80); // make it linear damage
+				iDamage = int(iDamage / victim.health * 100); // make it linear damage
 
 			if (sWeapon == "model1887_mp")
 				iDamage = int(iDamage * 1.2);
