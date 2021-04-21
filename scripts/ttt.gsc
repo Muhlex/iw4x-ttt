@@ -5,7 +5,7 @@
 init()
 {
 	level.ttt = spawnStruct();
-	level.ttt.enabled = !!getDvarInt("ttt");
+	level.ttt.enabled = getDvar("g_gametype") == "ttt";
 	if (!level.ttt.enabled) return;
 
 	level.ttt.maxhealth = getDvarInt("scr_player_maxhealth");
@@ -32,16 +32,7 @@ init()
 	setDvar("scr_game_spectatetype", "2");
 	setDvar("scr_showperksonspawn", 0);
 
-	setDvar("scr_dm_scorelimit", "0");
-	setDvar("scr_dm_timelimit", (getDvarFloat("ttt_roundtime") + level.ttt.preptime / 60));
-	setDvar("scr_dm_numlives", "0");
-	setDvar("scr_dm_winlimit", "0");
-
-	if (getDvar("g_gametype") != "dm")
-	{
-		setDvar("g_gametype", "dm");
-		map_restart();
-	}
+	setDvar("scr_ttt_timelimit", (getDvarFloat("ttt_roundtime") + level.ttt.preptime / 60));
 
 	scripts\ttt\_weaponnames::init();
 	scripts\ttt\use::init();
@@ -54,7 +45,7 @@ init()
 
 	thread OnPlayerConnect();
 
-	wait(0.05); // wait for the dm script to execute
+	wait(0.05); // wait for other scripts to execute
 	setDvar("g_deadChat", "0");
 }
 
