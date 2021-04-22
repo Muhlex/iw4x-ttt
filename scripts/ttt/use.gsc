@@ -32,6 +32,20 @@ makeUsableCustom(onUse, onAvailable, onAvailableEnd, useRange, useAngle, usePrio
 	self thread OnUseEntDeath();
 }
 
+isUseEntAvailable(ent)
+{
+	return isDefined(self.ttt.use.availableEnt) && self.ttt.use.availableEnt == ent;
+}
+
+getUseEntAvailablePlayers(ent)
+{
+	result = [];
+	foreach (player in getLivingPlayers())
+		if (player isUseEntAvailable(ent))
+			result[result.size] = player;
+	return result;
+}
+
 getAvailableUseEnt()
 {
 	highestPriority = undefined;
@@ -80,10 +94,9 @@ OnUseEntDeath()
 	self waittill("death");
 
 	foreach (player in level.players)
-	{
 		if (self == player.ttt.use.availableEnt) player unsetPlayerAvailableUseEnt();
-	}
-	array_remove(level.ttt.use.ents, self);
+
+	level.ttt.use.ents = array_remove(level.ttt.use.ents, self);
 }
 
 playerUseEntsThink()
@@ -96,7 +109,7 @@ playerUseEntsThink()
 		wait(0.1);
 
 		if (self isInKillcam()) continue;
-		if (self.ttt.inBuyMenu) continue;
+		if (self.ttt.items.inBuyMenu) continue;
 
 		useEnt = self getAvailableUseEnt();
 		if (useEnt != self.ttt.use.availableEnt)
@@ -129,7 +142,7 @@ OnPlayerUse()
 	{
 		self waittill("activate");
 		if (self isInKillcam()) continue;
-		if (self.ttt.inBuyMenu) continue;
+		if (self.ttt.items.inBuyMenu) continue;
 
 		useEnt = self getAvailableUseEnt();
 		if (isDefined(useEnt)) thread [[useEnt.onUse]](useEnt, self);

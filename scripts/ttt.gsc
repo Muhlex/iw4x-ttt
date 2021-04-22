@@ -23,16 +23,19 @@ init()
 
 	makeDvarServerInfo("cg_overheadIconSize", 0);
 	makeDvarServerInfo("cg_overheadRankSize", 0);
-	makeDvarServerInfo("cg_overheadNamesSize", 0.8);
+	makeDvarServerInfo("cg_overheadNamesSize", 0.75);
 
-	setDvar("scr_player_forceautoassign", "1");
-	setDvar("scr_player_forcerespawn", "1");
-	setDvar("scr_game_hardpoints", "0");
-	setDvar("scr_teambalance", "0");
-	setDvar("scr_game_spectatetype", "2");
+	setDvar("scr_player_forceautoassign", 1);
+	setDvar("scr_player_forcerespawn", 1);
+	setDvar("scr_game_hardpoints", 0);
+	setDvar("scr_teambalance", 0);
+	setDvar("scr_game_spectatetype", 2);
 	setDvar("scr_showperksonspawn", 0);
 
-	setDvar("scr_ttt_timelimit", (getDvarFloat("ttt_roundtime") + level.ttt.preptime / 60));
+	setDvar("bg_fallDamageMinHeight", getDvar("ttt_falldamage_min"));
+	setDvar("bg_fallDamageMaxHeight", getDvar("ttt_falldamage_max"));
+
+	setDvar("scr_ttt_timelimit", (getDvarFloat("scr_ttt_timelimit") + level.ttt.preptime / 60));
 
 	scripts\ttt\_weaponnames::init();
 	scripts\ttt\use::init();
@@ -54,7 +57,6 @@ initPlayer()
 	self.ttt = spawnStruct();
 	self.ttt.role = undefined;
 	self.ttt.bodyFound = false;
-	self.ttt.inBuyMenu = false;
 	self.ttt.incomingDamageMultiplier = 1.0;
 
 	self scripts\ttt\use::initPlayer();
@@ -151,7 +153,7 @@ OnAftertimeEnd()
 	while (level.showingFinalKillcam) wait(0.05);
 
 	game["roundsPlayed"]++;
-	if (game["roundsPlayed"] >= getDvarInt("ttt_roundlimit"))
+	if (game["roundsPlayed"] >= getDvarInt("scr_ttt_roundlimit"))
 	{
 		// reset these because endGame expects them to be
 		game["state"] = "playing";
@@ -216,8 +218,9 @@ OnPlayerSpawn()
 		self thread scripts\ttt\use::OnPlayerUse();
 		self thread scripts\ttt\use::playerUseEntsThink();
 		self thread scripts\ttt\pickups::OnPlayerDropWeapon();
-		self thread scripts\ttt\items::OnPlayerRoleWeapon();
-		self thread OnPlayerBuyMenu();
+		self thread scripts\ttt\items::OnPlayerRoleWeaponToggle();
+		self thread scripts\ttt\items::OnPlayerRoleWeaponActivate();
+		self thread scripts\ttt\items::OnPlayerBuyMenu();
 		self thread OnPlayerHealthUpdate();
 	}
 }
@@ -232,7 +235,7 @@ OnPlayerDeath()
 
 		self scripts\ttt\use::unsetPlayerAvailableUseEnt();
 		self scripts\ttt\ui::destroySelfHud();
-		self unsetPlayerBuyMenu();
+		self scripts\ttt\items::unsetPlayerBuyMenu();
 		checkRoundWinConditions();
 	}
 }
@@ -285,13 +288,17 @@ OnBodyInspectTrigger(ent, player)
 	{
 		ent.owner.ttt.bodyFound = true;
 		ent.usePriority = 0;
-		player scripts\ttt\ui::updateUseAvailableHint(undefined, ownerRoleColor + ownerName + "^7\n[ ^3[{+activate}]^7 ] to inspect");
 		foreach (p in level.players)
 		{
-			if (p == player) p iPrintLnBold("You found the body of ^3" + ownerName + "^7. They were " + ownerRoleColor + ent.owner.ttt.role + "^7.");
-			else p iPrintLnBold(playerName + "^7 found the body of ^3" + ownerName + "^7. They were " + ownerRoleColor + ent.owner.ttt.role + "^7.");
+			if (p == player)
+				p iPrintLnBold("You found the body of ^3" + ownerName + "^7. They were " + ownerRoleColor + ent.owner.ttt.role + "^7.");
+			else
+				p iPrintLnBold(playerName + "^7 found the body of ^3" + ownerName + "^7. They were " + ownerRoleColor + ent.owner.ttt.role + "^7.");
+
 			p playLocalSound("copycat_steal_class");
 		}
+		foreach (p in scripts\ttt\use::getUseEntAvailablePlayers(ent))
+			p scripts\ttt\ui::updateUseAvailableHint(undefined, ownerRoleColor + ownerName + "^7\n[ ^3[{+activate}]^7 ] to inspect");
 	}
 	else player iPrintLnBold("This is the body of ^3" + ownerName + "^7. They were " + ownerRoleColor + ent.owner.ttt.role + "^7.");
 }
@@ -403,128 +410,6 @@ scoreboardThink()
 		self scripts\ttt\ui::destroyScoreboard();
 		self scripts\ttt\ui::displayScoreboard();
 		wait(0.25);
-	}
-}
-
-OnPlayerBuyMenu()
-{
-	self endon("disconnect");
-	self endon("death");
-
-	self notifyOnPlayerCommand("buymenu_toggle", "+actionslot 2");
-	self notifyOnPlayerCommand("buymenu_close", "weapnext");
-	self notifyOnPlayerCommand("buymenu_close", "weapprev");
-
-	for (;;)
-	{
-		eventName = self waittill_any_return("buymenu_toggle", "buymenu_close");
-
-		if (!self.ttt.inBuyMenu && eventName == "buymenu_close") continue;
-		if (!isAlive(self) || !isDefined(self.ttt.role) || (self.ttt.role != "traitor" && self.ttt.role != "detective")) continue;
-
-		if (self.ttt.inBuyMenu) self thread unsetPlayerBuyMenu(true);
-		else self thread setPlayerBuyMenu();
-	}
-}
-
-setPlayerBuyMenu()
-{
-	self endon("disconnect");
-	self endon("death");
-	self endon("buymenu_toggle");
-	self endon("buymenu_close");
-
-	LAPTOP_WEAPON = "killstreak_ac130_mp";
-
-	self giveWeapon(LAPTOP_WEAPON);
-	self switchToWeapon(LAPTOP_WEAPON);
-
-	while (self getCurrentWeapon() != LAPTOP_WEAPON) wait(0.05); // wait for laptop to open
-	while (!self isOnGround()) wait(0.05); // wait for player to land (if falling)
-
-	self.ttt.inBuyMenu = true;
-
-	self setBlurForPlayer(6, 1.5);
-	self freezeControls(true);
-	self scripts\ttt\ui::destroySelfHud();
-	self scripts\ttt\ui::destroyBuyMenu();
-	self scripts\ttt\ui::displayBuyMenu(self.ttt.role);
-	self thread buyMenuThink();
-	self thread buyMenuThinkLaptop(LAPTOP_WEAPON);
-}
-
-unsetPlayerBuyMenu(switchToLastWeapon)
-{
-	if (!isDefined(switchToLastWeapon)) switchToLastWeapon = false;
-
-	self.ttt.inBuyMenu = false;
-
-	self freezeControls(false);
-	if (switchToLastWeapon)
-	{
-		self switchToWeapon(self getLastWeapon());
-		self thread playLaptopSound();
-	}
-	self setBlurForPlayer(0, 0.75);
-	self scripts\ttt\ui::destroyBuyMenu();
-	if (isAlive(self)) self scripts\ttt\ui::displaySelfHud();
-}
-
-playLaptopSound()
-{
-	/**
-	 * Stowing the laptop makes a distinct sound that only other players can hear.
-	 * We recreate this sound for the local player here. The wait is needed
-	 * because the sound otherwise sometimes doesn't play.
-	 */
-	wait (0.05);
-	self playLocalSound("weap_c4detpack_safety_plr");
-}
-
-buyMenuThinkLaptop(weaponName)
-{
-	self endon("disconnect");
-	self endon("death");
-	self endon("buymenu_toggle");
-	self endon("buymenu_close");
-
-	for (;;)
-	{
-		if (self getCurrentWeapon() != weaponName) self notify("buymenu_close");
-		wait(0.2);
-	}
-}
-
-buyMenuThink()
-{
-	self endon("disconnect");
-	self endon("death");
-	self endon("buymenu_toggle");
-	self endon("buymenu_close");
-
-	self notifyOnPlayerCommand("menu_up", "+forward");
-	self notifyOnPlayerCommand("menu_down", "+back");
-	self notifyOnPlayerCommand("menu_left", "+moveleft");
-	self notifyOnPlayerCommand("menu_right", "+moveright");
-	self notifyOnPlayerCommand("menu_activate", "+activate");
-	self notifyOnPlayerCommand("menu_activate", "+attack");
-	self notifyOnPlayerCommand("menu_activate", "+gostand");
-
-	for (;;)
-	{
-		eventName = self waittill_any_return("menu_up", "menu_down", "menu_left", "menu_right", "menu_activate");
-		moveDown = 0;
-		moveRight = 0;
-		if (eventName == "menu_up") moveDown = -1;
-		else if (eventName == "menu_down") moveDown = 1;
-		else if (eventName == "menu_left") moveRight = -1;
-		else if (eventName == "menu_right") moveRight = 1;
-
-		if (moveDown != 0 || moveRight != 0)
-			self scripts\ttt\ui::updateBuyMenu(self.ttt.role, moveDown, moveRight);
-
-		if (eventName == "menu_activate")
-			self scripts\ttt\items::tryBuyItem(level.ttt.items[self.ttt.role][self.ttt.items.selectedIndex]);
 	}
 }
 

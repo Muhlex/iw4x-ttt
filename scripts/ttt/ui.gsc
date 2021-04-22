@@ -51,6 +51,7 @@ displaySelfHud()
 	self.ttt.ui["hud"]["self"]["health"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -150, -14);
 	self.ttt.ui["hud"]["self"]["health"].hidewheninmenu = true;
 	self.ttt.ui["hud"]["self"]["health"].glowAlpha = 1;
+	self.ttt.ui["hud"]["self"]["health"].label = &"";
 
 	self.ttt.ui["hud"]["self"]["armor"] = self createIcon("cardicon_vest_1", 16, 16);
 	self.ttt.ui["hud"]["self"]["armor"] setParent(self.ttt.ui["hud"]["self"]["health"]);
@@ -75,14 +76,14 @@ updatePlayerHealthDisplay()
 	text = "";
 	if (isAlive(self))
 	{
-		text = self.health + "/" + level.ttt.maxhealth; // use cached maxhealth, because disabling health regen messes with the value
+		// use cached maxhealth, because disabling health regen messes with the value
 		healthPct = self.health / level.ttt.maxhealth;
 		healthProxToHalf = (1 - abs(healthPct - 0.5)) * 2;
 
 		self.ttt.ui["hud"]["self"]["health"].color = ((1 - healthPct) + healthProxToHalf * 0.5, healthPct + healthProxToHalf * 0.5, 0.5);
 		self.ttt.ui["hud"]["self"]["health"].glowColor = ((1 - healthPct) * 0.6 + healthProxToHalf * 0.3, healthPct * 0.6 + healthProxToHalf * 0.3, 0.3);
 	}
-	self.ttt.ui["hud"]["self"]["health"] setText(text);
+	self.ttt.ui["hud"]["self"]["health"] setValue(self.health);
 }
 
 updatePlayerArmorDisplay()
@@ -124,7 +125,7 @@ updatePlayerRoleDisplay(doPulse)
 	if (doPulse) self.ttt.ui["hud"]["self"]["role"] thread maps\mp\gametypes\_hud::fontPulse(self);
 }
 
-displayUseAvailableHint(label, text)
+displayUseAvailableHint(label, text, value)
 {
 	self.ttt.ui["hud"]["self"]["use_hint"] = [];
 	self.ttt.ui["hud"]["self"]["use_hint"]["text"] = self createFontString("default", 1.5);
@@ -133,13 +134,14 @@ displayUseAvailableHint(label, text)
 	self.ttt.ui["hud"]["self"]["use_hint"]["text"].alpha = 0.85;
 	self.ttt.ui["hud"]["self"]["use_hint"]["text"].archived = false;
 	self.ttt.ui["hud"]["self"]["use_hint"]["text"].hidewheninmenu = true;
-	updateUseAvailableHint(label, text);
+	updateUseAvailableHint(label, text, value);
 }
 
-updateUseAvailableHint(label, text)
+updateUseAvailableHint(label, text, value)
 {
-	self.ttt.ui["hud"]["self"]["use_hint"]["text"].label = label;
+	if (isDefined(label)) self.ttt.ui["hud"]["self"]["use_hint"]["text"].label = label;
 	if (isDefined(text)) self.ttt.ui["hud"]["self"]["use_hint"]["text"] setText(text);
+	if (isDefined(value)) self.ttt.ui["hud"]["self"]["use_hint"]["text"] setValue(value);
 }
 
 destroyUseAvailableHint()

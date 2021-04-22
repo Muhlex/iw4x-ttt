@@ -97,7 +97,7 @@ recursivelyDestroyElements(array)
 
 isArray(array)
 {
-	return isDefined(getArrayKeys(array));
+	return isDefined(getFirstArrayKey(array));
 }
 
 isInArray(array, searchValue)
@@ -111,4 +111,15 @@ intUp(value)
 	result = int(value);
 	if (result == value) return result;
 	else return result + 1;
+}
+
+drawDebugLine(pos1, pos2, color, ticks)
+{
+	if (!isDefined(ticks)) ticks = 200;
+
+	for (i = 0; i < ticks; i++)
+	{
+		line(pos1, pos2, color);
+		wait(0.05);
+	}
 }

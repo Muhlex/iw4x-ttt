@@ -26,24 +26,24 @@ init()
 
 	level.ttt.items["traitor"][2] = spawnStruct();
 	level.ttt.items["traitor"][2].name = "RANGER SHOTGUN";
-	level.ttt.items["traitor"][2].description = "^3Exclusive weapon\n^7Strong close-range shotgun\nwhich can fire ^2two shells at once^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip";
+	level.ttt.items["traitor"][2].description = "^3Exclusive weapon\n^7Strong close-range shotgun\nwhich can fire ^2two shells at once^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
 	level.ttt.items["traitor"][2].icon = "weapon_ranger";
 	level.ttt.items["traitor"][2].iconWidth = 48;
 	level.ttt.items["traitor"][2].iconHeight = 24;
 	level.ttt.items["traitor"][2].iconOffsetX = -1;
 	level.ttt.items["traitor"][2].onBuy = ::OnBuyRanger;
-	level.ttt.items["traitor"][2].getIsAvailable = ::getIsAvailableRoleWeapon;
+	level.ttt.items["traitor"][2].getIsAvailable = ::getIsAvailableRoleItem;
 	level.ttt.items["traitor"][2].weaponName = "ranger_mp";
 
 	level.ttt.items["traitor"][3] = spawnStruct();
 	level.ttt.items["traitor"][3].name = "ROCKET LAUNCHER";
-	level.ttt.items["traitor"][3].description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds 1 rocket. ^1Can't pick up ammo^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip";
+	level.ttt.items["traitor"][3].description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds 1 rocket. ^1Can't pick up ammo^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
 	level.ttt.items["traitor"][3].icon = "weapon_rpg7";
 	level.ttt.items["traitor"][3].iconWidth = 44;
 	level.ttt.items["traitor"][3].iconHeight = 22;
 	level.ttt.items["traitor"][3].iconOffsetX = 1;
 	level.ttt.items["traitor"][3].onBuy = ::OnBuyRPG;
-	level.ttt.items["traitor"][3].getIsAvailable = ::getIsAvailableRoleWeapon;
+	level.ttt.items["traitor"][3].getIsAvailable = ::getIsAvailableRoleItem;
 	level.ttt.items["traitor"][3].weaponName = "rpg_mp";
 
 	level.ttt.items["traitor"][4] = spawnStruct();
@@ -69,36 +69,36 @@ init()
 	level.ttt.items["traitor"][6].onBuy = ::OnBuyFlash;
 	level.ttt.items["traitor"][6].getIsAvailable = ::getIsAvailableOffhand;
 
-	level.ttt.items["traitor"][7] = spawnStruct();
-	level.ttt.items["traitor"][7].name = "SILENT DISGUISE";
-	level.ttt.items["traitor"][7].description = "^3Passive Item\n^2Removes ^7your nametag.\n^2Silences ^7your footsteps.";
-	level.ttt.items["traitor"][7].icon = "specialty_quieter_upgrade";
-	level.ttt.items["traitor"][7].onBuy = ::OnBuyDisguise;
-	level.ttt.items["traitor"][7].getIsAvailable = ::getIsAvailablePassive;
+	// level.ttt.items["traitor"][7] = spawnStruct();
+	// level.ttt.items["traitor"][7].name = "SILENT DISGUISE";
+	// level.ttt.items["traitor"][7].description = "^3Passive item\n^2Removes ^7your nametag.\n^2Silences ^7your footsteps.";
+	// level.ttt.items["traitor"][7].icon = "specialty_quieter_upgrade";
+	// level.ttt.items["traitor"][7].onBuy = ::OnBuyDisguise;
+	// level.ttt.items["traitor"][7].getIsAvailable = ::getIsAvailablePassive;
 
 	level.ttt.items["detective"][0] = armor;
 
 	level.ttt.items["detective"][1] = spawnStruct();
 	level.ttt.items["detective"][1].name = "RIOT SHIELD";
-	level.ttt.items["detective"][1].description = "^3Exclusive weapon\n^2Blocks bullets^7, even when\nit is on your back.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip";
+	level.ttt.items["detective"][1].description = "^3Exclusive weapon\n^2Blocks bullets^7, even when\nit is on your back.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
 	level.ttt.items["detective"][1].icon = "weapon_riotshield";
 	level.ttt.items["detective"][1].iconWidth = 64;
 	level.ttt.items["detective"][1].iconHeight = 32;
 	level.ttt.items["detective"][1].iconOffsetX = -16;
 	level.ttt.items["detective"][1].onBuy = ::OnBuyRiot;
 	level.ttt.items["detective"][1].onPickup = ::OnPickupRiot;
-	level.ttt.items["detective"][1].getIsAvailable = ::getIsAvailableRoleWeapon;
+	level.ttt.items["detective"][1].getIsAvailable = ::getIsAvailableRoleItem;
 	level.ttt.items["detective"][1].weaponName = "riotshield_mp";
 
 	level.ttt.items["detective"][2] = spawnStruct();
 	level.ttt.items["detective"][2].name = "SPAS-12 SHOTGUN";
-	level.ttt.items["detective"][2].description = "^3Exclusive weapon\n^7Versatile shotgun with good\nperformance ^2up to medium range^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip";
+	level.ttt.items["detective"][2].description = "^3Exclusive weapon\n^7Versatile shotgun with good\nperformance ^2up to medium range^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
 	level.ttt.items["detective"][2].icon = "weapon_spas12";
 	level.ttt.items["detective"][2].iconWidth = 48;
 	level.ttt.items["detective"][2].iconHeight = 24;
 	level.ttt.items["detective"][2].iconOffsetX = 1;
 	level.ttt.items["detective"][2].onBuy = ::OnBuySpas;
-	level.ttt.items["detective"][2].getIsAvailable = ::getIsAvailableRoleWeapon;
+	level.ttt.items["detective"][2].getIsAvailable = ::getIsAvailableRoleItem;
 	level.ttt.items["detective"][2].weaponName = "spas12_mp";
 
 	level.ttt.items["detective"][3] = spawnStruct();
@@ -109,11 +109,20 @@ init()
 	level.ttt.items["detective"][3].getIsAvailable = ::getIsAvailableOffhand;
 
 	level.ttt.items["detective"][4] = spawnStruct();
-	level.ttt.items["detective"][4].name = "INSANE BICEPS";
-	level.ttt.items["detective"][4].description = "^3Passive item\n^7Allows you to ^2lob weapons\n^7like crazy.";
-	level.ttt.items["detective"][4].icon = "specialty_onemanarmy_upgrade";
-	level.ttt.items["detective"][4].onBuy = ::OnBuyLob;
-	level.ttt.items["detective"][4].getIsAvailable = ::getIsAvailablePassive;
+	level.ttt.items["detective"][4].name = "HEALTH STATION";
+	level.ttt.items["detective"][4].description = "^3Deployable item\n^7Slowly ^2regenerates health ^7on use.\nCan be placed anywhere.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	level.ttt.items["detective"][4].icon = "hint_health";
+	level.ttt.items["detective"][4].onBuy = ::OnBuyHealthStation;
+	level.ttt.items["detective"][4].onActivate = ::OnActivateHealthStation;
+	level.ttt.items["detective"][4].getIsAvailable = ::getIsAvailableRoleItem;
+	level.ttt.items["detective"][4].weaponName = "onemanarmy_mp";
+
+	level.ttt.items["detective"][5] = spawnStruct();
+	level.ttt.items["detective"][5].name = "INSANE BICEPS";
+	level.ttt.items["detective"][5].description = "^3Passive item\n^7Allows you to ^2lob weapons\n^7like crazy.";
+	level.ttt.items["detective"][5].icon = "specialty_onemanarmy_upgrade";
+	level.ttt.items["detective"][5].onBuy = ::OnBuyLob;
+	level.ttt.items["detective"][5].getIsAvailable = ::getIsAvailablePassive;
 
 	foreach (roleItems in level.ttt.items) foreach (item in roleItems) precacheShader(item.icon);
 }
@@ -121,10 +130,139 @@ init()
 initPlayer()
 {
 	self.ttt.items = spawnStruct();
+	self.ttt.items.inBuyMenu = false;
 	self.ttt.items.selectedIndex = 0;
 	self.ttt.items.credits = 0;
 	self.ttt.items.boughtItems = [];
 	self resetRoleInventory();
+}
+
+OnPlayerBuyMenu()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	self notifyOnPlayerCommand("buymenu_toggle", "+actionslot 2");
+	self notifyOnPlayerCommand("buymenu_close", "weapnext");
+	self notifyOnPlayerCommand("buymenu_close", "weapprev");
+
+	for (;;)
+	{
+		eventName = self waittill_any_return("buymenu_toggle", "buymenu_close");
+
+		if (!self.ttt.items.inBuyMenu && eventName == "buymenu_close") continue;
+		if (!isAlive(self) || !isDefined(self.ttt.role) || (self.ttt.role != "traitor" && self.ttt.role != "detective")) continue;
+
+		if (self.ttt.items.inBuyMenu) self thread unsetPlayerBuyMenu(true);
+		else self thread setPlayerBuyMenu();
+	}
+}
+
+setPlayerBuyMenu()
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("buymenu_toggle");
+	self endon("buymenu_close");
+
+	LAPTOP_WEAPON = "killstreak_ac130_mp";
+
+	self giveWeapon(LAPTOP_WEAPON);
+	self switchToWeapon(LAPTOP_WEAPON);
+
+	while (self getCurrentWeapon() != LAPTOP_WEAPON) wait(0.05); // wait for laptop to open
+	while (!self isOnGround()) wait(0.05); // wait for player to land (if falling)
+
+	self.ttt.items.inBuyMenu = true;
+
+	self setBlurForPlayer(6, 1.5);
+	self freezeControls(true);
+	self scripts\ttt\ui::destroySelfHud();
+	self scripts\ttt\ui::destroyHeadIcons();
+	self scripts\ttt\ui::destroyBuyMenu();
+	self scripts\ttt\ui::displayBuyMenu(self.ttt.role);
+	self thread buyMenuThink();
+	self thread buyMenuThinkLaptop(LAPTOP_WEAPON);
+}
+
+unsetPlayerBuyMenu(switchToLastWeapon)
+{
+	if (!isDefined(switchToLastWeapon)) switchToLastWeapon = false;
+
+	self.ttt.items.inBuyMenu = false;
+
+	self freezeControls(false);
+	if (switchToLastWeapon)
+	{
+		self switchToWeapon(self getLastWeapon());
+		self thread playLaptopSound();
+	}
+	self setBlurForPlayer(0, 0.75);
+	self scripts\ttt\ui::destroyBuyMenu();
+
+	if (isAlive(self))
+	{
+		self scripts\ttt\ui::displaySelfHud();
+		self scripts\ttt\ui::displayHeadIcons();
+	}
+}
+
+playLaptopSound()
+{
+	/**
+	 * Stowing the laptop makes a distinct sound that only other players can hear.
+	 * We recreate this sound for the local player here. The wait is needed
+	 * because the sound otherwise sometimes doesn't play.
+	 */
+	wait (0.05);
+	self playLocalSound("weap_c4detpack_safety_plr");
+}
+
+buyMenuThinkLaptop(weaponName)
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("buymenu_toggle");
+	self endon("buymenu_close");
+
+	for (;;)
+	{
+		if (self getCurrentWeapon() != weaponName) self notify("buymenu_close");
+		wait(0.2);
+	}
+}
+
+buyMenuThink()
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("buymenu_toggle");
+	self endon("buymenu_close");
+
+	self notifyOnPlayerCommand("menu_up", "+forward");
+	self notifyOnPlayerCommand("menu_down", "+back");
+	self notifyOnPlayerCommand("menu_left", "+moveleft");
+	self notifyOnPlayerCommand("menu_right", "+moveright");
+	self notifyOnPlayerCommand("menu_activate", "+activate");
+	self notifyOnPlayerCommand("menu_activate", "+attack");
+	self notifyOnPlayerCommand("menu_activate", "+gostand");
+
+	for (;;)
+	{
+		eventName = self waittill_any_return("menu_up", "menu_down", "menu_left", "menu_right", "menu_activate");
+		moveDown = 0;
+		moveRight = 0;
+		if (eventName == "menu_up") moveDown = -1;
+		else if (eventName == "menu_down") moveDown = 1;
+		else if (eventName == "menu_left") moveRight = -1;
+		else if (eventName == "menu_right") moveRight = 1;
+
+		if (moveDown != 0 || moveRight != 0)
+			self scripts\ttt\ui::updateBuyMenu(self.ttt.role, moveDown, moveRight);
+
+		if (eventName == "menu_activate")
+			self scripts\ttt\items::tryBuyItem(level.ttt.items[self.ttt.role][self.ttt.items.selectedIndex]);
+	}
 }
 
 resetRoleInventory()
@@ -159,6 +297,10 @@ isRoleWeaponEquipped()
 {
 	return self hasRoleWeapon() && self hasWeapon(self.ttt.items.roleInventory.item.weaponName);
 }
+isRoleWeaponCurrent()
+{
+	return self isRoleWeaponEquipped() && self getCurrentWeapon() == self.ttt.items.roleInventory.item.weaponName;
+}
 giveRoleWeapon()
 {
 	inv = self.ttt.items.roleInventory;
@@ -185,7 +327,7 @@ takeRoleWeapon()
 	return weaponName;
 }
 
-OnPlayerRoleWeapon()
+OnPlayerRoleWeaponToggle()
 {
 	self endon("disconnect");
 	self endon("death");
@@ -195,7 +337,6 @@ OnPlayerRoleWeapon()
 	for (;;)
 	{
 		self waittill("roleweapon_toggle");
-
 		if (!self hasRoleWeapon()) continue;
 
 		if (self isRoleWeaponEquipped()) self switchFromRoleWeapon();
@@ -245,10 +386,28 @@ OnRoleWeaponStow()
 	for (;;)
 	{
 		self waittill("weapon_change", newWeaponName);
-		if (newWeaponName == self.ttt.items.roleInventory.item.weaponName) continue;
+		if (newWeaponName == self.ttt.items.roleInventory.item.weaponName || newWeaponName == "none") continue;
 
 		self takeRoleWeapon();
 		break;
+	}
+}
+
+OnPlayerRoleWeaponActivate()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	self notifyOnPlayerCommand("roleweapon_activate", "+attack");
+
+	for (;;)
+	{
+		self waittill("roleweapon_activate");
+		if (!self isRoleWeaponCurrent()) continue;
+
+		item = self.ttt.items.roleInventory.item;
+		if (!isDefined(item.onActivate)) continue;
+		self [[item.onActivate]](item);
 	}
 }
 
@@ -327,9 +486,9 @@ getIsAvailablePassive(item)
 	return !isInArray(self.ttt.items.boughtItems, item);
 }
 
-getIsAvailableRoleWeapon(item)
+getIsAvailableRoleItem(item)
 {
-	return !isInArray(self.ttt.items.boughtItems, item);
+	return !self hasRoleWeapon();
 }
 
 getIsAvailableEquipment()
@@ -467,4 +626,127 @@ OnBuyConcussion()
 OnBuyLob()
 {
 	self.ttt.dropVelocity = 512;
+}
+
+OnBuyHealthStation(item)
+{
+	self setRoleInventory(item);
+}
+
+OnActivateHealthStation(item)
+{
+	eyePos = self getEye();
+	spawnPos = physicsTrace(eyePos, eyePos + anglesToForward(self.angles) * 64);
+	spawnPos -= anglesToForward(self.angles) * 16;
+	spawnPos = physicsTrace(spawnPos, spawnPos - (0, 0, self getPlayerViewHeight())) + (0, 0, 16);
+
+	spawnPosLeft = spawnPos + anglesToRight(self.angles) * -20;
+	spawnPosRight = spawnPos + anglesToRight(self.angles) * 20;
+	if (positionWouldTelefrag(spawnPos) || positionWouldTelefrag(spawnPosLeft) || positionWouldTelefrag(spawnPosRight))
+	{
+		self iPrintLnBold("You cannot place a health station here.");
+		return;
+	}
+
+	self takeRoleWeapon();
+	self switchToWeapon(self getLastWeapon());
+	self resetRoleInventory();
+
+	healthStation = spawn("script_model", spawnPos);
+	healthStation setModel("com_plasticcase_friendly");
+	healthStation.angles = self.angles + (0, 90, 0);
+	healthStation cloneBrushmodelToScriptmodel(level.airDropCrateCollision);
+	healthStation physicsLaunchServer();
+	healthStation.hp = int(level.ttt.maxhealth * 2);
+	healthStation.lastDispenseTime = 0;
+	healthStation.inUse = false;
+
+	healthStation setCanDamage(true);
+	healthStation.maxhealth = 500;
+	healthStation.health = healthStation.maxhealth;
+	healthStation thread OnHealthStationDamage();
+	healthStation thread OnHealthStationDeath();
+
+	healthStation scripts\ttt\use::makeUsableCustom(
+		::OnHealthStationTrigger,
+		::OnHealthStationAvailable,
+		::OnHealthStationAvailableEnd, 80, 45, 0, true
+	);
+}
+
+OnHealthStationDamage()
+{
+	self endon("death");
+
+	for (;;)
+	{
+		self waittill("damage");
+
+		playFX(level._effect["sentry_smoke_mp"], self.origin);
+		self playSound("bullet_ap_crate");
+	}
+}
+
+OnHealthStationDeath()
+{
+	self waittill("death");
+
+	playFX(level._effect["sentry_explode_mp"], self.origin);
+	self playSound("sentry_explode");
+	wait(4);
+	self delete();
+}
+
+OnHealthStationTrigger(healthStation, player)
+{
+	if (healthStation.inUse) return;
+
+	healthStation.inUse = true;
+	player thread healthStationUseThink(healthStation);
+}
+
+healthStationUseThink(healthStation)
+{
+	healthStation endon("death");
+
+	ticksUsed = 0;
+
+	while (isAlive(self) && self useButtonPressed() && self scripts\ttt\use::isUseEntAvailable(healthStation))
+	{
+		if (healthStation.lastDispenseTime <= getTime() - 100 && healthStation.hp > 0 && self.health < level.ttt.maxhealth)
+		{
+			self.health++;
+			self.maxhealth = self.health;
+			healthStation.hp--;
+			healthStation.lastDispenseTime = getTime();
+
+			if (healthStation.hp <= 0) healthStation notify("death");
+
+			if (ticksUsed == 0) healthStation playSound("intelligence_pickup");
+			else if (ticksUsed % 2 == 1) healthStation playSound("gear_rattle_sprint");
+
+			foreach (player in scripts\ttt\use::getUseEntAvailablePlayers(healthStation))
+				player scripts\ttt\ui::updateUseAvailableHint(undefined, undefined, healthStation.hp);
+
+			ticksUsed++;
+		}
+
+		wait(0.05);
+	}
+
+	healthStation.inUse = false;
+}
+
+OnHealthStationAvailable(healthStation, player)
+{
+	player scripts\ttt\ui::destroyUseAvailableHint();
+	player scripts\ttt\ui::displayUseAvailableHint(
+		&"[ ^3[{+activate}] ^7] to ^3heal^7 yourself\n\nAvailable health: ^2",
+		undefined,
+		healthStation.hp
+	);
+}
+OnHealthStationAvailableEnd(healthStation, player)
+{
+	player scripts\ttt\ui::destroyUseAvailableHint();
 }

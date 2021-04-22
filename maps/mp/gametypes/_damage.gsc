@@ -1276,7 +1276,7 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 		else
 		{
 			if (sMeansOfDeath == "MOD_FALLING")
-				iDamage = int(iDamage / victim.health * 100); // make it linear damage
+				iDamage = int(iDamage / victim.health * level.ttt.maxhealth); // make it linear damage
 
 			if (sWeapon == "model1887_mp")
 				iDamage = int(iDamage * 1.2);
@@ -1301,6 +1301,9 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 				if (getWeaponClass(sWeapon) == "weapon_sniper") multiplier = level.ttt.headshotMultiplierSniper;
 				iDamage = int(iDamage * multiplier);
 			}
+
+			if (sMeansOfDeath == "MOD_MELEE" && sWeapon != "riotshield_mp")
+				iDamage = 100;
 
 			if (sWeapon == "throwingknife_mp")
 				iDamage = int(level.ttt.maxhealth);

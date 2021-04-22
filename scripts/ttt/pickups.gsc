@@ -81,6 +81,12 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, item, origin, angles, velocity,
 	weaponEnt = spawn("script_model", origin);
 	weaponEnt.angles = angles + (0, 90, 0);
 	if (weaponName == "riotshield_mp") weaponEnt.angles += (0, 90, 0);
+	if (weaponName == "onemanarmy_mp")
+	{
+		weaponEnt.angles += (-90, 100, -35);
+		weaponEnt.origin += anglesToRight(physicsEnt.angles) * -2;
+		physicsEnt.origin += anglesToForward(physicsEnt.angles) * 8;
+	}
 	weaponEnt linkTo(physicsEnt);
 	weaponEnt setModel(getWeaponModel(weaponName));
 	weaponParts = getWeaponHideTags(weaponName);
@@ -272,7 +278,9 @@ OnWeaponPickupTrigger(ent, player)
 OnWeaponPickupAvailable(ent, player)
 {
 	player scripts\ttt\ui::destroyUseAvailableHint();
-	player scripts\ttt\ui::displayUseAvailableHint(&"[ ^3[{+activate}] ^7] for ^3", level.ttt.localizedWeaponNames[ent.weaponName]);
+	displayName = level.ttt.localizedWeaponNames[ent.weaponName];
+	if (ent.weaponName == "onemanarmy_mp" && isDefined(ent.item)) displayName = ent.item.name;
+	player scripts\ttt\ui::displayUseAvailableHint(&"[ ^3[{+activate}] ^7] for ^3", displayName);
 }
 OnWeaponPickupAvailableEnd(ent, player)
 {
