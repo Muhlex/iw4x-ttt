@@ -34,3 +34,9 @@ Aims to replicate the [Trouble in Terrorist Town](https://www.troubleinterrorist
 | ttt_traitor_kill_credits       | Amount of shop credits awarded to a traitor for killing an innocent or detective.                                                 |             1 |
 | ttt_detective_start_credits    | Amount of shop credits every detective starts the round with.                                                                     |             1 |
 | ttt_detective_kill_credits     | Amount of shop credits awarded to a detective for killing a traitor.                                                              |             1 |
+
+Furthermore there are some settings from the base game, that should be changed for a better experience:
+| Dvar                       | Description                                                               | Recommended Value |
+|----------------------------|---------------------------------------------------------------------------|------------------:|
+| scr_player_maxhealth       | The player's total health on spawn.                                       |               250 |
+| scr_player_healthregentime | Time in seconds after which health regeneration kicks in. (0 to disable.) |                 0 |
