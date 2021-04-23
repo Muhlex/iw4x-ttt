@@ -38,6 +38,7 @@ init()
 	setDvar("scr_ttt_timelimit", (getDvarFloat("ttt_timelimit") + level.ttt.preptime / 60));
 
 	scripts\ttt\_weaponnames::init();
+	scripts\ttt\_coords::init();
 	scripts\ttt\use::init();
 	scripts\ttt\items::init();
 	scripts\ttt\pickups::init();

@@ -202,18 +202,30 @@ tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
 
 spawnWorldPickups()
 {
+	mapname = getDvar("mapname");
 	spawnPoints = maps\mp\gametypes\_spawnlogic::getSpawnpointArray("mp_dm_spawn");
+	if (isDefined(level.ttt.coords.pickups[mapname]))
+		spawnPoints = array_combine(spawnPoints, level.ttt.coords.pickups[mapname]);
 	spawnPoints = array_randomize(spawnPoints);
 
 	foreach (spawnPoint in spawnPoints)
 	{
 		// Spawn weapons
-		origin = spawnPoint.origin + (0, 0, 48); // put up to about half of the player's height
-		origin = physicsTrace(
-			origin,
-			origin + anglesToForward(spawnPoint.angles) * randomIntRange(96, 256)
-		);
-		origin -= anglesToForward(spawnPoint.angles) * 24; // prevent weapons from spawning in walls
+		isPlayerSpawnPoint = isDefined(spawnPoint.origin);
+
+		if (isPlayerSpawnPoint) origin = spawnPoint.origin;
+		else origin = spawnPoint;
+
+		origin += (0, 0, 48); // put up to about half of the player's height
+
+		if (isPlayerSpawnPoint)
+		{
+			origin = physicsTrace(
+				origin,
+				origin + anglesToForward(spawnPoint.angles) * randomIntRange(96, 256)
+			);
+			origin -= anglesToForward(spawnPoint.angles) * 24; // prevent weapons from spawning in walls
+		}
 
 		origin = physicsTrace(origin, origin + (0, 0, -1024)) + (0, 0, 8);
 
