@@ -19,8 +19,8 @@ Aims to replicate the [Trouble in Terrorist Town](https://www.troubleinterrorist
 ### Configurable Settings
 | Dvar                           | Description                                                                                                                       | Default Value |
 |--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|--------------:|
-| scr_ttt_timelimit              | Timelimit per round in minutes. (Not including preptime.)                                                                         |           5.0 |
-| scr_ttt_roundlimit             | Rounds per map.                                                                                                                   |             6 |
+| ttt_roundlimit                 | Rounds per map.                                                                                                                   |             8 |
+| ttt_timelimit                  | Timelimit per round in minutes. (Not including preptime.)                                                                         |           5.0 |
 | ttt_preptime                   | Length of the preparation phase (in seconds), where player's can pick up weapons before roles are drawn.                          |            30 |
 | ttt_aftertime                  | Delay between the round ending and the final killcam being shown (in seconds).                                                   |            10 |
 | ttt_traitor_pct                | Percentage of players that will become traitors. The number of players will be multiplied by this number and then rounded down.   |           0.4 |
@@ -38,5 +38,6 @@ Aims to replicate the [Trouble in Terrorist Town](https://www.troubleinterrorist
 Furthermore there are some settings from the base game, that should be changed for a better experience:
 | Dvar                       | Description                                                                           | Recommended Value |
 |----------------------------|---------------------------------------------------------------------------------------|------------------:|
+| g_gametype                 | Needs to be set to run the gamemode.                                                  |               ttt |
 | scr_player_maxhealth       | The player's total health on spawn.                                                   |               250 |
 | scr_player_healthregentime | Time in seconds after which health regeneration kicks in.<br>(Set to `0` to disable.) |                 0 |

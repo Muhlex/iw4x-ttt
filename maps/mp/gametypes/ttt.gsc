@@ -10,10 +10,10 @@ main()
 	maps\mp\gametypes\_callbacksetup::SetupCallbacks();
 	maps\mp\gametypes\_globallogic::SetupCallbacks();
 
-	registerTimeLimitDvar(level.gameType, 5, 0, 1440);
+	registerTimeLimitDvar(level.gameType, 0, 0, 1440);
 	registerScoreLimitDvar(level.gameType, 0, 0, 0);
 	registerWinLimitDvar(level.gameType, 1, 0, 5000);
-	registerRoundLimitDvar(level.gameType, 6, 0, 10);
+	registerRoundLimitDvar(level.gameType, 0, 0, 10);
 	registerNumLivesDvar(level.gameType, 0, 0, 10);
 	registerHalfTimeDvar(level.gameType, 0, 0, 1);
 

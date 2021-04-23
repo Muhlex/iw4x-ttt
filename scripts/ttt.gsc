@@ -35,7 +35,7 @@ init()
 	setDvar("bg_fallDamageMinHeight", getDvar("ttt_falldamage_min"));
 	setDvar("bg_fallDamageMaxHeight", getDvar("ttt_falldamage_max"));
 
-	setDvar("scr_ttt_timelimit", (getDvarFloat("scr_ttt_timelimit") + level.ttt.preptime / 60));
+	setDvar("scr_ttt_timelimit", (getDvarFloat("ttt_timelimit") + level.ttt.preptime / 60));
 
 	scripts\ttt\_weaponnames::init();
 	scripts\ttt\use::init();
@@ -153,7 +153,7 @@ OnAftertimeEnd()
 	while (level.showingFinalKillcam) wait(0.05);
 
 	game["roundsPlayed"]++;
-	if (game["roundsPlayed"] >= getDvarInt("scr_ttt_roundlimit"))
+	if (game["roundsPlayed"] >= getDvarInt("ttt_roundlimit"))
 	{
 		// reset these because endGame expects them to be
 		game["state"] = "playing";
