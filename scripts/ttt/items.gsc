@@ -48,7 +48,7 @@ init()
 
 	level.ttt.items["traitor"][4] = spawnStruct();
 	level.ttt.items["traitor"][4].name = "THROWING KNIFE";
-	level.ttt.items["traitor"][4].description = "^3Exclusive equipment\n^7Kills ^2silently^7. Can be ^2picked up\n^7by anyone after throwing.";
+	level.ttt.items["traitor"][4].description = "^3Exclusive equipment\n^7Kills ^2silently^7. Can be ^2picked up\n^7by anyone if it doesn't kill.";
 	level.ttt.items["traitor"][4].icon = "equipment_throwing_knife";
 	level.ttt.items["traitor"][4].iconOffsetX = 1;
 	level.ttt.items["traitor"][4].onBuy = ::OnBuyKnife;

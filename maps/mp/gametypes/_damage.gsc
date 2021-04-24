@@ -1306,7 +1306,22 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 				iDamage = 100;
 
 			if (sWeapon == "throwingknife_mp")
+			{
 				iDamage = int(level.ttt.maxhealth);
+
+				// Get the throwing knife entity for this damage event:
+				knives = getEntArray("grenade", "classname");
+				foreach (knife in knives) if (knife.model != "weapon_parabolic_knife") knives = array_remove(knives, knife);
+				thisKnife = undefined;
+				foreach (knife in knives)
+				{
+					if (knife.origin != vPoint) continue;
+
+					thisKnife = knife;
+					break;
+				}
+				if (isDefined(thisKnife)) thisKnife makeunusable();
+			}
 		}
 	}
 
