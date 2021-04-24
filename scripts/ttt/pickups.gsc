@@ -144,18 +144,12 @@ dropWeapon(weaponName, velocity)
 	self takeWeapon(weaponName);
 	if (!weaponWasActive) return;
 
-	primariesList = self getWeaponsListPrimaries();
 	hasDefaultWeapon = self hasWeapon(level.ttt.defaultWeapon);
-	weaponCount = primariesList.size - int(hasDefaultWeapon);
+	weaponCount = self getWeaponsListPrimaries().size - int(hasDefaultWeapon);
 
 	if (weaponCount <= 1 && !hasDefaultWeapon) self giveDefaultWeapon();
 
-	lastWeaponName = self getLastWeapon();
-	if (!isDefined(lastWeaponName) || !self hasWeapon(lastWeaponName) || lastWeaponName == level.ttt.defaultWeapon)
-		lastWeaponName = primariesList[0];
-	if (!isDefined(lastWeaponName) || !self hasWeapon(lastWeaponName))
-		return;
-	self switchToWeapon(lastWeaponName);
+	self switchToLastWeapon();
 }
 
 tryPickUpWeapon(weaponEnt, pickupOnFullInventory)

@@ -194,7 +194,7 @@ unsetPlayerBuyMenu(switchToLastWeapon)
 	self freezeControls(false);
 	if (switchToLastWeapon)
 	{
-		self switchToWeapon(self getLastWeapon());
+		self switchToLastWeapon();
 		self thread playLaptopSound();
 	}
 	self setBlurForPlayer(0, 0.75);
@@ -649,7 +649,7 @@ OnActivateHealthStation(item)
 	}
 
 	self takeRoleWeapon();
-	self switchToWeapon(self getLastWeapon());
+	self switchToLastWeapon();
 	self resetRoleInventory();
 
 	healthStation = spawn("script_model", spawnPos);

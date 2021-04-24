@@ -2,6 +2,19 @@
 #include maps\mp\_utility;
 #include maps\mp\gametypes\_hud_util;
 
+switchToLastWeapon()
+{
+	weaponList = self getWeaponsListPrimaries();
+	lastWeaponName = self getLastWeapon();
+	if (!isDefined(lastWeaponName) || !self hasWeapon(lastWeaponName) || lastWeaponName == level.ttt.defaultWeapon)
+		foreach (weaponName in weaponList)
+			if (weaponName != level.ttt.defaultWeapon)
+				lastWeaponName = weaponName;
+	if (!isDefined(lastWeaponName) || !self hasWeapon(lastWeaponName))
+		lastWeaponName = weaponList[0];
+	self switchToWeapon(lastWeaponName);
+}
+
 createRectangle(w, h, color, showToAll)
 {
 	rect = undefined;
