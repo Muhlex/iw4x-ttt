@@ -18,6 +18,8 @@ main()
 	registerHalfTimeDvar(level.gameType, 0, 0, 1);
 
 	level.onStartGameType = ::onStartGameType;
+	level.onDeadEvent = ::noop;
+	level.onOneLeftEvent = ::noop;
 	level.getSpawnPoint = ::getSpawnPoint;
 
 	game["dialog"]["gametype"] = "ttt";
@@ -30,6 +32,11 @@ main()
 		game["dialog"]["gametype"] = "dh_" + game["dialog"]["gametype"];
 	else if (getDvarInt( "scr_" + level.gameType + "_promode" ) )
 		game["dialog"]["gametype"] = game["dialog"]["gametype"] + "_pro";
+}
+
+noop()
+{
+	return;
 }
 
 

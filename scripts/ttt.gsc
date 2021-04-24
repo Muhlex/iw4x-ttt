@@ -195,7 +195,7 @@ OnPlayerConnect()
 
 OnPlayerDisconnect()
 {
-	self waittill ("disconnect");
+	self waittill("disconnect");
 
 	checkRoundWinConditions();
 }
@@ -428,7 +428,7 @@ checkRoundWinConditions()
 	foreach (player in getLivingPlayers()) aliveCounts[player.ttt.role]++;
 
 	if ((aliveCounts["innocent"] + aliveCounts["detective"]) == 0) endRound("traitor", "death");
-	if (aliveCounts["traitor"] == 0) endRound("innocent", "death");
+	else if (aliveCounts["traitor"] == 0) endRound("innocent", "death");
 }
 
 drawPlayerRoles()
