@@ -10,16 +10,17 @@ main()
 	maps\mp\gametypes\_callbacksetup::SetupCallbacks();
 	maps\mp\gametypes\_globallogic::SetupCallbacks();
 
-	registerTimeLimitDvar(level.gameType, 0, 0, 1440);
+	registerTimeLimitDvar(level.gameType, 0, 0, 0);
 	registerScoreLimitDvar(level.gameType, 0, 0, 0);
 	registerWinLimitDvar(level.gameType, 1, 0, 5000);
-	registerRoundLimitDvar(level.gameType, 0, 0, 10);
-	registerNumLivesDvar(level.gameType, 0, 0, 10);
+	registerRoundLimitDvar(level.gameType, 0, 0, 0);
+	registerNumLivesDvar(level.gameType, 0, 0, 0);
 	registerHalfTimeDvar(level.gameType, 0, 0, 1);
 
-	level.onStartGameType = ::onStartGameType;
 	level.onDeadEvent = ::noop;
 	level.onOneLeftEvent = ::noop;
+	level.onTimeLimit = ::onTimeLimit;
+	level.onStartGameType = ::onStartGameType;
 	level.getSpawnPoint = ::getSpawnPoint;
 
 	game["dialog"]["gametype"] = "ttt";
@@ -39,6 +40,10 @@ noop()
 	return;
 }
 
+onTimeLimit()
+{
+	level notify("ttt_timelimit_reached");
+}
 
 onStartGameType()
 {
@@ -49,6 +54,7 @@ onStartGameType()
 	setObjectiveText("axis", text);
 	setObjectiveScoreText("allies", text);
 	setObjectiveScoreText("axis", text);
+
 	text = "Trouble in Terrorist Town";
 	setObjectiveHintText("allies", text);
 	setObjectiveHintText("axis", text);
