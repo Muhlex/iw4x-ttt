@@ -45,7 +45,6 @@ displaySelfHud()
 	self.ttt.ui["hud"]["self"]["role"].color = (1, 1, 1);
 	self.ttt.ui["hud"]["self"]["role"].glowAlpha = 1;
 	self.ttt.ui["hud"]["self"]["role"].hidewheninmenu = true;
-	self.ttt.ui["hud"]["self"]["role"] maps\mp\gametypes\_hud::fontPulseInit(1.25);
 
 	self.ttt.ui["hud"]["self"]["health"] = self createFontString("hudbig", 0.8);
 	self.ttt.ui["hud"]["self"]["health"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -150, -14);
@@ -93,9 +92,8 @@ updatePlayerArmorDisplay()
 	self.ttt.ui["hud"]["self"]["armor"].alpha = isInArray(self.ttt.items.boughtItems, level.ttt.items["traitor"][0]);
 }
 
-updatePlayerRoleDisplay(doPulse)
+updatePlayerRoleDisplay()
 {
-	if (!isDefined(doPulse)) doPulse = false;
 	role = self.ttt.role;
 
 	text = "";
@@ -121,8 +119,11 @@ updatePlayerRoleDisplay(doPulse)
 		self.ttt.ui["hud"]["self"]["shop_hint"].hidewheninmenu = true;
 		self.ttt.ui["hud"]["self"]["shop_hint"].label = &"Press ^3[{+actionslot 2}]^7 to open shop";
 	}
+}
 
-	if (doPulse) self.ttt.ui["hud"]["self"]["role"] thread maps\mp\gametypes\_hud::fontPulse(self);
+pulsePlayerRoleDisplay(duration)
+{
+	self.ttt.ui["hud"]["self"]["role"] thread scripts\ttt\_util::fontPulseCustom(self, 2.0, duration);
 }
 
 displayUseAvailableHint(label, text, value)

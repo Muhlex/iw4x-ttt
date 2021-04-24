@@ -106,7 +106,9 @@ OnPreptimeEnd()
 {
 	level endon("game_ended");
 
-	wait(level.ttt.preptime);
+	wait(level.ttt.preptime - 0.2);
+	foreach (player in getLivingPlayers()) player thread scripts\ttt\ui::pulsePlayerRoleDisplay(0.4);
+	wait(0.2);
 	level.ttt.preparing = false;
 
 	drawPlayerRoles();
@@ -456,7 +458,7 @@ drawPlayerRoles()
 	{
 		if (traitorCount == 1) player iPrintLnBold("There is ^1" + traitorCount + "^7 traitor among us");
 		else player iPrintLnBold("There are ^1" + traitorCount + "^7 traitors among us");
-		player scripts\ttt\ui::updatePlayerRoleDisplay(true);
+		player scripts\ttt\ui::updatePlayerRoleDisplay();
 	}
 }
 

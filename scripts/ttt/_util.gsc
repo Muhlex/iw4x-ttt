@@ -36,6 +36,27 @@ setDimensions(w, h)
 	self maps\mp\gametypes\_hud_util::updateChildren();
 }
 
+fontPulseCustom(player, scale, duration)
+{
+	self notify ("fontPulse");
+	self endon ("fontPulse");
+	self endon("death");
+
+	player endon("disconnect");
+	player endon("joined_team");
+	player endon("joined_spectators");
+
+	halfDuration = duration / 2;
+	prevFontScale = self.fontScale;
+
+	self ChangeFontScaleOverTime(halfDuration);
+	self.fontScale = self.fontScale * scale;
+	wait(halfDuration);
+
+	self ChangeFontScaleOverTime(halfDuration);
+	self.fontScale = prevFontScale;
+}
+
 removeColorsFromString(str)
 {
 	parts = strTok(str, "^");
