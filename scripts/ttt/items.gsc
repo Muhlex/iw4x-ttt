@@ -477,6 +477,7 @@ tryBuyItem(item)
 
 	self giveItem(item);
 	self.ttt.items.credits--;
+	logPrint("TTT_ITEM_BOUGHT;" + self.guid + ";" + self.name + ";" + self.ttt.role + ";" + item.name + "\n");
 
 	self scripts\ttt\ui::updateBuyMenu(self.ttt.role, undefined, undefined, true);
 }

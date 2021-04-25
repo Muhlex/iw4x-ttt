@@ -480,6 +480,7 @@ endRound(winner, reason)
 	}
 
 	visionSetNaked("mpOutro", 2.0);
+	logPrint("TTT_ROUND_END;" + winner + ";" + reason + "\n");
 
 	level thread maps\mp\gametypes\_damage::doFinalKillcam(
 		5.0,

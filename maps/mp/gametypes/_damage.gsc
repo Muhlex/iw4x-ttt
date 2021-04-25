@@ -1538,6 +1538,11 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 		lpselfnum = victim getEntityNumber();
 		lpselfname = victim.name;
 		lpselfteam = victim.pers[ "team" ];
+		if (level.ttt.enabled)
+		{
+			if (isDefined(victim.ttt.role)) lpselfteam = victim.ttt.role;
+			else lpselfteam = "none";
+		}
 		lpselfGuid = victim.guid;
 		lpattackerteam = "";
 
@@ -1547,6 +1552,11 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 			lpattackGuid = eAttacker.guid;
 			lpattackname = eAttacker.name;
 			lpattackerteam = eAttacker.pers[ "team" ];
+			if (level.ttt.enabled)
+			{
+				if (isDefined(eAttacker.ttt.role)) lpattackerteam = eAttacker.ttt.role;
+				else lpattackerteam = "none";
+			}
 		}
 		else
 		{
@@ -2563,6 +2573,11 @@ logPrintPlayerDeath( lifeId, attacker, iDamage, sMeansOfDeath, sWeapon, sPrimary
 	lpselfnum = self getEntityNumber();
 	lpselfname = self.name;
 	lpselfteam = self.team;
+	if (level.ttt.enabled)
+	{
+		if (isDefined(self.ttt.role)) lpselfteam = self.ttt.role;
+		else lpselfteam = "none";
+	}
 	lpselfguid = self.guid;
 
 	if ( isPlayer( attacker ) )
@@ -2570,6 +2585,11 @@ logPrintPlayerDeath( lifeId, attacker, iDamage, sMeansOfDeath, sWeapon, sPrimary
 		lpattackGuid = attacker.guid;
 		lpattackname = attacker.name;
 		lpattackerteam = attacker.team;
+		if (level.ttt.enabled)
+		{
+			if (isDefined(attacker.ttt.role)) lpattackerteam = attacker.ttt.role;
+			else lpattackerteam = "none";
+		}
 		lpattacknum = attacker getEntityNumber();
 		attackerString = attacker getXuid() + "(" + lpattackname + ")";
 	}
