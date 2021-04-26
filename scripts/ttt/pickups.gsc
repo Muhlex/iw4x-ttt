@@ -242,7 +242,9 @@ spawnWorldPickups()
 			ammoModel setModel("weapon_scavenger_grenadebag");
 			ammoModel.angles = (0, randomInt(360), 90);
 
-			ammoModel thread ammoModelThink();
+			ammoModel.trigger = spawn("trigger_radius", ammoOrigin + (0, 0, 8), 0, 16, 16);
+
+			ammoModel thread OnAmmoModelTrigger();
 		}
 	}
 }
@@ -313,25 +315,17 @@ weaponEntThink()
 	}
 }
 
-ammoModelThink()
+OnAmmoModelTrigger()
 {
-	self endon ("death");
-
-	pickupDistanceSq = 32 * 32;
+	self endon("death");
 
 	for (;;)
 	{
-		foreach (player in getLivingPlayers())
-		{
-			if (distanceSquared(player.origin, self.origin) > pickupDistanceSq) continue;
+		self.trigger waittill("trigger", player);
 
-			currentWeaponName = player getCurrentWeapon();
-			player tryPickUpAmmo(self, currentWeaponName);
-			foreach (weaponName in player getWeaponsListPrimaries())
-				player tryPickUpAmmo(self, weaponName);
-		}
-
-		wait(0.1);
+		currentWeaponName = player getCurrentWeapon();
+		player tryPickUpAmmo(self, currentWeaponName);
+		foreach (weaponName in player getWeaponsListPrimaries()) player tryPickUpAmmo(self, weaponName);
 	}
 }
 
@@ -352,5 +346,7 @@ tryPickUpAmmo(ammoEnt, weaponName)
 
 	self setWeaponAmmoStock(weaponName, newStock);
 	self playLocalSound("scavenger_pack_pickup");
+
+	ammoEnt.trigger delete();
 	ammoEnt delete();
 }
