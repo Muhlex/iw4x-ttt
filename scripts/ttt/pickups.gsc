@@ -187,7 +187,7 @@ tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
 
 		if (weaponCount >= 2 && pickupOnFullInventory) self dropWeapon(currentWeapon);
 
-		if (weaponCount == 0 || pickupOnFullInventory || currentWeapon == level.ttt.defaultWeapon)
+		if ((weaponCount == 0 || pickupOnFullInventory || currentWeapon == level.ttt.defaultWeapon) && !isRoleWeaponEquipped)
 			self switchToWeapon(weaponEnt.weaponName);
 	}
 
