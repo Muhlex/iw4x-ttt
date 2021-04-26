@@ -40,11 +40,12 @@ getRandomWeapon()
 	tieredWeapons[2][1] = "mg4";
 	tieredWeapons[2][2] = "m40a3";
 	tieredWeapons[2][3] = "m40a3"; // generate more sniper rifles as this is the only one in the pool
-	tieredWeapons[2][4] = "deserteagle";
-	tieredWeapons[2][5] = "coltanaconda";
-	tieredWeapons[2][6] = "pp2000";
-	tieredWeapons[2][7] = "tmp";
-	tieredWeapons[2][8] = "model1887";
+	tieredWeapons[2][4] = "usp";
+	tieredWeapons[2][5] = "deserteagle";
+	tieredWeapons[2][6] = "coltanaconda";
+	tieredWeapons[2][7] = "pp2000";
+	tieredWeapons[2][8] = "tmp";
+	tieredWeapons[2][9] = "model1887";
 
 	weighting = randomInt(100);
 	result = undefined;
