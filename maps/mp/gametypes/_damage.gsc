@@ -977,6 +977,9 @@ getKillcamEntity( attacker, eInflictor, sWeapon )
 	if ( sWeapon == "cobra_player_minigun_mp" )
 		return undefined;
 
+	if (level.ttt.enabled && eInflictor.classname == "script_model" && isDefined(eInflictor.weaponName))
+		return eInflictor.killCamEnt; // a thrown, dropped weapon
+
 	if ( sWeapon == "artillery_mp" || sWeapon == "stealth_bomb_mp" || sWeapon == "pavelow_minigun_mp" )
 		return eInflictor.killCamEnt;
 

@@ -131,6 +131,8 @@ OnWeaponEntPhysicsFinish()
 
 	self.physicsEnt waittill("physics_finished");
 
+	stopFXOnTag(level.ttt.pickups.trailEffect, self, "tag_weapon");
+
 	self.trigger = spawn("trigger_radius", self.origin + (0, 0, 8), 0, 16, 16);
 
 	self thread OnWeaponEntTrigger();
@@ -177,7 +179,10 @@ dropWeapon(weaponName, velocity)
 	if (self.ttt.pickups.dropCanDamage)
 	{
 		self playSound("breathing_better_alt");
+		weaponEnt.killCamEnt = spawn("script_model", weaponEnt.origin);
+
 		weaponEnt thread setTrailEffect();
+		weaponEnt thread weaponEntKillCamEntThink(self);
 		weaponEnt thread OnWeaponEntDamagePlayer(self);
 	}
 
@@ -198,6 +203,24 @@ setTrailEffect()
 {
 	wait(0.05);
 	playFXOnTag(level.ttt.pickups.trailEffect, self, "tag_weapon");
+}
+
+weaponEntKillCamEntThink(attacker)
+{
+	self endon("death");
+	self.physicsEnt endon("physics_finished");
+
+	playerAngles = attacker getPlayerAngles();
+	offset = (0, 0, 16);
+	offset += anglesToForward(playerAngles) * -48;
+	offset += anglesToRight(playerAngles) * -16;
+
+	for (;;)
+	{
+		wait(0.1); // needs to be at least 2 ticks to allow smooth movement
+
+		self.killCamEnt moveTo(self.physicsEnt.origin + offset, 0.1);
+	}
 }
 
 OnWeaponEntDamagePlayer(attacker)
@@ -250,6 +273,7 @@ OnWeaponEntDamagePlayer(attacker)
 				);
 
 				self.physicsEnt delete();
+				self.killCamEnt delete();
 				self delete();
 			}
 		}
@@ -298,6 +322,7 @@ tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
 	}
 
 	weaponEnt.physicsEnt delete();
+	weaponEnt.killCamEnt delete();
 	weaponEnt.trigger delete();
 	weaponEnt delete();
 }
