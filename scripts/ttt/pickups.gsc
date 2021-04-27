@@ -5,11 +5,16 @@
 init()
 {
 	precacheModel("weapon_scavenger_grenadebag");
+
+	level.ttt.pickups = spawnStruct();
+	level.ttt.pickups.trailEffect = loadFx("props/throwingknife_geotrail");
 }
 
 initPlayer()
 {
-	self.ttt.dropVelocity = 64;
+	self.ttt.pickups = spawnStruct();
+	self.ttt.pickups.dropVelocity = 64;
+	self.ttt.pickups.dropCanDamage = false;
 }
 
 getRandomWeapon()
@@ -56,7 +61,7 @@ getRandomWeapon()
 	return result + "_mp";
 }
 
-createWeaponEnt(weaponName, ammoClip, ammoStock, item, origin, angles, velocity, pickupDelay)
+createWeaponEnt(weaponName, ammoClip, ammoStock, item, origin, angles, velocity)
 {
 	if (!isDefined(weaponName)) return;
 	if (!isDefined(ammoClip)) ammoClip = 0;
@@ -65,7 +70,6 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, item, origin, angles, velocity,
 	if (!isDefined(origin)) origin = (0, 0, 0);
 	if (!isDefined(angles)) angles = (0, 0, 0);
 	if (!isDefined(velocity)) velocity = (0, 0, 0);
-	if (!isDefined(pickupDelay)) pickupDelay = 0;
 
 	/**
 	 * Some weapons have weird models that always fall straight to the ground
@@ -75,16 +79,16 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, item, origin, angles, velocity,
 	 */
 
 	physicsEnt = spawn("script_model", origin);
-	physicsEnt.angles = angles + (0, 90, 0);
+	physicsEnt.angles = angles;
 	physicsEnt setModel(getWeaponModel("p90_mp"));
 	physicsEnt hide();
 
 	weaponEnt = spawn("script_model", origin);
-	weaponEnt.angles = angles + (0, 90, 0);
-	if (weaponName == "riotshield_mp") weaponEnt.angles += (0, 90, 0);
+	weaponEnt.angles = angles;
+	if (weaponName == "riotshield_mp") weaponEnt.angles = combineAngles(angles, (0, 90, 90));
 	if (weaponName == "onemanarmy_mp")
 	{
-		weaponEnt.angles += (-90, 100, -35);
+		weaponEnt.angles = combineAngles(angles, (-90, 100, -35));
 		weaponEnt.origin += anglesToRight(physicsEnt.angles) * -2;
 		physicsEnt.origin += anglesToForward(physicsEnt.angles) * 8;
 	}
@@ -104,14 +108,44 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, item, origin, angles, velocity,
 
 	physicsEnt physicsLaunchServer(origin + launchOffset, velocity); // this takes an absolute position!
 
-	wait(pickupDelay);
+	weaponEnt thread OnWeaponEntUsable();
+	weaponEnt thread OnWeaponEntPhysicsFinish();
 
-	weaponEnt scripts\ttt\use::makeUsableCustom(
+	return weaponEnt;
+}
+
+OnWeaponEntUsable()
+{
+	wait(0.25);
+
+	self scripts\ttt\use::makeUsableCustom(
 		::OnWeaponPickupTrigger,
 		::OnWeaponPickupAvailable,
 		::OnWeaponPickupAvailableEnd
 	);
-	weaponEnt thread weaponEntThink();
+}
+
+OnWeaponEntPhysicsFinish()
+{
+	self endon("death");
+
+	self.physicsEnt waittill("physics_finished");
+
+	self.trigger = spawn("trigger_radius", self.origin + (0, 0, 8), 0, 16, 16);
+
+	self thread OnWeaponEntTrigger();
+}
+
+OnWeaponEntTrigger()
+{
+	self endon("death");
+
+	for (;;)
+	{
+		self.trigger waittill("trigger", player);
+
+		player tryPickUpWeapon(self);
+	}
 }
 
 dropWeapon(weaponName, velocity)
@@ -138,7 +172,14 @@ dropWeapon(weaponName, velocity)
 	spawnPos -= anglesToForward(self.angles) * 24;
 	spawnPos = physicsTrace(spawnPos, spawnPos + (0, 0, -16)) + (0, 0, 8);
 
-	thread createWeaponEnt(weaponName, ammoClip, ammoStock, item, spawnPos, self getPlayerAngles(), velocity, 1);
+	weaponEnt = createWeaponEnt(weaponName, ammoClip, ammoStock, item, spawnPos, self getPlayerAngles() + (0, 90, 0), velocity);
+
+	if (self.ttt.pickups.dropCanDamage)
+	{
+		self playSound("breathing_better_alt");
+		weaponEnt thread setTrailEffect();
+		weaponEnt thread OnWeaponEntDamagePlayer(self);
+	}
 
 	if (!isAlive(self)) return;
 
@@ -151,6 +192,71 @@ dropWeapon(weaponName, velocity)
 	if (weaponCount <= 1 && !hasDefaultWeapon) self giveDefaultWeapon();
 
 	self switchToLastWeapon();
+}
+
+setTrailEffect()
+{
+	wait(0.05);
+	playFXOnTag(level.ttt.pickups.trailEffect, self, "tag_weapon");
+}
+
+OnWeaponEntDamagePlayer(attacker)
+{
+	self endon("death");
+	self.physicsEnt endon("physics_finished");
+
+	TICK_RATE = 20;
+
+	distanceSq = 0.0;
+
+	for (;;)
+	{
+		if (isDefined(self.lastTickOrigin))
+		{
+			velocitySq = lengthSquared(self.origin * TICK_RATE - self.lastTickOrigin * TICK_RATE);
+			distanceSq += distanceSquared(self.origin, self.lastTickOrigin);
+
+			trace = bulletTrace(self.lastTickOrigin, self.origin, true, attacker);
+			if (isDefined(trace["entity"]) && isPlayer(trace["entity"]) && isAlive(trace["entity"]))
+			{
+				if (velocitySq > 256 * 256)
+				{
+					velocityFactor = min(velocitySq / (512 * 512), 1);
+					distanceFactor = min(distanceSq / (192 * 192), 1);
+					damage = level.ttt.maxhealth * velocityFactor * distanceFactor;
+					trace["entity"] thread [[level.callbackPlayerDamage]](
+						self, // eInflictor The entity that causes the damage. ( e.g. a turret )
+						attacker, // eAttacker The entity that is attacking.
+						int(damage), // iDamage Integer specifying the amount of damage done
+						0, // iDFlags Integer specifying flags that are to be applied to the damage
+						"MOD_IMPACT", // sMeansOfDeath Integer specifying the method of death
+						self.weaponName, // sWeapon The weapon number of the weapon used to inflict the damage
+						trace["position"], // vPoint The point the damage is from?
+						trace["normal"] * -1, // vDir The direction of the damage
+						"none", // sHitLoc The location of the hit
+						0 // psOffsetTime The time offset for the damage
+					);
+					trace["entity"] playSound("knife_bounce_wood");
+				}
+
+				createWeaponEnt(
+					self.weaponName,
+					self.ammoClip,
+					self.ammoStock,
+					self.item,
+					self.physicsEnt.origin,
+					self.physicsEnt.angles,
+					trace["normal"] * 48
+				);
+
+				self.physicsEnt delete();
+				self delete();
+			}
+		}
+
+		self.lastTickOrigin = self.origin;
+		wait (0.05);
+	}
 }
 
 tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
@@ -192,6 +298,7 @@ tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
 	}
 
 	weaponEnt.physicsEnt delete();
+	weaponEnt.trigger delete();
 	weaponEnt delete();
 }
 
@@ -226,7 +333,7 @@ spawnWorldPickups()
 
 		weaponName = getRandomWeapon();
 
-		thread createWeaponEnt(weaponName, 0, weaponClipSize(weaponName), undefined, origin, (0, randomInt(360), 0));
+		createWeaponEnt(weaponName, 0, weaponClipSize(weaponName), undefined, origin, (0, randomInt(360), 0));
 
 		// Spawn ammo
 		AMMO_COUNT = 3;
@@ -239,13 +346,13 @@ spawnWorldPickups()
 			);
 			ammoOrigin -= ammoForwardVector * 16;
 			ammoOrigin = physicsTrace(ammoOrigin, ammoOrigin + (0, 0, -1024)) + (0, 0, 0);
-			ammoModel = spawn("script_model", ammoOrigin);
-			ammoModel setModel("weapon_scavenger_grenadebag");
-			ammoModel.angles = (0, randomInt(360), 90);
+			ammoEnt = spawn("script_model", ammoOrigin);
+			ammoEnt setModel("weapon_scavenger_grenadebag");
+			ammoEnt.angles = (0, randomInt(360), 90);
 
-			ammoModel.trigger = spawn("trigger_radius", ammoOrigin + (0, 0, 8), 0, 16, 16);
+			ammoEnt.trigger = spawn("trigger_radius", ammoOrigin + (0, 0, 8), 0, 16, 16);
 
-			ammoModel thread OnAmmoModelTrigger();
+			ammoEnt thread OnAmmoEntTrigger();
 		}
 	}
 }
@@ -268,14 +375,13 @@ OnPlayerDropWeapon()
 	{
 		self waittill("drop_weapon");
 
-		// if (self getWeaponsListPrimaries().size < 1) continue;
 		weaponName = self getCurrentWeapon();
 		if (weaponName == level.ttt.defaultWeapon) continue;
 		if (!maps\mp\gametypes\_weapons::mayDropWeapon(weaponName)) continue;
 
 		self dropWeapon(
 			weaponName,
-			self getVelocity() * 0.5 + anglesToForward(self getPlayerAngles()) * self.ttt.dropVelocity + (0, 0, 64)
+			self getVelocity() * 0.5 + anglesToForward(self getPlayerAngles()) * self.ttt.pickups.dropVelocity + (0, 0, 64)
 		);
 	}
 }
@@ -316,7 +422,7 @@ weaponEntThink()
 	}
 }
 
-OnAmmoModelTrigger()
+OnAmmoEntTrigger()
 {
 	self endon("death");
 

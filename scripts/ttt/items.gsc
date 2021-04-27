@@ -119,7 +119,7 @@ init()
 
 	level.ttt.items["detective"][5] = spawnStruct();
 	level.ttt.items["detective"][5].name = "INSANE BICEPS";
-	level.ttt.items["detective"][5].description = "^3Passive item\n^7Allows you to ^2lob weapons\n^7like crazy.";
+	level.ttt.items["detective"][5].description = "^3Passive item\n^7Drop weapons with ^2deadly velocity^7.\nDeal ^2more damage ^7at far distances.\n\nPress [ ^3[{+actionslot 1}]^7 ] to drop a weapon.";
 	level.ttt.items["detective"][5].icon = "specialty_onemanarmy_upgrade";
 	level.ttt.items["detective"][5].onBuy = ::OnBuyLob;
 	level.ttt.items["detective"][5].getIsAvailable = ::getIsAvailablePassive;
@@ -626,7 +626,8 @@ OnBuyConcussion()
 
 OnBuyLob()
 {
-	self.ttt.dropVelocity = 512;
+	self.ttt.pickups.dropVelocity = 512;
+	self.ttt.pickups.dropCanDamage = true;
 }
 
 OnBuyHealthStation(item)
