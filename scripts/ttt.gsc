@@ -420,7 +420,7 @@ checkRoundWinConditions()
 {
 	if (level.ttt.preparing) return;
 
-	if (level.players.size <= 1 && getLivingPlayers().size == 1) return;
+	if (level.players.size == 0 || (level.players.size == 1 && getLivingPlayers().size == 1)) return;
 	aliveCounts = [];
 	aliveCounts["innocent"] = 0;
 	aliveCounts["detective"] = 0;
