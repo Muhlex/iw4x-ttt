@@ -460,6 +460,8 @@ drawPlayerRoles()
 		else player iPrintLnBold("There are ^1" + traitorCount + "^7 traitors among us");
 		player scripts\ttt\ui::updatePlayerRoleDisplay();
 	}
+
+	logPrint("TTT_ROUND_START;" + playerCount + ";" + traitorCount + ";" + detectiveCount + "\n");
 }
 
 endRound(winner, reason)
@@ -480,7 +482,7 @@ endRound(winner, reason)
 	}
 
 	visionSetNaked("mpOutro", 2.0);
-	logPrint("TTT_ROUND_END;" + winner + ";" + reason + "\n");
+	logPrint("TTT_ROUND_END;" + winner + ";" + reason + ";" + (getSecondsPassed() - level.ttt.preptime) + "\n");
 
 	level thread maps\mp\gametypes\_damage::doFinalKillcam(
 		5.0,
