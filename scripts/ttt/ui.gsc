@@ -47,14 +47,13 @@ displaySelfHud()
 	self.ttt.ui["hud"]["self"]["role"].hidewheninmenu = true;
 
 	self.ttt.ui["hud"]["self"]["health"] = self createFontString("hudbig", 0.8);
-	self.ttt.ui["hud"]["self"]["health"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -150, -14);
+	self.ttt.ui["hud"]["self"]["health"] setPoint("BOTTOM CENTER", "BOTTOM RIGHT", -46, -36);
 	self.ttt.ui["hud"]["self"]["health"].hidewheninmenu = true;
 	self.ttt.ui["hud"]["self"]["health"].glowAlpha = 1;
 	self.ttt.ui["hud"]["self"]["health"].label = &"";
 
 	self.ttt.ui["hud"]["self"]["armor"] = self createIcon("cardicon_vest_1", 16, 16);
-	self.ttt.ui["hud"]["self"]["armor"] setParent(self.ttt.ui["hud"]["self"]["health"]);
-	self.ttt.ui["hud"]["self"]["armor"] setPoint("LEFT TOP", "RIGHT TOP", 8, -8);
+	self.ttt.ui["hud"]["self"]["armor"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -126, -15);
 	self.ttt.ui["hud"]["self"]["armor"].hidewheninmenu = true;
 	self.ttt.ui["hud"]["self"]["armor"].alpha = isInArray(self.ttt.items.boughtItems, level.ttt.items["traitor"][0]);
 
