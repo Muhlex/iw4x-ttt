@@ -78,19 +78,32 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, item, origin, angles, velocity)
 	 * model of a weapon that works correctly.
 	 */
 
-	physicsEnt = spawn("script_model", origin);
+	// offset the p90 model so that it's actual center is at the specified origin
+	physicsEnt = spawn("script_model", origin + anglesToForward(angles) * 12);
 	physicsEnt.angles = angles;
 	physicsEnt setModel(getWeaponModel("p90_mp"));
 	physicsEnt hide();
 
 	weaponEnt = spawn("script_model", origin);
 	weaponEnt.angles = angles;
+	switch (getWeaponClass(weaponName)) {
+		case "weapon_smg":
+			weaponEnt.origin += anglesToForward(angles) * 10;
+			break;
+		case "weapon_pistol":
+		case "weapon_machine_pistol":
+		case "weapon_assault":
+			weaponEnt.origin += anglesToForward(angles) * 6;
+			break;
+		case "weapon_shotgun":
+			weaponEnt.origin += anglesToForward(angles) * -2;
+			break;
+	}
 	if (weaponName == "riotshield_mp") weaponEnt.angles = combineAngles(angles, (0, 90, 90));
 	if (weaponName == "onemanarmy_mp")
 	{
 		weaponEnt.angles = combineAngles(angles, (-90, 100, -35));
-		weaponEnt.origin += anglesToRight(physicsEnt.angles) * -2;
-		physicsEnt.origin += anglesToForward(physicsEnt.angles) * 8;
+		weaponEnt.origin += anglesToRight(angles) * -2;
 	}
 	weaponEnt linkTo(physicsEnt);
 	weaponEnt setModel(getWeaponModel(weaponName));
@@ -106,7 +119,8 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, item, origin, angles, velocity)
 	// magic numbers to make the item receive velocity around it's center of mass
 	launchOffset = 0 * anglesToRight(angles) + -10 * anglesToForward(angles) + 10 * anglesToUp(angles);
 
-	physicsEnt physicsLaunchServer(origin + launchOffset, velocity); // this takes an absolute position!
+	// ... because this takes an absolute position:
+	physicsEnt physicsLaunchServer(physicsEnt.origin + launchOffset, velocity);
 
 	weaponEnt thread OnWeaponEntUsable();
 	weaponEnt thread OnWeaponEntPhysicsFinish();
@@ -178,7 +192,7 @@ dropWeapon(weaponName, velocity)
 
 	if (self.ttt.pickups.dropCanDamage)
 	{
-		self playSound("breathing_better_alt");
+		self playSound("detpack_pickup");
 		weaponEnt.killCamEnt = spawn("script_model", weaponEnt.origin);
 
 		weaponEnt thread setTrailEffect();
@@ -234,51 +248,73 @@ OnWeaponEntDamagePlayer(attacker)
 
 	for (;;)
 	{
-		if (isDefined(self.lastTickOrigin))
+		if (isDefined(self.physicsEnt.lastTickOrigin))
 		{
-			velocitySq = lengthSquared(self.origin * TICK_RATE - self.lastTickOrigin * TICK_RATE);
-			distanceSq += distanceSquared(self.origin, self.lastTickOrigin);
+			forward = anglesToForward(self.physicsEnt.angles);
+			lastForward = anglesToForward(self.physicsEnt.lastTickAngles);
 
-			trace = bulletTrace(self.lastTickOrigin, self.origin, true, attacker);
-			if (isDefined(trace["entity"]) && isPlayer(trace["entity"]) && isAlive(trace["entity"]))
+			/**
+			 * The "collision" of the weapon is determined with 3 parallel traces
+			 * that each test for intersection with a player entity.
+			 * The middle one (index 1) lies in the center of the weapon.
+			 */
+
+			origins = [];
+			lastTickOrigins = [];
+			for (i = 0; i < 3; i++)
 			{
-				if (velocitySq > 256 * 256)
+				origins[i] = self.physicsEnt.origin + forward * (i * -12);
+				lastTickOrigins[i] = self.physicsEnt.lastTickOrigin + lastForward * (i * -12);
+			}
+
+			velocitySq = lengthSquared(origins[1] * TICK_RATE - lastTickOrigins[1] * TICK_RATE);
+			distanceSq += distanceSquared(origins[1], lastTickOrigins[1]);
+
+			for (i = 0; i < origins.size; i++)
+			{
+				trace = bulletTrace(lastTickOrigins[i], origins[i], true, attacker);
+				if (isDefined(trace["entity"]) && isPlayer(trace["entity"]) && isAlive(trace["entity"]))
 				{
-					velocityFactor = min(velocitySq / (512 * 512), 1);
-					distanceFactor = min(distanceSq / (192 * 192), 1);
-					damage = level.ttt.maxhealth * velocityFactor * distanceFactor;
-					trace["entity"] thread [[level.callbackPlayerDamage]](
-						self, // eInflictor The entity that causes the damage. ( e.g. a turret )
-						attacker, // eAttacker The entity that is attacking.
-						int(damage), // iDamage Integer specifying the amount of damage done
-						0, // iDFlags Integer specifying flags that are to be applied to the damage
-						"MOD_IMPACT", // sMeansOfDeath Integer specifying the method of death
-						self.weaponName, // sWeapon The weapon number of the weapon used to inflict the damage
-						trace["position"], // vPoint The point the damage is from?
-						trace["normal"] * -1, // vDir The direction of the damage
-						"none", // sHitLoc The location of the hit
-						0 // psOffsetTime The time offset for the damage
+					if (velocitySq > 256 * 256)
+					{
+						velocityFactor = min(velocitySq / (512 * 512), 1);
+						distanceFactor = min(distanceSq / (192 * 192), 1);
+						damage = level.ttt.maxhealth * velocityFactor * distanceFactor;
+						trace["entity"] thread [[level.callbackPlayerDamage]](
+							self, // eInflictor The entity that causes the damage. ( e.g. a turret )
+							attacker, // eAttacker The entity that is attacking.
+							int(damage), // iDamage Integer specifying the amount of damage done
+							0, // iDFlags Integer specifying flags that are to be applied to the damage
+							"MOD_IMPACT", // sMeansOfDeath Integer specifying the method of death
+							self.weaponName, // sWeapon The weapon number of the weapon used to inflict the damage
+							trace["position"], // vPoint The point the damage is from?
+							trace["normal"] * -1, // vDir The direction of the damage
+							"none", // sHitLoc The location of the hit
+							0 // psOffsetTime The time offset for the damage
+						);
+						trace["entity"] playSound("knife_bounce_wood");
+					}
+
+					createWeaponEnt(
+						self.weaponName,
+						self.ammoClip,
+						self.ammoStock,
+						self.item,
+						self.physicsEnt.origin,
+						self.physicsEnt.angles,
+						trace["normal"] * 48
 					);
-					trace["entity"] playSound("knife_bounce_wood");
+
+					self.physicsEnt delete();
+					self.killCamEnt delete();
+					self delete();
+					return; // function already implicitly ends due to the entity being deleted
 				}
-
-				createWeaponEnt(
-					self.weaponName,
-					self.ammoClip,
-					self.ammoStock,
-					self.item,
-					self.physicsEnt.origin,
-					self.physicsEnt.angles,
-					trace["normal"] * 48
-				);
-
-				self.physicsEnt delete();
-				self.killCamEnt delete();
-				self delete();
 			}
 		}
 
-		self.lastTickOrigin = self.origin;
+		self.physicsEnt.lastTickOrigin = self.physicsEnt.origin;
+		self.physicsEnt.lastTickAngles = self.physicsEnt.angles;
 		wait (0.05);
 	}
 }
