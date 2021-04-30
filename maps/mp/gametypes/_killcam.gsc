@@ -40,7 +40,7 @@ killcam(
 		if ( sWeapon == "artillery_mp" || sWeapon == "stealth_bomb_mp" )
 			camtime = (gettime() - killcamentitystarttime) / 1000 - predelay - .1;
 		else if ( level.showingFinalKillcam	)
-			camtime = 4.0;
+			camtime = getDvarFloat("scr_final_killcam_time");
 		else if ( sWeapon == "javelin_mp" )
 			camtime = 8;
 		else if ( issubstr( sWeapon, "remotemissile_" ) )
