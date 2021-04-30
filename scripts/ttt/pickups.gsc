@@ -128,6 +128,22 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, item, origin, angles, velocity)
 	return weaponEnt;
 }
 
+OnWeaponPickupTrigger(ent, player)
+{
+	player tryPickUpWeapon(ent, true);
+}
+OnWeaponPickupAvailable(ent, player)
+{
+	player scripts\ttt\ui::destroyUseAvailableHint();
+	displayName = level.ttt.localizedWeaponNames[ent.weaponName];
+	if (ent.weaponName == "onemanarmy_mp" && isDefined(ent.item)) displayName = ent.item.name;
+	player scripts\ttt\ui::displayUseAvailableHint(&"[ ^3[{+activate}] ^7] for ^3", displayName);
+}
+OnWeaponPickupAvailableEnd(ent, player)
+{
+	player scripts\ttt\ui::destroyUseAvailableHint();
+}
+
 OnWeaponEntUsable()
 {
 	wait(0.25);
@@ -147,20 +163,200 @@ OnWeaponEntPhysicsFinish()
 
 	stopFXOnTag(level.ttt.pickups.trailEffect, self, "tag_weapon");
 
-	self.trigger = spawn("trigger_radius", self.origin + (0, 0, 8), 0, 16, 16);
-
-	self thread OnWeaponEntTrigger();
+	self thread weaponEntThink();
 }
 
-OnWeaponEntTrigger()
+weaponEntThink()
 {
 	self endon("death");
 
+	pickupDistanceSq = 32 * 32;
+
 	for (;;)
 	{
-		self.trigger waittill("trigger", player);
+		// check if anyone is trying to implicitly pick up the weapon (walking over it)
+		foreach (player in getLivingPlayers())
+		{
+			isNearOrigin = distanceSquared(player.origin, self.origin) <= pickupDistanceSq;
+			isNearEyes = distanceSquared(player getEye(), self.origin) <= pickupDistanceSq;
+			if (!isNearOrigin && !isNearEyes) continue;
 
-		player tryPickUpWeapon(self);
+			player tryPickUpWeapon(self);
+		}
+
+		wait(0.1);
+	}
+}
+
+createAmmoEnt(origin, angles)
+{
+	if (!isDefined(origin)) origin = (0, 0, 0);
+	if (!isDefined(angles)) angles = (0, 0, 0);
+
+	ammoEnt = spawn("script_model", origin);
+	ammoEnt setModel("weapon_scavenger_grenadebag");
+	ammoEnt.angles = angles + (0, 0, 90);
+
+	ammoEnt thread ammoEntThink();
+}
+
+ammoEntThink()
+{
+	self endon ("death");
+
+	pickupDistanceSq = 32 * 32;
+
+	for (;;)
+	{
+		foreach (player in getLivingPlayers())
+		{
+			isNearOrigin = distanceSquared(player.origin, self.origin) <= pickupDistanceSq;
+			isNearEyes = distanceSquared(player getEye(), self.origin) <= pickupDistanceSq;
+			if (!isNearOrigin && !isNearEyes) continue;
+
+			currentWeaponName = player getCurrentWeapon();
+			player tryPickUpAmmo(self, currentWeaponName);
+			foreach (weaponName in player getWeaponsListPrimaries())
+				player tryPickUpAmmo(self, weaponName);
+		}
+
+		wait(0.1);
+	}
+}
+
+tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
+{
+	if (!isDefined(pickupOnFullInventory)) pickupOnFullInventory = false;
+
+	hasRoleWeapon = self scripts\ttt\items::hasRoleWeapon();
+	isRoleWeaponEquipped = self scripts\ttt\items::isRoleWeaponEquipped();
+	newIsRoleWeapon = scripts\ttt\items::isRoleWeapon(weaponEnt.weaponName);
+
+	if (self hasWeapon(weaponEnt.weaponName) || (hasRoleWeapon && newIsRoleWeapon)) return;
+
+	currentWeapon = self getCurrentWeapon();
+
+	if (newIsRoleWeapon)
+	{
+		scripts\ttt\items::setRoleInventory(weaponEnt.item, weaponEnt.ammoClip, weaponEnt.ammoStock);
+		if (isDefined(weaponEnt.item.onPickUp)) self thread [[weaponEnt.item.onPickUp]](weaponEnt.item);
+		self playLocalSound("weap_pickup");
+	}
+	else
+	{
+		hasDefaultWeapon = self hasWeapon(level.ttt.defaultWeapon);
+		weaponCount = self getWeaponsListPrimaries().size - int(hasDefaultWeapon) - int(isRoleWeaponEquipped);
+
+		if (weaponCount >= 2 && !pickupOnFullInventory) return;
+
+		self giveWeapon(weaponEnt.weaponName);
+		self setWeaponAmmoClip(weaponEnt.weaponName, weaponEnt.ammoClip);
+		self setWeaponAmmoStock(weaponEnt.weaponName, weaponEnt.ammoStock);
+		if (hasDefaultWeapon && weaponCount == 1) self takeWeapon(level.ttt.defaultWeapon);
+		self thread maps\mp\gametypes\_weapons::stowedWeaponsRefresh();
+		self playLocalSound("weap_pickup");
+
+		if (weaponCount >= 2 && pickupOnFullInventory) self dropWeapon(currentWeapon);
+
+		if ((weaponCount == 0 || pickupOnFullInventory || currentWeapon == level.ttt.defaultWeapon) && !isRoleWeaponEquipped)
+			self switchToWeapon(weaponEnt.weaponName);
+	}
+
+	weaponEnt.physicsEnt delete();
+	weaponEnt.killCamEnt delete();
+	weaponEnt delete();
+}
+
+tryPickUpAmmo(ammoEnt, weaponName)
+{
+	if (weaponName == level.ttt.defaultWeapon) return;
+	if (weaponName == "rpg_mp") return;
+
+	maxClip = weaponClipSize(weaponName);
+	currentStock = self getWeaponAmmoStock(weaponName);
+	maxStock = maxClip * int(weaponMaxAmmo(weaponName) / maxClip / 3);
+	if (maxStock < maxClip) maxStock = maxClip;
+
+	if (currentStock >= maxStock) return;
+
+	newStock = currentStock + maxClip;
+	if (newStock > maxStock) newStock = maxStock;
+
+	self setWeaponAmmoStock(weaponName, newStock);
+	self playLocalSound("scavenger_pack_pickup");
+
+	ammoEnt delete();
+}
+
+spawnWorldPickups()
+{
+	mapname = getDvar("mapname");
+	spawnPoints = maps\mp\gametypes\_spawnlogic::getSpawnpointArray("mp_dm_spawn");
+	if (isDefined(level.ttt.coords.pickups[mapname]))
+		spawnPoints = array_combine(spawnPoints, level.ttt.coords.pickups[mapname]);
+	spawnPoints = array_randomize(spawnPoints);
+
+	foreach (spawnPoint in spawnPoints)
+	{
+		// Spawn weapons
+		isPlayerSpawnPoint = isDefined(spawnPoint.origin);
+
+		if (isPlayerSpawnPoint) origin = spawnPoint.origin;
+		else origin = spawnPoint;
+
+		origin += (0, 0, 48); // put up to about half of the player's height
+
+		if (isPlayerSpawnPoint)
+		{
+			origin = physicsTrace(
+				origin,
+				origin + anglesToForward(spawnPoint.angles) * randomIntRange(96, 256)
+			);
+			origin -= anglesToForward(spawnPoint.angles) * 24; // prevent weapons from spawning in walls
+		}
+
+		origin = physicsTrace(origin, origin + (0, 0, -1024)) + (0, 0, 8);
+
+		weaponName = getRandomWeapon();
+
+		createWeaponEnt(weaponName, 0, weaponClipSize(weaponName), undefined, origin, (0, randomInt(360), 0));
+
+		// Spawn ammo
+		AMMO_COUNT = 3;
+		for (i = 0; i < AMMO_COUNT; i++)
+		{
+			ammoForwardVector = anglesToForward((0, 360 / AMMO_COUNT * i, 0));
+			ammoOrigin = physicsTrace(
+				origin + (0, 0, 48),
+				origin + ammoForwardVector * randomIntRange(48, 96)
+			);
+			ammoOrigin -= ammoForwardVector * 16;
+			ammoOrigin = physicsTrace(ammoOrigin, ammoOrigin + (0, 0, -1024)) + (0, 0, 0);
+
+			createAmmoEnt(ammoOrigin, (0, randomInt(360), 0));
+		}
+	}
+}
+
+OnPlayerDropWeapon()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	self notifyOnPlayerCommand("drop_weapon", "+actionslot 1");
+
+	for (;;)
+	{
+		self waittill("drop_weapon");
+
+		weaponName = self getCurrentWeapon();
+		if (weaponName == level.ttt.defaultWeapon) continue;
+		if (!maps\mp\gametypes\_weapons::mayDropWeapon(weaponName)) continue;
+
+		self dropWeapon(
+			weaponName,
+			self getVelocity() * 0.5 + anglesToForward(self getPlayerAngles()) * self.ttt.pickups.dropVelocity + (0, 0, 64)
+		);
 	}
 }
 
@@ -319,202 +515,9 @@ OnWeaponEntDamagePlayer(attacker)
 	}
 }
 
-tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
-{
-	if (!isDefined(pickupOnFullInventory)) pickupOnFullInventory = false;
-
-	hasRoleWeapon = self scripts\ttt\items::hasRoleWeapon();
-	isRoleWeaponEquipped = self scripts\ttt\items::isRoleWeaponEquipped();
-	newIsRoleWeapon = scripts\ttt\items::isRoleWeapon(weaponEnt.weaponName);
-
-	if (self hasWeapon(weaponEnt.weaponName) || (hasRoleWeapon && newIsRoleWeapon)) return;
-
-	currentWeapon = self getCurrentWeapon();
-
-	if (newIsRoleWeapon)
-	{
-		scripts\ttt\items::setRoleInventory(weaponEnt.item, weaponEnt.ammoClip, weaponEnt.ammoStock);
-		if (isDefined(weaponEnt.item.onPickUp)) self thread [[weaponEnt.item.onPickUp]](weaponEnt.item);
-		self playLocalSound("weap_pickup");
-	}
-	else
-	{
-		hasDefaultWeapon = self hasWeapon(level.ttt.defaultWeapon);
-		weaponCount = self getWeaponsListPrimaries().size - int(hasDefaultWeapon) - int(isRoleWeaponEquipped);
-
-		if (weaponCount >= 2 && !pickupOnFullInventory) return;
-
-		self giveWeapon(weaponEnt.weaponName);
-		self setWeaponAmmoClip(weaponEnt.weaponName, weaponEnt.ammoClip);
-		self setWeaponAmmoStock(weaponEnt.weaponName, weaponEnt.ammoStock);
-		if (hasDefaultWeapon && weaponCount == 1) self takeWeapon(level.ttt.defaultWeapon);
-		self thread maps\mp\gametypes\_weapons::stowedWeaponsRefresh();
-		self playLocalSound("weap_pickup");
-
-		if (weaponCount >= 2 && pickupOnFullInventory) self dropWeapon(currentWeapon);
-
-		if ((weaponCount == 0 || pickupOnFullInventory || currentWeapon == level.ttt.defaultWeapon) && !isRoleWeaponEquipped)
-			self switchToWeapon(weaponEnt.weaponName);
-	}
-
-	weaponEnt.physicsEnt delete();
-	weaponEnt.killCamEnt delete();
-	weaponEnt.trigger delete();
-	weaponEnt delete();
-}
-
-spawnWorldPickups()
-{
-	mapname = getDvar("mapname");
-	spawnPoints = maps\mp\gametypes\_spawnlogic::getSpawnpointArray("mp_dm_spawn");
-	if (isDefined(level.ttt.coords.pickups[mapname]))
-		spawnPoints = array_combine(spawnPoints, level.ttt.coords.pickups[mapname]);
-	spawnPoints = array_randomize(spawnPoints);
-
-	foreach (spawnPoint in spawnPoints)
-	{
-		// Spawn weapons
-		isPlayerSpawnPoint = isDefined(spawnPoint.origin);
-
-		if (isPlayerSpawnPoint) origin = spawnPoint.origin;
-		else origin = spawnPoint;
-
-		origin += (0, 0, 48); // put up to about half of the player's height
-
-		if (isPlayerSpawnPoint)
-		{
-			origin = physicsTrace(
-				origin,
-				origin + anglesToForward(spawnPoint.angles) * randomIntRange(96, 256)
-			);
-			origin -= anglesToForward(spawnPoint.angles) * 24; // prevent weapons from spawning in walls
-		}
-
-		origin = physicsTrace(origin, origin + (0, 0, -1024)) + (0, 0, 8);
-
-		weaponName = getRandomWeapon();
-
-		createWeaponEnt(weaponName, 0, weaponClipSize(weaponName), undefined, origin, (0, randomInt(360), 0));
-
-		// Spawn ammo
-		AMMO_COUNT = 3;
-		for (i = 0; i < AMMO_COUNT; i++)
-		{
-			ammoForwardVector = anglesToForward((0, 360 / AMMO_COUNT * i, 0));
-			ammoOrigin = physicsTrace(
-				origin + (0, 0, 48),
-				origin + ammoForwardVector * randomIntRange(48, 96)
-			);
-			ammoOrigin -= ammoForwardVector * 16;
-			ammoOrigin = physicsTrace(ammoOrigin, ammoOrigin + (0, 0, -1024)) + (0, 0, 0);
-			ammoEnt = spawn("script_model", ammoOrigin);
-			ammoEnt setModel("weapon_scavenger_grenadebag");
-			ammoEnt.angles = (0, randomInt(360), 90);
-
-			ammoEnt.trigger = spawn("trigger_radius", ammoOrigin + (0, 0, 8), 0, 16, 16);
-
-			ammoEnt thread OnAmmoEntTrigger();
-		}
-	}
-}
-
 giveDefaultWeapon()
 {
 	self giveWeapon(level.ttt.defaultWeapon);
 	self SetWeaponAmmoClip(level.ttt.defaultWeapon, 0);
 	self SetWeaponAmmoStock(level.ttt.defaultWeapon, 0);
-}
-
-OnPlayerDropWeapon()
-{
-	self endon("disconnect");
-	self endon("death");
-
-	self notifyOnPlayerCommand("drop_weapon", "+actionslot 1");
-
-	for (;;)
-	{
-		self waittill("drop_weapon");
-
-		weaponName = self getCurrentWeapon();
-		if (weaponName == level.ttt.defaultWeapon) continue;
-		if (!maps\mp\gametypes\_weapons::mayDropWeapon(weaponName)) continue;
-
-		self dropWeapon(
-			weaponName,
-			self getVelocity() * 0.5 + anglesToForward(self getPlayerAngles()) * self.ttt.pickups.dropVelocity + (0, 0, 64)
-		);
-	}
-}
-
-OnWeaponPickupTrigger(ent, player)
-{
-	player tryPickUpWeapon(ent, true);
-}
-OnWeaponPickupAvailable(ent, player)
-{
-	player scripts\ttt\ui::destroyUseAvailableHint();
-	displayName = level.ttt.localizedWeaponNames[ent.weaponName];
-	if (ent.weaponName == "onemanarmy_mp" && isDefined(ent.item)) displayName = ent.item.name;
-	player scripts\ttt\ui::displayUseAvailableHint(&"[ ^3[{+activate}] ^7] for ^3", displayName);
-}
-OnWeaponPickupAvailableEnd(ent, player)
-{
-	player scripts\ttt\ui::destroyUseAvailableHint();
-}
-
-weaponEntThink()
-{
-	self endon("death");
-
-	pickupDistanceSq = 32 * 32;
-
-	for (;;)
-	{
-		// check if anyone is trying to implicitly pick up the weapon (walking over it)
-		foreach (player in getLivingPlayers())
-		{
-			if (distanceSquared(player.origin, self.origin) > pickupDistanceSq) continue;
-
-			player tryPickUpWeapon(self);
-		}
-
-		wait(0.1);
-	}
-}
-
-OnAmmoEntTrigger()
-{
-	self endon("death");
-
-	for (;;)
-	{
-		self.trigger waittill("trigger", player);
-
-		currentWeaponName = player getCurrentWeapon();
-		player tryPickUpAmmo(self, currentWeaponName);
-		foreach (weaponName in player getWeaponsListPrimaries()) player tryPickUpAmmo(self, weaponName);
-	}
-}
-
-tryPickUpAmmo(ammoEnt, weaponName)
-{
-	if (weaponName == level.ttt.defaultWeapon) return;
-	if (weaponName == "rpg_mp") return;
-
-	maxClip = weaponClipSize(weaponName);
-	currentStock = self getWeaponAmmoStock(weaponName);
-	maxStock = maxClip * int(weaponMaxAmmo(weaponName) / maxClip / 3);
-	if (maxStock < maxClip) maxStock = maxClip;
-
-	if (currentStock >= maxStock) return;
-
-	newStock = currentStock + maxClip;
-	if (newStock > maxStock) newStock = maxStock;
-
-	self setWeaponAmmoStock(weaponName, newStock);
-	self playLocalSound("scavenger_pack_pickup");
-
-	ammoEnt.trigger delete();
-	ammoEnt delete();
 }
