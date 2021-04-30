@@ -496,9 +496,9 @@ OnWeaponEntDamagePlayer(attacker)
 						self.ammoClip,
 						self.ammoStock,
 						self.item,
-						self.physicsEnt.origin,
+						origins[1],
 						self.physicsEnt.angles,
-						trace["normal"] * 48
+						trace["normal"] * 64 + (0, 0, 48)
 					);
 
 					self.physicsEnt delete();
@@ -511,7 +511,7 @@ OnWeaponEntDamagePlayer(attacker)
 
 		self.physicsEnt.lastTickOrigin = self.physicsEnt.origin;
 		self.physicsEnt.lastTickAngles = self.physicsEnt.angles;
-		wait (0.05);
+		wait(0.05);
 	}
 }
 
