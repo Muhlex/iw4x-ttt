@@ -1338,7 +1338,7 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 	if ( !(iDFlags & level.iDFLAGS_NO_PROTECTION) )
 	{
 		// items you own don't damage you in FFA
-		if ( !level.teamBased && attackerIsNPC && isDefined( eAttacker.owner ) && eAttacker.owner == victim )
+		if ( !level.teamBased && attackerIsNPC && isDefined( eAttacker.owner ) && eAttacker.owner == victim && !level.ttt.enabled )
 		{
 			prof_end( "PlayerDamage player" );
 

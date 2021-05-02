@@ -33,65 +33,65 @@ init()
 	level.ttt.items["traitor"][1].getIsAvailable = ::getIsAvailablePassive;
 
 	level.ttt.items["traitor"][2] = spawnStruct();
-	level.ttt.items["traitor"][2].name = "RANGER SHOTGUN";
-	level.ttt.items["traitor"][2].description = "^3Exclusive weapon\n^7Strong close-range shotgun\nwhich can fire ^2two shells at once^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
-	level.ttt.items["traitor"][2].icon = "weapon_ranger";
-	level.ttt.items["traitor"][2].iconWidth = 48;
-	level.ttt.items["traitor"][2].iconHeight = 24;
-	level.ttt.items["traitor"][2].iconOffsetX = -1;
-	level.ttt.items["traitor"][2].onBuy = ::OnBuyRanger;
-	level.ttt.items["traitor"][2].getIsAvailable = ::getIsAvailableRoleItem;
-	level.ttt.items["traitor"][2].weaponName = "ranger_mp";
+	level.ttt.items["traitor"][2].name = "ATTACK HELICOPTER";
+	level.ttt.items["traitor"][2].description = "^3Air support\n^2Attack helicopter^7 that targets ^1anyone^7.\nStays for ^31 ^7minute. Can be ^1shot down^7.";
+	level.ttt.items["traitor"][2].icon = "specialty_helicopter_support_crate";
+	level.ttt.items["traitor"][2].onBuy = ::OnBuyHelicopter;
+	level.ttt.items["traitor"][2].getIsAvailable = ::getIsAvailableHelicopter;
 
 	level.ttt.items["traitor"][3] = spawnStruct();
-	level.ttt.items["traitor"][3].name = "ROCKET LAUNCHER";
-	level.ttt.items["traitor"][3].description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds 1 rocket. ^1Can't pick up ammo^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
-	level.ttt.items["traitor"][3].icon = "weapon_rpg7";
-	level.ttt.items["traitor"][3].iconWidth = 44;
-	level.ttt.items["traitor"][3].iconHeight = 22;
-	level.ttt.items["traitor"][3].iconOffsetX = 1;
-	level.ttt.items["traitor"][3].onBuy = ::OnBuyRPG;
+	level.ttt.items["traitor"][3].name = "BOMB";
+	level.ttt.items["traitor"][3].description = "^3Deployable item\n^7Causes a ^2huge explosion ^7after ^3" + getDvarInt("ttt_bomb_timer") + " ^7s.\nCan be ^1defused^7. Emits a ^1sound^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	level.ttt.items["traitor"][3].icon = "hud_suitcase_bomb";
+	level.ttt.items["traitor"][3].onBuy = ::OnBuyBomb;
+	level.ttt.items["traitor"][3].onActivate = ::OnActivateBomb;
 	level.ttt.items["traitor"][3].getIsAvailable = ::getIsAvailableRoleItem;
-	level.ttt.items["traitor"][3].weaponName = "rpg_mp";
+	level.ttt.items["traitor"][3].weaponName = "onemanarmy_mp";
 
 	level.ttt.items["traitor"][4] = spawnStruct();
-	level.ttt.items["traitor"][4].name = "THROWING KNIFE";
-	level.ttt.items["traitor"][4].description = "^3Exclusive equipment\n^7Kills ^2silently^7. Can be ^2picked up\n^7by anyone if it doesn't kill.";
-	level.ttt.items["traitor"][4].icon = "equipment_throwing_knife";
+	level.ttt.items["traitor"][4].name = "ROCKET LAUNCHER";
+	level.ttt.items["traitor"][4].description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds 1 rocket. ^1Can't pick up ammo^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	level.ttt.items["traitor"][4].icon = "weapon_rpg7";
+	level.ttt.items["traitor"][4].iconWidth = 44;
+	level.ttt.items["traitor"][4].iconHeight = 22;
 	level.ttt.items["traitor"][4].iconOffsetX = 1;
-	level.ttt.items["traitor"][4].onBuy = ::OnBuyKnife;
-	level.ttt.items["traitor"][4].getIsAvailable = ::getIsAvailableEquipment;
+	level.ttt.items["traitor"][4].onBuy = ::OnBuyRPG;
+	level.ttt.items["traitor"][4].getIsAvailable = ::getIsAvailableRoleItem;
+	level.ttt.items["traitor"][4].weaponName = "rpg_mp";
 
 	level.ttt.items["traitor"][5] = spawnStruct();
-	level.ttt.items["traitor"][5].name = "CLAYMORE";
-	level.ttt.items["traitor"][5].description = "^3Exclusive equipment\n^7Triggers for anyone (^1for yourself too^7).\n^2Highlighted to other traitors^7.";
-	level.ttt.items["traitor"][5].icon = "equipment_claymore";
-	level.ttt.items["traitor"][5].iconOffsetX = 1;
-	level.ttt.items["traitor"][5].onBuy = ::OnBuyClaymore;
-	level.ttt.items["traitor"][5].getIsAvailable = ::getIsAvailableEquipment;
+	level.ttt.items["traitor"][5].name = "RANGER SHOTGUN";
+	level.ttt.items["traitor"][5].description = "^3Exclusive weapon\n^7Strong close-range shotgun\nwhich can fire ^2two shells at once^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	level.ttt.items["traitor"][5].icon = "weapon_ranger";
+	level.ttt.items["traitor"][5].iconWidth = 48;
+	level.ttt.items["traitor"][5].iconHeight = 24;
+	level.ttt.items["traitor"][5].iconOffsetX = -1;
+	level.ttt.items["traitor"][5].onBuy = ::OnBuyRanger;
+	level.ttt.items["traitor"][5].getIsAvailable = ::getIsAvailableRoleItem;
+	level.ttt.items["traitor"][5].weaponName = "ranger_mp";
 
 	level.ttt.items["traitor"][6] = spawnStruct();
-	level.ttt.items["traitor"][6].name = "FLASHBANG";
-	level.ttt.items["traitor"][6].description = "^3Exclusive special grenade\n^2Blinds ^7anyone who is caught in\nor looking at the explosion.";
-	level.ttt.items["traitor"][6].icon = "weapon_flashbang";
-	level.ttt.items["traitor"][6].onBuy = ::OnBuyFlash;
-	level.ttt.items["traitor"][6].getIsAvailable = ::getIsAvailableOffhand;
+	level.ttt.items["traitor"][6].name = "THROWING KNIFE";
+	level.ttt.items["traitor"][6].description = "^3Exclusive equipment\n^7Kills ^2silently^7. Can be ^2picked up\n^7by anyone if it doesn't kill.";
+	level.ttt.items["traitor"][6].icon = "equipment_throwing_knife";
+	level.ttt.items["traitor"][6].iconOffsetX = 1;
+	level.ttt.items["traitor"][6].onBuy = ::OnBuyKnife;
+	level.ttt.items["traitor"][6].getIsAvailable = ::getIsAvailableEquipment;
 
 	level.ttt.items["traitor"][7] = spawnStruct();
-	level.ttt.items["traitor"][7].name = "BOMB";
-	level.ttt.items["traitor"][7].description = "^3Deployable item\n^7Causes a ^2huge explosion ^7after ^3" + getDvarInt("ttt_bomb_timer") + "^7s.\nCan be ^1defused^7. Emits a ^1sound^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
-	level.ttt.items["traitor"][7].icon = "hud_suitcase_bomb";
-	level.ttt.items["traitor"][7].onBuy = ::OnBuyBomb;
-	level.ttt.items["traitor"][7].onActivate = ::OnActivateBomb;
-	level.ttt.items["traitor"][7].getIsAvailable = ::getIsAvailableRoleItem;
-	level.ttt.items["traitor"][7].weaponName = "onemanarmy_mp";
+	level.ttt.items["traitor"][7].name = "CLAYMORE";
+	level.ttt.items["traitor"][7].description = "^3Exclusive equipment\n^7Triggers for anyone ^1including traitors^7.\n^2Highlighted ^7to other traitors.";
+	level.ttt.items["traitor"][7].icon = "equipment_claymore";
+	level.ttt.items["traitor"][7].iconOffsetX = 1;
+	level.ttt.items["traitor"][7].onBuy = ::OnBuyClaymore;
+	level.ttt.items["traitor"][7].getIsAvailable = ::getIsAvailableEquipment;
 
-	// level.ttt.items["traitor"][8] = spawnStruct();
-	// level.ttt.items["traitor"][8].name = "SILENT DISGUISE";
-	// level.ttt.items["traitor"][8].description = "^3Passive item\n^2Removes ^7your nametag.\n^2Silences ^7your footsteps.";
-	// level.ttt.items["traitor"][8].icon = "specialty_quieter_upgrade";
-	// level.ttt.items["traitor"][8].onBuy = ::OnBuyDisguise;
-	// level.ttt.items["traitor"][8].getIsAvailable = ::getIsAvailablePassive;
+	level.ttt.items["traitor"][8] = spawnStruct();
+	level.ttt.items["traitor"][8].name = "FLASHBANG";
+	level.ttt.items["traitor"][8].description = "^3Exclusive special grenade\n^2Blinds ^7anyone who is caught in\nor looking at the explosion.";
+	level.ttt.items["traitor"][8].icon = "weapon_flashbang";
+	level.ttt.items["traitor"][8].onBuy = ::OnBuyFlash;
+	level.ttt.items["traitor"][8].getIsAvailable = ::getIsAvailableOffhand;
 
 	level.ttt.items["detective"][0] = armor;
 
@@ -977,10 +977,16 @@ explodeBomb()
 	self delete();
 }
 
-OnBuyDisguise()
+OnBuyHelicopter()
 {
-	self maps\mp\perks\_perks::givePerk("specialty_quieter");
-	self maps\mp\perks\_perks::givePerk("specialty_spygame");
+	level.heli_turretClipSize = 35; // helicopter only gets accurate after ~20 shots
+	level.heli_maxhealth = 500;
+	self maps\mp\killstreaks\_helicopter::startHelicopter(-1);
+}
+
+getIsAvailableHelicopter()
+{
+	return !isDefined(level.chopper);
 }
 
 OnBuyRiot(item)
