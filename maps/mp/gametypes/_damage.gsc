@@ -977,8 +977,8 @@ getKillcamEntity( attacker, eInflictor, sWeapon )
 	if ( sWeapon == "cobra_player_minigun_mp" )
 		return undefined;
 
-	if (level.ttt.enabled && eInflictor.classname == "script_model" && isDefined(eInflictor.weaponName))
-		return eInflictor.killCamEnt; // a thrown, dropped weapon
+	if (level.ttt.enabled && eInflictor.classname == "script_model" && isDefined(eInflictor.killCamEnt))
+		return eInflictor.killCamEnt; // a thrown, dropped weapon or the bomb item
 
 	if ( sWeapon == "artillery_mp" || sWeapon == "stealth_bomb_mp" || sWeapon == "pavelow_minigun_mp" )
 		return eInflictor.killCamEnt;
@@ -1293,15 +1293,14 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 					iDamage = int(iDamage * 1.2);
 				if (sWeapon == "deserteagle_mp")
 					iDamage = int(iDamage * 1.4);
+				if (sWeapon == "rpg_mp")
+					iDamage = int(iDamage * level.ttt.rpgMultiplier);
 				if (sWeapon == "claymore_mp")
-					iDamage = int(iDamage * 1.2);
+					iDamage = int(iDamage * level.ttt.claymoreMultiplier);
 			}
 
 			if ((sMeansOfDeath == "MOD_PISTOL_BULLET" || sMeansOfDeath == "MOD_RIFLE_BULLET") && victim.ttt.incomingDamageMultiplier != 1.0)
 				iDamage = int(iDamage * victim.ttt.incomingDamageMultiplier);
-
-			if (isExplosiveDamage(sMeansOfDeath))
-				iDamage = int(iDamage * level.ttt.explosiveMultiplier);
 
 			if (sMeansOfDeath == "MOD_HEAD_SHOT")
 			{

@@ -11,13 +11,16 @@ init()
 	level.ttt.maxhealth = getDvarInt("scr_player_maxhealth");
 	level.ttt.headshotMultiplier = getDvarFloat("ttt_headshot_multiplier");
 	level.ttt.headshotMultiplierSniper = getDvarFloat("ttt_headshot_multiplier_sniper");
-	level.ttt.explosiveMultiplier = getDvarFloat("ttt_explosive_multiplier");
+	level.ttt.rpgMultiplier = getDvarFloat("ttt_rpg_multiplier");
+	level.ttt.claymoreMultiplier = getDvarFloat("ttt_claymore_multiplier");
 	level.ttt.preptime = getDvarInt("ttt_preptime");
-	level.ttt.defaultWeapon = "beretta_tactical_mp";
 	if (level.ttt.preptime < 1) level.ttt.preptime = 1;
+	level.ttt.defaultWeapon = "beretta_tactical_mp";
 
 	level.ttt.prematch = true;
 	level.ttt.preparing = true;
+
+	level.ttt.effects = spawnStruct();
 
 	level.inGracePeriod = false;
 
@@ -216,6 +219,7 @@ OnPlayerSpawn()
 
 		self scripts\ttt\pickups::giveDefaultWeapon();
 		self setSpawnWeapon(level.ttt.defaultWeapon);
+		self scripts\ttt\ui::setupHeadIconAnchor();
 		self scripts\ttt\ui::displaySelfHud();
 
 		self thread scripts\ttt\use::OnPlayerUse();
@@ -279,11 +283,11 @@ OnPlayerRagdoll()
 	}
 }
 
-OnBodyInspectTrigger(ent, player)
+OnBodyInspectTrigger(ent)
 {
-	player scripts\ttt\items::awardBodyInspectCredits(ent.owner);
+	self scripts\ttt\items::awardBodyInspectCredits(ent.owner);
 
-	playerName = removeColorsFromString(player.name);
+	playerName = removeColorsFromString(self.name);
 	ownerName = removeColorsFromString(ent.owner.name);
 	ownerRoleColor = getRoleStringColor(ent.owner.ttt.role);
 
@@ -293,7 +297,7 @@ OnBodyInspectTrigger(ent, player)
 		ent.usePriority = 0;
 		foreach (p in level.players)
 		{
-			if (p == player)
+			if (p == self)
 				p iPrintLnBold("You found the body of ^3" + ownerName + "^7. They were " + ownerRoleColor + ent.owner.ttt.role + "^7.");
 			else
 				p iPrintLnBold(playerName + "^7 found the body of ^3" + ownerName + "^7. They were " + ownerRoleColor + ent.owner.ttt.role + "^7.");
@@ -303,24 +307,24 @@ OnBodyInspectTrigger(ent, player)
 		foreach (p in scripts\ttt\use::getUseEntAvailablePlayers(ent))
 			p scripts\ttt\ui::updateUseAvailableHint(undefined, ownerRoleColor + ownerName + "^7\n[ ^3[{+activate}]^7 ] to inspect");
 	}
-	else player iPrintLnBold("This is the body of ^3" + ownerName + "^7. They were " + ownerRoleColor + ent.owner.ttt.role + "^7.");
+	else self iPrintLnBold("This is the body of ^3" + ownerName + "^7. They were " + ownerRoleColor + ent.owner.ttt.role + "^7.");
 }
-OnBodyInspectAvailable(ent, player)
+OnBodyInspectAvailable(ent)
 {
-	player scripts\ttt\ui::destroyUseAvailableHint();
+	self scripts\ttt\ui::destroyUseAvailableHint();
 
 	if (ent.owner.ttt.bodyFound)
 	{
 		ownerName = removeColorsFromString(ent.owner.name);
 		ownerRoleColor = getRoleStringColor(ent.owner.ttt.role);
-		player scripts\ttt\ui::displayUseAvailableHint(undefined, ownerRoleColor + ownerName + "^7\n[ ^3[{+activate}]^7 ] to inspect");
+		self scripts\ttt\ui::displayUseAvailableHint(undefined, ownerRoleColor + ownerName + "^7\n[ ^3[{+activate}]^7 ] to inspect");
 	}
 	else
-		player scripts\ttt\ui::displayUseAvailableHint(undefined, "^3Unidentified body^7\n[ ^3[{+activate}]^7 ] to inspect");
+		self scripts\ttt\ui::displayUseAvailableHint(undefined, "^3Unidentified body^7\n[ ^3[{+activate}]^7 ] to inspect");
 }
-OnBodyInspectAvailableEnd(ent, player)
+OnBodyInspectAvailableEnd(ent)
 {
-	player scripts\ttt\ui::destroyUseAvailableHint();
+	self scripts\ttt\ui::destroyUseAvailableHint();
 }
 
 OnPlayerWeaponSwitchStart()
@@ -342,7 +346,7 @@ OnPlayerWeaponSwitchCancel(weaponName)
 
 	for (;;)
 	{
-		while (self isSwitchingWeapon()) wait(0.05);
+		while (self isSwitchingWeapon() || self getCurrentWeapon() == "none") wait(0.05);
 
 		self notify("weapon_switch_cancelled", weaponName);
 		break;

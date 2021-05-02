@@ -2,17 +2,53 @@
 #include maps\mp\_utility;
 #include maps\mp\gametypes\_hud_util;
 
-switchToLastWeapon()
+getLastValidWeapon(getRoleWeapons)
 {
+	if (!isDefined(getRoleWeapons)) getRoleWeapons = false;
+
 	weaponList = self getWeaponsListPrimaries();
 	lastWeaponName = self getLastWeapon();
-	if (!isDefined(lastWeaponName) || !self hasWeapon(lastWeaponName) || lastWeaponName == level.ttt.defaultWeapon)
+	if (!isDefined(lastWeaponName) || !self hasWeapon(lastWeaponName) || lastWeaponName == level.ttt.defaultWeapon || (!getRoleWeapons && scripts\ttt\items::isRoleWeapon(lastWeaponName)))
 		foreach (weaponName in weaponList)
-			if (weaponName != level.ttt.defaultWeapon)
+			if (weaponName != level.ttt.defaultWeapon && (getRoleWeapons || !scripts\ttt\items::isRoleWeapon(weaponName)))
 				lastWeaponName = weaponName;
 	if (!isDefined(lastWeaponName) || !self hasWeapon(lastWeaponName))
 		lastWeaponName = weaponList[0];
-	self switchToWeapon(lastWeaponName);
+
+	return lastWeaponName;
+}
+
+switchToLastWeapon()
+{
+	self switchToWeapon(self getLastValidWeapon());
+}
+
+freezePlayer()
+{
+	self unfreezePlayer();
+
+	freezeEnt = spawn("script_origin", self.origin);
+	freezeEnt hide();
+	self.freezeEnt = freezeEnt;
+	self playerLinkTo(freezeEnt);
+}
+
+unfreezePlayer()
+{
+	self unlink();
+	self.freezeEnt delete();
+}
+
+playSoundDelayed(sound, delay)
+{
+	wait(delay);
+	self playSound(sound);
+}
+
+playFXDelayed(fx, pos, delay)
+{
+	wait(delay);
+	playFX(fx, pos);
 }
 
 createRectangle(w, h, color, showToAll)
@@ -149,11 +185,26 @@ intUp(value)
 
 drawDebugLine(pos1, pos2, color, ticks)
 {
+	if (!isDefined(color)) color = (1, 1, 1);
 	if (!isDefined(ticks)) ticks = 200;
 
 	for (i = 0; i < ticks; i++)
 	{
 		line(pos1, pos2, color);
 		wait(0.05);
+	}
+}
+
+drawDebugCircle(pos, radius, color, ticks)
+{
+	for (i = 0; i < 40; i++)
+	{
+		angle = i / 40 * 360;
+		nextAngle = (i + 1) / 40 * 360;
+
+		linePos = pos + (cos(angle) * radius, sin(angle) * radius, 0);
+		nextLinePos = pos + (cos(nextAngle) * radius, sin(nextAngle) * radius, 0);
+
+		thread drawDebugLine(linePos, nextLinePos, color, ticks);
 	}
 }

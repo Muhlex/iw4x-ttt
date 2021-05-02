@@ -32,6 +32,21 @@ makeUsableCustom(onUse, onAvailable, onAvailableEnd, useRange, useAngle, usePrio
 	self thread OnUseEntDeath();
 }
 
+OnUseEntDeath()
+{
+	self waittill("death");
+
+	self makeUnusableCustom();
+}
+
+makeUnusableCustom()
+{
+	foreach (player in level.players)
+		if (self == player.ttt.use.availableEnt) player unsetPlayerAvailableUseEnt();
+
+	level.ttt.use.ents = array_remove(level.ttt.use.ents, self);
+}
+
 isUseEntAvailable(ent)
 {
 	return isDefined(self.ttt.use.availableEnt) && self.ttt.use.availableEnt == ent;
@@ -89,16 +104,6 @@ getAvailableUseEnt()
 	return result;
 }
 
-OnUseEntDeath()
-{
-	self waittill("death");
-
-	foreach (player in level.players)
-		if (self == player.ttt.use.availableEnt) player unsetPlayerAvailableUseEnt();
-
-	level.ttt.use.ents = array_remove(level.ttt.use.ents, self);
-}
-
 playerUseEntsThink()
 {
 	self endon("disconnect");
@@ -119,7 +124,7 @@ playerUseEntsThink()
 			if (isDefined(useEnt))
 			{
 				self.ttt.use.availableEnt = useEnt;
-				thread [[useEnt.onAvailable]](useEnt, self);
+				self thread [[useEnt.onAvailable]](useEnt);
 			}
 		}
 	}
@@ -127,7 +132,7 @@ playerUseEntsThink()
 
 unsetPlayerAvailableUseEnt()
 {
-	thread [[self.ttt.use.availableEnt.onAvailableEnd]](self.ttt.use.availableEnt, self);
+	self thread [[self.ttt.use.availableEnt.onAvailableEnd]](self.ttt.use.availableEnt);
 	self.ttt.use.availableEnt = undefined;
 }
 
@@ -145,6 +150,6 @@ OnPlayerUse()
 		if (self.ttt.items.inBuyMenu) continue;
 
 		useEnt = self getAvailableUseEnt();
-		if (isDefined(useEnt)) thread [[useEnt.onUse]](useEnt, self);
+		if (isDefined(useEnt)) self thread [[useEnt.onUse]](useEnt);
 	}
 }

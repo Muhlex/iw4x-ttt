@@ -7,7 +7,7 @@ init()
 	precacheModel("weapon_scavenger_grenadebag");
 
 	level.ttt.pickups = spawnStruct();
-	level.ttt.pickups.trailEffect = loadFx("props/throwingknife_geotrail");
+	level.ttt.effects.trailEffect = loadFX("props/throwingknife_geotrail");
 }
 
 initPlayer()
@@ -128,20 +128,20 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, item, origin, angles, velocity)
 	return weaponEnt;
 }
 
-OnWeaponPickupTrigger(ent, player)
+OnWeaponPickupTrigger(ent)
 {
-	player tryPickUpWeapon(ent, true);
+	self tryPickUpWeapon(ent, true);
 }
-OnWeaponPickupAvailable(ent, player)
+OnWeaponPickupAvailable(ent)
 {
-	player scripts\ttt\ui::destroyUseAvailableHint();
+	self scripts\ttt\ui::destroyUseAvailableHint();
 	displayName = level.ttt.localizedWeaponNames[ent.weaponName];
 	if (ent.weaponName == "onemanarmy_mp" && isDefined(ent.item)) displayName = ent.item.name;
-	player scripts\ttt\ui::displayUseAvailableHint(&"[ ^3[{+activate}] ^7] for ^3", displayName);
+	self scripts\ttt\ui::displayUseAvailableHint(&"[ ^3[{+activate}] ^7] for ^3", displayName);
 }
-OnWeaponPickupAvailableEnd(ent, player)
+OnWeaponPickupAvailableEnd(ent)
 {
-	player scripts\ttt\ui::destroyUseAvailableHint();
+	self scripts\ttt\ui::destroyUseAvailableHint();
 }
 
 OnWeaponEntUsable()
@@ -161,7 +161,7 @@ OnWeaponEntPhysicsFinish()
 
 	self.physicsEnt waittill("physics_finished");
 
-	stopFXOnTag(level.ttt.pickups.trailEffect, self, "tag_weapon");
+	stopFXOnTag(level.ttt.effects.trailEffect, self, "tag_weapon");
 
 	self thread weaponEntThink();
 }
@@ -245,7 +245,9 @@ tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
 	else
 	{
 		hasDefaultWeapon = self hasWeapon(level.ttt.defaultWeapon);
-		weaponCount = self getWeaponsListPrimaries().size - int(hasDefaultWeapon) - int(isRoleWeaponEquipped);
+		primariesList = self getWeaponsListPrimaries();
+		weaponCount = primariesList.size - int(hasDefaultWeapon) - int(isRoleWeaponEquipped);
+		lastValidWeapon = self getLastValidWeapon();
 
 		if (weaponCount >= 2 && !pickupOnFullInventory) return;
 
@@ -256,7 +258,13 @@ tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
 		self thread maps\mp\gametypes\_weapons::stowedWeaponsRefresh();
 		self playLocalSound("weap_pickup");
 
-		if (weaponCount >= 2 && pickupOnFullInventory) self dropWeapon(currentWeapon);
+		if (weaponCount >= 2 && pickupOnFullInventory)
+		{
+			if (maps\mp\gametypes\_weapons::mayDropWeapon(currentWeapon) && !isRoleWeaponEquipped)
+				self dropWeapon(currentWeapon);
+			else
+				self dropWeapon(lastValidWeapon);
+		}
 
 		if ((weaponCount == 0 || pickupOnFullInventory || currentWeapon == level.ttt.defaultWeapon) && !isRoleWeaponEquipped)
 			self switchToWeapon(weaponEnt.weaponName);
@@ -269,6 +277,7 @@ tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
 
 tryPickUpAmmo(ammoEnt, weaponName)
 {
+	if (!self maps\mp\gametypes\_weapons::mayDropWeapon(weaponName)) return;
 	if (weaponName == level.ttt.defaultWeapon) return;
 	if (weaponName == "rpg_mp") return;
 
@@ -412,7 +421,7 @@ dropWeapon(weaponName, velocity)
 setTrailEffect()
 {
 	wait(0.05);
-	playFXOnTag(level.ttt.pickups.trailEffect, self, "tag_weapon");
+	playFXOnTag(level.ttt.effects.trailEffect, self, "tag_weapon");
 }
 
 weaponEntKillCamEntThink(attacker)

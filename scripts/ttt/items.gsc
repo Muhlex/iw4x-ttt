@@ -4,6 +4,14 @@
 
 init()
 {
+	level.ttt.effects.bombBlink = loadFX("misc/aircraft_light_red_blink");
+	level.ttt.effects.bombExplosion = loadFX("explosions/tanker_explosion");
+	level.ttt.effects.bombOuterExplosion = loadFX("explosions/aerial_explosion_large");
+
+	precacheModel("prop_suitcase_bomb");
+
+	level.ttt.bombs = [];
+
 	level.ttt.items = [];
 	level.ttt.items["traitor"] = [];
 	level.ttt.items["detective"] = [];
@@ -69,12 +77,21 @@ init()
 	level.ttt.items["traitor"][6].onBuy = ::OnBuyFlash;
 	level.ttt.items["traitor"][6].getIsAvailable = ::getIsAvailableOffhand;
 
-	// level.ttt.items["traitor"][7] = spawnStruct();
-	// level.ttt.items["traitor"][7].name = "SILENT DISGUISE";
-	// level.ttt.items["traitor"][7].description = "^3Passive item\n^2Removes ^7your nametag.\n^2Silences ^7your footsteps.";
-	// level.ttt.items["traitor"][7].icon = "specialty_quieter_upgrade";
-	// level.ttt.items["traitor"][7].onBuy = ::OnBuyDisguise;
-	// level.ttt.items["traitor"][7].getIsAvailable = ::getIsAvailablePassive;
+	level.ttt.items["traitor"][7] = spawnStruct();
+	level.ttt.items["traitor"][7].name = "BOMB";
+	level.ttt.items["traitor"][7].description = "^3Deployable item\n^7Causes a ^2huge explosion ^7after ^3" + getDvarInt("ttt_bomb_timer") + "^7s.\nCan be ^1defused^7. Emits a ^1sound^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	level.ttt.items["traitor"][7].icon = "hud_suitcase_bomb";
+	level.ttt.items["traitor"][7].onBuy = ::OnBuyBomb;
+	level.ttt.items["traitor"][7].onActivate = ::OnActivateBomb;
+	level.ttt.items["traitor"][7].getIsAvailable = ::getIsAvailableRoleItem;
+	level.ttt.items["traitor"][7].weaponName = "onemanarmy_mp";
+
+	// level.ttt.items["traitor"][8] = spawnStruct();
+	// level.ttt.items["traitor"][8].name = "SILENT DISGUISE";
+	// level.ttt.items["traitor"][8].description = "^3Passive item\n^2Removes ^7your nametag.\n^2Silences ^7your footsteps.";
+	// level.ttt.items["traitor"][8].icon = "specialty_quieter_upgrade";
+	// level.ttt.items["traitor"][8].onBuy = ::OnBuyDisguise;
+	// level.ttt.items["traitor"][8].getIsAvailable = ::getIsAvailablePassive;
 
 	level.ttt.items["detective"][0] = armor;
 
@@ -170,13 +187,23 @@ setPlayerBuyMenu()
 	self giveWeapon(LAPTOP_WEAPON);
 	self switchToWeapon(LAPTOP_WEAPON);
 
-	while (self getCurrentWeapon() != LAPTOP_WEAPON) wait(0.05); // wait for laptop to open
-	while (!self isOnGround()) wait(0.05); // wait for player to land (if falling)
+	TIMEOUT = 1.5 * 1000;
+	startTime = getTime();
+	while (self getCurrentWeapon() != LAPTOP_WEAPON || !self isOnGround())
+	{
+		wait(0.05);
+		if (startTime + TIMEOUT < getTime())
+		{
+			self switchToLastWeapon();
+			self playLaptopSound();
+			return;
+		}
+	}
 
 	self.ttt.items.inBuyMenu = true;
 
 	self setBlurForPlayer(6, 1.5);
-	self freezeControls(true);
+	self freezePlayer();
 	self scripts\ttt\ui::destroySelfHud();
 	self scripts\ttt\ui::destroyHeadIcons();
 	self scripts\ttt\ui::destroyBuyMenu();
@@ -191,11 +218,11 @@ unsetPlayerBuyMenu(switchToLastWeapon)
 
 	self.ttt.items.inBuyMenu = false;
 
-	self freezeControls(false);
+	self unfreezePlayer();
 	if (switchToLastWeapon)
 	{
 		self switchToLastWeapon();
-		self thread playLaptopSound();
+		self playLaptopSound();
 	}
 	self setBlurForPlayer(0, 0.75);
 	self scripts\ttt\ui::destroyBuyMenu();
@@ -211,11 +238,9 @@ playLaptopSound()
 {
 	/**
 	 * Stowing the laptop makes a distinct sound that only other players can hear.
-	 * We recreate this sound for the local player here. The wait is needed
-	 * because the sound otherwise sometimes doesn't play.
+	 * We recreate this sound for the local player here.
 	 */
-	wait (0.05);
-	self playLocalSound("weap_c4detpack_safety_plr");
+	self playSoundToPlayer("weap_c4detpack_safety_plr", self);
 }
 
 buyMenuThinkLaptop(weaponName)
@@ -358,6 +383,7 @@ switchFromRoleWeapon()
 equipRoleWeapon()
 {
 	if (self isRoleWeaponEquipped()) return;
+	if (!maps\mp\gametypes\_weapons::mayDropWeapon(self getCurrentWeapon())) return;
 
 	weaponName = self giveRoleWeapon();
 	self switchToWeapon(weaponName);
@@ -407,7 +433,7 @@ OnPlayerRoleWeaponActivate()
 
 		item = self.ttt.items.roleInventory.item;
 		if (!isDefined(item.onActivate)) continue;
-		self [[item.onActivate]](item);
+		self thread [[item.onActivate]](item);
 	}
 }
 
@@ -594,6 +620,363 @@ OnBuyFlash()
 	self SetOffhandSecondaryClass("flash");
 }
 
+OnBuyBomb(item)
+{
+	self setRoleInventory(item);
+}
+
+OnActivateBomb()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	self notify("ttt_planting_bomb");
+	self endon("ttt_planting_bomb");
+
+	BOMB_WEAPON = "briefcase_bomb_mp";
+
+	self giveWeapon(BOMB_WEAPON);
+	self setWeaponAmmoClip(BOMB_WEAPON, 0);
+	self setWeaponAmmoStock(BOMB_WEAPON, 0);
+	self switchToWeapon(BOMB_WEAPON);
+
+	self thread OnBombInteractionInterrupt();
+
+	TIMEOUT = 1.5 * 1000;
+	startTime = getTime();
+	while (self getCurrentWeapon() != BOMB_WEAPON || !self isOnGround())
+	{
+		wait(0.05);
+		if (startTime + TIMEOUT < getTime())
+		{
+			if (self getCurrentWeapon() == BOMB_WEAPON) switchToLastWeapon();
+			return;
+		}
+	}
+
+	// self playSound("mp_bomb_plant");
+	self freezePlayer();
+	self thread attachBombModel();
+
+	self thread activateBombThink();
+}
+
+activateBombThink()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	BOMB_WEAPON = "briefcase_bomb_mp";
+	PLANT_TIME = 4.0 * 1000;
+	plantStartTime = getTime();
+
+	for (;;)
+	{
+		wait(0.05);
+
+		if (self getCurrentWeapon() != BOMB_WEAPON || (!self attackButtonPressed() && !self useButtonPressed()))
+		{
+			self stopBombInteraction();
+			return;
+		}
+
+		if (plantStartTime + PLANT_TIME > getTime()) continue;
+
+		self notify("ttt_planted_bomb");
+
+		self stopBombInteraction(true, BOMB_WEAPON);
+
+		bombEnt = spawn("script_model", self.origin);
+		bombEnt.angles = self.angles + (0, -90, 0);
+		bombEnt setModel("prop_suitcase_bomb");
+		bombEnt.owner = self;
+		bombEnt.killCamEnt = spawn("script_model", self.origin + (0, 0, maps\mp\killstreaks\_airdrop::getFlyHeightOffset(self.origin)));
+		bombEnt.objectName = "ttt_bomb";
+
+		bombEnt showBomb();
+
+		level.ttt.bombs[level.ttt.bombs.size] = bombEnt;
+		scripts\ttt\ui::updateBombHuds();
+
+		self takeRoleWeapon();
+		self switchToLastWeapon();
+		self resetRoleInventory();
+
+		bombEnt thread OnBombDeath();
+		bombEnt thread bombThink(self);
+
+		return;
+	}
+}
+
+OnDefuseBomb(bombEnt)
+{
+	self endon("disconnect");
+	self endon("death");
+	bombEnt endon("death");
+
+	self notify("ttt_defusing_bomb");
+	self endon("ttt_defusing_bomb");
+
+	BOMB_WEAPON = "briefcase_bomb_defuse_mp";
+
+	if (!maps\mp\gametypes\_weapons::mayDropWeapon(self getCurrentWeapon())) return;
+
+	self giveWeapon(BOMB_WEAPON);
+	self setWeaponAmmoClip(BOMB_WEAPON, 0);
+	self setWeaponAmmoStock(BOMB_WEAPON, 0);
+	self switchToWeapon(BOMB_WEAPON);
+
+	bombEnt hideBomb();
+
+	self thread OnBombInteractionInterrupt(bombEnt);
+
+	TIMEOUT = 1.5 * 1000;
+	startTime = getTime();
+	while (self getCurrentWeapon() != BOMB_WEAPON || !self isOnGround())
+	{
+		wait(0.05);
+		if (startTime + TIMEOUT < getTime())
+		{
+			bombEnt showBomb();
+			return;
+		}
+	}
+
+	self playSound("mp_bomb_defuse");
+	self freezePlayer();
+	self thread attachBombModel();
+
+	self thread defuseBombThink(bombEnt);
+}
+
+defuseBombThink(bombEnt)
+{
+	self endon("disconnect");
+	self endon("death");
+	bombEnt endon("death");
+
+	BOMB_WEAPON = "briefcase_bomb_defuse_mp";
+	DEFUSE_TIME = 4.0 * 1000;
+	defuseStartTime = getTime();
+
+	for (;;)
+	{
+		wait(0.05);
+
+		if (self getCurrentWeapon() != BOMB_WEAPON || (!self attackButtonPressed() && !self useButtonPressed()))
+		{
+			self stopBombInteraction();
+			bombEnt showBomb();
+			return;
+		}
+
+		if (defuseStartTime + DEFUSE_TIME > getTime()) continue;
+
+		if (randomFloat(1.0) < getDvarFloat("ttt_bomb_defuse_failure_pct"))
+		{
+			bombEnt thread explodeBomb();
+			return;
+		}
+
+		self notify("ttt_defused_bomb");
+
+		self stopBombInteraction(true, BOMB_WEAPON);
+
+		bombEnt.killCamEnt delete();
+		bombEnt.fxEnt delete();
+		bombEnt delete();
+
+		return;
+	}
+}
+
+showBomb()
+{
+	self show();
+	self.interactingPlayer = undefined;
+	self.fxEnt = spawnFX(level.ttt.effects.bombBlink, self.origin + (0, 0, 2) + anglesToRight(self.angles) * 3);
+	triggerFx(self.fxEnt);
+	self scripts\ttt\use::makeUsableCustom(
+		::OnDefuseBomb,
+		::OnBombEntAvailable,
+		::OnBombEntAvailableEnd
+	);
+}
+
+hideBomb()
+{
+	self.interactingPlayer = self;
+	self hide();
+	self.fxEnt delete();
+	self scripts\ttt\use::makeUnusableCustom();
+}
+
+stopBombInteraction(isDone, bombWeaponName)
+{
+	if (!isDefined(isDone)) isDone = false;
+
+	self notify("ttt_bomb_interaction_stopped");
+
+	self unfreezePlayer();
+	self thread detachBombModel();
+	if (isDone)
+	{
+		self setWeaponAmmoClip(bombWeaponName, 1);
+		self setWeaponAmmoStock(bombWeaponName, 1);
+	}
+	if (isAlive(self)) self switchToLastWeapon();
+}
+
+OnBombInteractionInterrupt(bombEnt)
+{
+	self endon("ttt_planted_bomb");
+	self endon("ttt_defused_bomb");
+
+	self waittill_any("disconnect", "death");
+
+	self stopBombInteraction();
+	if (isDefined(bombEnt)) bombEnt showBomb();
+}
+
+attachBombModel()
+{
+	self endon("death");
+	self endon("disconnect");
+	self endon("ttt_bomb_interaction_stopped");
+
+	self thread detachBombModel();
+
+	wait(0.4);
+
+	self attach("prop_suitcase_bomb", "tag_inhand", true);
+}
+detachBombModel()
+{
+	self endon("death");
+	self endon("disconnect");
+
+	wait(0.15);
+
+	self detach("prop_suitcase_bomb", "tag_inhand");
+}
+
+OnBombEntAvailable(bombEnt)
+{
+	label = &"Hold [ ^3[{+activate}] ^7] to ^3defuse^7 the bomb\n\n^7Explodes in: ^1";
+	if (getDvarFloat("ttt_bomb_defuse_failure_pct") > 0.0)
+		label = &"Hold [ ^3[{+activate}] ^7] to ^3risk defusing^7 the bomb\n\n^7Explodes in: ^1";
+	self scripts\ttt\ui::destroyUseAvailableHint();
+	self scripts\ttt\ui::displayUseAvailableHint(
+		label,
+		undefined,
+		getBombSecondsRemaining(bombEnt)
+	);
+}
+OnBombEntAvailableEnd(bombEnt)
+{
+	self scripts\ttt\ui::destroyUseAvailableHint();
+}
+
+getBombSecondsRemaining(bombEnt)
+{
+	return max(0, ceil(getDvarInt("ttt_bomb_timer") - (getTime() - bombEnt.birthtime) / 1000));
+}
+
+OnBombDeath()
+{
+	self waittill("death");
+
+	level.ttt.bombs = array_remove(level.ttt.bombs, self);
+	scripts\ttt\ui::updateBombHuds();
+	if (isDefined(self.interactingPlayer)) self.interactingPlayer stopBombInteraction();
+}
+
+bombThink()
+{
+	self endon("death");
+
+	for (;;)
+	{
+		wait(1.0);
+
+		scripts\ttt\ui::updateBombHuds();
+
+		secondsRemaining = getBombSecondsRemaining(self);
+		self playSound("weap_fraggrenade_pin");
+		playFXOnTag("tag_origin", self, level.ttt.effects.bombBlink);
+		if (secondsRemaining <= 10) self thread playSoundDelayed("weap_fraggrenade_pin", 0.5);
+		if (secondsRemaining <= 5)
+		{
+			self thread playSoundDelayed("weap_fraggrenade_pin", 0.25);
+			self thread playSoundDelayed("weap_fraggrenade_pin", 0.75);
+		}
+
+		foreach (player in scripts\ttt\use::getUseEntAvailablePlayers(self))
+			player scripts\ttt\ui::updateUseAvailableHint(undefined, undefined, secondsRemaining);
+
+		if (secondsRemaining > 0) continue;
+
+		self thread explodeBomb();
+	}
+}
+
+explodeBomb()
+{
+	RADIUS = getDvarInt("ttt_bomb_radius");
+	// radiusDamage(self.origin, RADIUS, level.ttt.maxhealth * 2, 0, attacker);
+	foreach (player in getLivingPlayers())
+	{
+		distance = distance(self.origin, player.origin);
+		damageNormalized = 1 - distance / RADIUS;
+		damage = int(damageNormalized * level.ttt.maxhealth * 3);
+		if (damage <= 0) continue;
+		player thread [[level.callbackPlayerDamage]](
+			self, // eInflictor The entity that causes the damage. ( e.g. a turret )
+			self.owner, // eAttacker The entity that is attacking.
+			damage, // iDamage Integer specifying the amount of damage done
+			0, // iDFlags Integer specifying flags that are to be applied to the damage
+			"MOD_EXPLOSIVE", // sMeansOfDeath Integer specifying the method of death
+			"none", // sWeapon The weapon number of the weapon used to inflict the damage
+			self.origin, // vPoint The point the damage is from?
+			player.origin - self.origin, // vDir The direction of the damage
+			"none", // sHitLoc The location of the hit
+			0 // psOffsetTime The time offset for the damage
+		);
+	}
+
+	/*
+	foreach (player in level.players)
+	{
+		player thread drawDebugLine(self.origin - (RADIUS, 0, 0), self.origin + (RADIUS, 0, 0), (1, 0, 0), 120);
+		player thread drawDebugLine(self.origin - (0, RADIUS, 0), self.origin + (0, RADIUS, 0), (0, 1, 0), 120);
+		player thread drawDebugLine(self.origin - (0, 0, RADIUS), self.origin + (0, 0, RADIUS), (0, 0, 1), 120);
+
+		player thread drawDebugCircle(self.origin, RADIUS / 1.5, (1, 0.5, 0.5), 600);
+		player thread drawDebugCircle(self.origin, RADIUS, (1, 1, 1), 600);
+	}
+	*/
+
+	physicsExplosionSphere(self.origin, RADIUS, int(RADIUS / 3), 2.5);
+	earthquake(0.75, 2.0, self.origin, RADIUS * 2);
+	self playSound("exp_suitcase_bomb_main");
+	playFX(level.ttt.effects.bombExplosion, self.origin);
+	FX_COUNT = 8;
+	for (i = 0; i < FX_COUNT; i++)
+	{
+		forward = anglesToForward(combineAngles((0, 360 / FX_COUNT * i, 0), (0, randomFloatRange(-10, 10), 0)));
+		thread playFXDelayed(
+			level.ttt.effects.bombOuterExplosion,
+			self.origin + forward * (RADIUS - 800) + (0, 0, randomIntRange(-128, 384)),
+			randomFloatRange(0.05, 0.8)
+		);
+	}
+
+	self.killCamEnt delete();
+	self.fxEnt delete();
+	self delete();
+}
+
 OnBuyDisguise()
 {
 	self maps\mp\perks\_perks::givePerk("specialty_quieter");
@@ -699,12 +1082,12 @@ OnHealthStationDeath()
 	self delete();
 }
 
-OnHealthStationTrigger(healthStation, player)
+OnHealthStationTrigger(healthStation)
 {
 	if (healthStation.inUse) return;
 
 	healthStation.inUse = true;
-	player thread healthStationUseThink(healthStation);
+	self thread healthStationUseThink(healthStation);
 }
 
 healthStationUseThink(healthStation)
@@ -739,16 +1122,16 @@ healthStationUseThink(healthStation)
 	healthStation.inUse = false;
 }
 
-OnHealthStationAvailable(healthStation, player)
+OnHealthStationAvailable(healthStation)
 {
-	player scripts\ttt\ui::destroyUseAvailableHint();
-	player scripts\ttt\ui::displayUseAvailableHint(
-		&"[ ^3[{+activate}] ^7] to ^3heal^7 yourself\n\nAvailable health: ^2",
+	self scripts\ttt\ui::destroyUseAvailableHint();
+	self scripts\ttt\ui::displayUseAvailableHint(
+		&"Hold [ ^3[{+activate}] ^7] to ^3heal^7 yourself\n\nAvailable health: ^2",
 		undefined,
 		healthStation.hp
 	);
 }
-OnHealthStationAvailableEnd(healthStation, player)
+OnHealthStationAvailableEnd(healthStation)
 {
-	player scripts\ttt\ui::destroyUseAvailableHint();
+	self scripts\ttt\ui::destroyUseAvailableHint();
 }

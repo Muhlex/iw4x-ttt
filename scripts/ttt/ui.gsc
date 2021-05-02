@@ -6,6 +6,7 @@
 init()
 {
 	precacheShader("cardicon_vest_1");
+	precacheShader("hud_suitcase_bomb");
 
 	precacheShader("cardicon_comic_shepherd");
 	precacheShader("cardtitle_silencer");
@@ -56,6 +57,8 @@ displaySelfHud()
 	self.ttt.ui["hud"]["self"]["armor"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -126, -15);
 	self.ttt.ui["hud"]["self"]["armor"].hidewheninmenu = true;
 	self.ttt.ui["hud"]["self"]["armor"].alpha = isInArray(self.ttt.items.boughtItems, level.ttt.items["traitor"][0]);
+
+	self displayBombHud();
 
 	self updatePlayerRoleDisplay();
 	self updatePlayerHealthDisplay();
@@ -149,6 +152,29 @@ destroyUseAvailableHint()
 	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["use_hint"]);
 }
 
+setupHeadIconAnchor()
+{
+	TAG = "j_head";
+
+	headPos = self getTagOrigin(TAG);
+	headAngles = self getTagAngles(TAG);
+
+	iconPos = headPos;
+	iconPos += anglesToForward(headAngles) * 20.0;
+	iconPos += anglesToRight(headAngles) * 4.0;
+	iconAnchor = spawn("script_model", iconPos);
+	iconAnchor linkTo(self, TAG);
+	self.headiconAnchor = iconAnchor;
+	self thread OnHeadIconAnchorDestroy();
+}
+
+OnHeadIconAnchorDestroy()
+{
+	self waittill_any("disconnect", "death");
+
+	self.headiconAnchor delete();
+}
+
 displayHeadIcons()
 {
 	self.ttt.ui["hud"]["headicons"] = [];
@@ -171,36 +197,24 @@ destroyHeadIcons()
 
 displayHeadIconOnPlayer(target, image)
 {
-	TAG = "j_head";
 	i = self.ttt.ui["hud"]["headicons"].size;
-
-	// create a target entity to be able to give the headicon an offset from the player's head
-	headPos = target getTagOrigin(TAG);
-	headAngles = target getTagAngles(TAG);
-	headiconPos = headPos;
-	headiconPos += anglesToForward(headAngles) * 20.0;
-	headiconPos += anglesToRight(headAngles) * 4.0;
-	headiconAnchor = spawn("script_model", headiconPos);
-	headiconAnchor setModel("tag_origin");
-	headiconAnchor linkTo(target, TAG);
 
 	self.ttt.ui["hud"]["headicons"][i] = newClientHudElem(self);
 	self.ttt.ui["hud"]["headicons"][i] setShader(image, 8, 8);
 	self.ttt.ui["hud"]["headicons"][i].color = level.ttt.colors[target.ttt.role];
 	self.ttt.ui["hud"]["headicons"][i].alpha = 0.75;
 	self.ttt.ui["hud"]["headicons"][i] setWaypoint(false, false);
-	self.ttt.ui["hud"]["headicons"][i] setTargetEnt(headiconAnchor);
-	self.ttt.ui["hud"]["headicons"][i] thread OnHeadIconDestroy(headiconAnchor, self, target);
+	self.ttt.ui["hud"]["headicons"][i] setTargetEnt(target.headiconAnchor);
+	self.ttt.ui["hud"]["headicons"][i] thread OnHeadIconDestroy(self, target);
 }
 
-OnHeadIconDestroy(headiconAnchor, showToPlayer, target)
+OnHeadIconDestroy(showToPlayer, target)
 {
 	//self endon("death"); // apparently this always fires instantly
 	showToPlayer endon("disconnect");
 
 	target waittill_any("death", "disconnect");
 	self destroy();
-	headiconAnchor delete();
 }
 
 displayRoundEnd(winner, reason)
@@ -561,4 +575,58 @@ updateBuyMenu(role, moveDown, moveRight, buySelected)
 destroyBuyMenu()
 {
 	recursivelyDestroyElements(self.ttt.ui["bm"]);
+}
+
+updateBombHuds()
+{
+	foreach (player in level.players)
+	{
+		if (isDefined(player.ttt.role) && player.ttt.role == "traitor" && isDefined(player.ttt.ui["hud"]["self"]["role"]))
+		{
+			player destroyBombHud();
+			player displayBombHud();
+		}
+	}
+}
+
+displayBombHud()
+{
+	if (!isDefined(self.ttt.role) || self.ttt.role != "traitor") return;
+
+	self.ttt.ui["hud"]["self"]["bombs"] = [];
+
+	foreach(i, bombEnt in level.ttt.bombs)
+	{
+		self.ttt.ui["hud"]["self"]["bombs"][i] = [];
+
+		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"] = newClientHudElem(self);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"] setShader("hud_suitcase_bomb");
+		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"].color = (1, 0.3, 0.3);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"].alpha = 0.5;
+		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"] setWaypoint(true, true);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"] setTargetEnt(bombEnt);
+
+		self.ttt.ui["hud"]["self"]["bombs"][i]["icon"] = self createIcon("hud_suitcase_bomb", 24, 24);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["icon"].color = (1, 0.3, 0.3);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["icon"].hidewheninmenu = true;
+		self.ttt.ui["hud"]["self"]["bombs"][i]["icon"] setPoint("TOP RIGHT", "TOP RIGHT", -20, 60);
+		if (i > 0)
+		{
+			self.ttt.ui["hud"]["self"]["bombs"][i]["icon"] setParent(self.ttt.ui["hud"]["self"]["bombs"][i - 1]["icon"]);
+			self.ttt.ui["hud"]["self"]["bombs"][i]["icon"] setPoint("TOP LEFT", "TOP LEFT", 0, 24 + 12);
+		}
+
+		self.ttt.ui["hud"]["self"]["bombs"][i]["text"] = self createFontString("default", 1.5);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["text"] setParent(self.ttt.ui["hud"]["self"]["bombs"][i]["icon"]);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["text"] setPoint("BOTTOM RIGHT ", "BOTTOM RIGHT", 2, 2);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["text"].color = (1, 1, 1);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["text"].hidewheninmenu = true;
+		self.ttt.ui["hud"]["self"]["bombs"][i]["text"].foreground = true;
+		self.ttt.ui["hud"]["self"]["bombs"][i]["text"] setValue(scripts\ttt\items::getBombSecondsRemaining(bombEnt));
+	}
+}
+
+destroyBombHud()
+{
+	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["bombs"]);
 }
