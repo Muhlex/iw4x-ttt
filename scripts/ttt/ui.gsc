@@ -592,7 +592,7 @@ updateBombHuds()
 {
 	foreach (player in level.players)
 	{
-		if (isDefined(player.ttt.role) && player.ttt.role == "traitor" && isDefined(player.ttt.ui["hud"]["self"]["role"]))
+		if ((isDefined(player.ttt.role) && player.ttt.role == "traitor" && isDefined(player.ttt.ui["hud"]["self"]["role"])) || !isAlive(player))
 		{
 			player destroyBombHud();
 			player displayBombHud();

@@ -242,6 +242,7 @@ OnPlayerDeath()
 
 		self scripts\ttt\use::unsetPlayerAvailableUseEnt();
 		self scripts\ttt\ui::destroySelfHud();
+		self scripts\ttt\ui::displayBombHud();
 		self scripts\ttt\items::unsetPlayerBuyMenu();
 		checkRoundWinConditions();
 	}
