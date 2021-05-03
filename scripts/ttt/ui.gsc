@@ -43,13 +43,15 @@ displaySelfHud()
 {
 	self.ttt.ui["hud"]["self"]["role"] = self createFontString("hudbig", 0.8);
 	self.ttt.ui["hud"]["self"]["role"] setPoint("TOP RIGHT", "TOP RIGHT", -20, 10);
+	self.ttt.ui["hud"]["self"]["role"].hidewheninmenu = true;
+	self.ttt.ui["hud"]["self"]["role"].foreground = true;
 	self.ttt.ui["hud"]["self"]["role"].color = (1, 1, 1);
 	self.ttt.ui["hud"]["self"]["role"].glowAlpha = 1;
-	self.ttt.ui["hud"]["self"]["role"].hidewheninmenu = true;
 
-	self.ttt.ui["hud"]["self"]["health"] = self createFontString("hudbig", 0.8);
-	self.ttt.ui["hud"]["self"]["health"] setPoint("BOTTOM CENTER", "BOTTOM RIGHT", -46, -36);
+	self.ttt.ui["hud"]["self"]["health"] = self createFontString("hudbig", 1.0625);
+	self.ttt.ui["hud"]["self"]["health"] setPoint("BOTTOM CENTER", "BOTTOM RIGHT", -46, -33);
 	self.ttt.ui["hud"]["self"]["health"].hidewheninmenu = true;
+	self.ttt.ui["hud"]["self"]["health"].foreground = true;
 	self.ttt.ui["hud"]["self"]["health"].glowAlpha = 1;
 	self.ttt.ui["hud"]["self"]["health"].label = &"";
 
@@ -80,9 +82,18 @@ updatePlayerHealthDisplay()
 		// use cached maxhealth, because disabling health regen messes with the value
 		healthPct = self.health / level.ttt.maxhealth;
 		healthProxToHalf = (1 - abs(healthPct - 0.5)) * 2;
+		healthGlowAlpha = (1 - healthPct + 0.75) * 0.35;
 
-		self.ttt.ui["hud"]["self"]["health"].color = ((1 - healthPct) + healthProxToHalf * 0.5, healthPct + healthProxToHalf * 0.5, 0.5);
-		self.ttt.ui["hud"]["self"]["health"].glowColor = ((1 - healthPct) * 0.6 + healthProxToHalf * 0.3, healthPct * 0.6 + healthProxToHalf * 0.3, 0.3);
+		self.ttt.ui["hud"]["self"]["health"].color = (
+			(1 - healthPct) + healthProxToHalf * 0.5,
+			healthPct + healthProxToHalf * 0.5,
+			0.5
+		);
+		self.ttt.ui["hud"]["self"]["health"].glowColor = (
+			((1 - healthPct) * 0.6 + healthProxToHalf) * healthGlowAlpha,
+			(healthPct * 0.6 + healthProxToHalf) * healthGlowAlpha,
+			healthGlowAlpha
+		);
 	}
 	self.ttt.ui["hud"]["self"]["health"] setValue(self.health);
 }
