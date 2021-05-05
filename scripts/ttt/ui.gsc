@@ -130,6 +130,7 @@ updatePlayerRoleDisplay()
 		self.ttt.ui["hud"]["self"]["shop_hint"].alpha = 0.5;
 		self.ttt.ui["hud"]["self"]["shop_hint"].archived = false;
 		self.ttt.ui["hud"]["self"]["shop_hint"].hidewheninmenu = true;
+		self.ttt.ui["hud"]["self"]["shop_hint"].foreground = true;
 		self.ttt.ui["hud"]["self"]["shop_hint"].label = &"Press ^3[{+actionslot 2}]^7 to open shop";
 	}
 }
@@ -161,6 +162,36 @@ updateUseAvailableHint(label, text, value)
 destroyUseAvailableHint()
 {
 	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["use_hint"]);
+}
+
+displayActivateHint(title, hint)
+{
+	self.ttt.ui["hud"]["self"]["activate_hint"] = [];
+	self.ttt.ui["hud"]["self"]["activate_hint"]["title"] = self createFontString("objective", 1.4);
+	self.ttt.ui["hud"]["self"]["activate_hint"]["title"] setPoint("TOP CENTER", "CENTER", 0, -64);
+	self.ttt.ui["hud"]["self"]["activate_hint"]["title"].color = (1, 1, 1);
+	self.ttt.ui["hud"]["self"]["activate_hint"]["title"].alpha = 0.85;
+	self.ttt.ui["hud"]["self"]["activate_hint"]["title"].archived = false;
+	self.ttt.ui["hud"]["self"]["activate_hint"]["title"].hidewheninmenu = true;
+	self.ttt.ui["hud"]["self"]["activate_hint"]["hint"] = self createFontString("default", 1.5);
+	self.ttt.ui["hud"]["self"]["activate_hint"]["hint"] setParent(self.ttt.ui["hud"]["self"]["activate_hint"]["title"]);
+	self.ttt.ui["hud"]["self"]["activate_hint"]["hint"] setPoint("TOP CENTER", "BOTTOM CENTER", 0, 12);
+	self.ttt.ui["hud"]["self"]["activate_hint"]["hint"].color = (1, 1, 1);
+	self.ttt.ui["hud"]["self"]["activate_hint"]["hint"].alpha = 0.85;
+	self.ttt.ui["hud"]["self"]["activate_hint"]["hint"].archived = false;
+	self.ttt.ui["hud"]["self"]["activate_hint"]["hint"].hidewheninmenu = true;
+	updateActivateHint(title, hint);
+}
+
+updateActivateHint(title, hint)
+{
+	if (isDefined(title)) self.ttt.ui["hud"]["self"]["activate_hint"]["title"] setText(title);
+	if (isDefined(hint)) self.ttt.ui["hud"]["self"]["activate_hint"]["hint"].label = hint;
+}
+
+destroyActivateHint()
+{
+	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["activate_hint"]);
 }
 
 setupHeadIconAnchor()

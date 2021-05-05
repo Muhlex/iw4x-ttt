@@ -224,9 +224,9 @@ ammoEntThink()
 	}
 }
 
-tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
+tryPickUpWeapon(weaponEnt, explicitPickup)
 {
-	if (!isDefined(pickupOnFullInventory)) pickupOnFullInventory = false;
+	if (!isDefined(explicitPickup)) explicitPickup = false;
 
 	hasRoleWeapon = self scripts\ttt\items::hasRoleWeapon();
 	isRoleWeaponEquipped = self scripts\ttt\items::isRoleWeaponEquipped();
@@ -238,6 +238,7 @@ tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
 
 	if (newIsRoleWeapon)
 	{
+		if (!explicitPickup) return;
 		scripts\ttt\items::setRoleInventory(weaponEnt.item, weaponEnt.ammoClip, weaponEnt.ammoStock);
 		if (isDefined(weaponEnt.item.onPickUp)) self thread [[weaponEnt.item.onPickUp]](weaponEnt.item);
 		self playLocalSound("weap_pickup");
@@ -249,7 +250,7 @@ tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
 		weaponCount = primariesList.size - int(hasDefaultWeapon) - int(isRoleWeaponEquipped);
 		lastValidWeapon = self getLastValidWeapon();
 
-		if (weaponCount >= 2 && !pickupOnFullInventory) return;
+		if (weaponCount >= 2 && !explicitPickup) return;
 
 		self giveWeapon(weaponEnt.weaponName);
 		self setWeaponAmmoClip(weaponEnt.weaponName, weaponEnt.ammoClip);
@@ -258,7 +259,7 @@ tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
 		self thread maps\mp\gametypes\_weapons::stowedWeaponsRefresh();
 		self playLocalSound("weap_pickup");
 
-		if (weaponCount >= 2 && pickupOnFullInventory)
+		if (weaponCount >= 2 && explicitPickup)
 		{
 			if (maps\mp\gametypes\_weapons::mayDropWeapon(currentWeapon) && !isRoleWeaponEquipped)
 				self dropWeapon(currentWeapon);
@@ -266,7 +267,7 @@ tryPickUpWeapon(weaponEnt, pickupOnFullInventory)
 				self dropWeapon(lastValidWeapon);
 		}
 
-		if ((weaponCount == 0 || pickupOnFullInventory || currentWeapon == level.ttt.defaultWeapon) && !isRoleWeaponEquipped)
+		if ((weaponCount == 0 || explicitPickup || currentWeapon == level.ttt.defaultWeapon) && !isRoleWeaponEquipped)
 			self switchToWeapon(weaponEnt.weaponName);
 	}
 

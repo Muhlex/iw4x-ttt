@@ -208,3 +208,25 @@ drawDebugCircle(pos, radius, color, ticks)
 		thread drawDebugLine(linePos, nextLinePos, color, ticks);
 	}
 }
+
+printCloseEntities()
+{
+	/#
+	count = 0;
+	for (i = 0; i < 8192; i++)
+	{
+		entity = GetEntByNum(i);
+		if (!isDefined(entity)) continue;
+		distance = distance(self.origin, entity.origin);
+		if (distance > 512) continue;
+		classname = entity.classname;
+		if (!isDefined(classname)) classname = "undefined";
+		targetname = entity.targetname;
+		if (!isDefined(targetname)) targetname = "undefined";
+		if (!isDefined(distance)) distance = "undefined";
+		iPrintLn("CLASS: " + classname + " | TARGET: " + targetname + " | DIST: " + distance);
+		count++;
+	}
+	iPrintLnBold("Found " + count + " entities in 512 units proximity.");
+	#/
+}

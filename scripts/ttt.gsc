@@ -91,7 +91,6 @@ OnPrematchOver()
 
 OnRoundRestart()
 {
-	level endon("game_ended");
 	level waittill("restarting");
 
 	thread OnRoundStart();
@@ -144,8 +143,6 @@ OnTimelimitReached()
 
 OnAftertimeEnd()
 {
-	level endon("game_ended");
-
 	wait(getDvarInt("ttt_aftertime"));
 
 	scripts\ttt\ui::destroyRoundEnd();
@@ -175,8 +172,6 @@ OnAftertimeEnd()
 
 OnPlayerConnect()
 {
-	level endon("game_ended");
-
 	for (;;)
 	{
 		level waittill("connected", player);
@@ -398,7 +393,7 @@ OnPlayerScoreboardClose()
 		self scripts\ttt\ui::destroyScoreboard();
 		//self scripts\ttt\ui::displayHeadIcons();
 
-		// Restore default scoreborad settings
+		// Restore default scoreboard settings
 		self setClientDvar("cg_scoreboardWidth", 500);
 		self setClientDvar("cg_scoreboardHeight", 435);
 
@@ -502,4 +497,6 @@ endRound(winner, reason)
 	);
 
 	thread OnAftertimeEnd();
+
+	level notify("game_ended");
 }

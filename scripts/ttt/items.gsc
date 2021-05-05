@@ -27,7 +27,7 @@ init()
 
 	level.ttt.items["traitor"][1] = spawnStruct();
 	level.ttt.items["traitor"][1].name = "RADAR";
-	level.ttt.items["traitor"][1].description = "^3Passive item\n^7Periodically shows the location\nof all players on the minimap.";
+	level.ttt.items["traitor"][1].description = "^3Passive item\n^7Periodically shows the ^2location\nof all players ^7on the minimap.";
 	level.ttt.items["traitor"][1].icon = "specialty_uav";
 	level.ttt.items["traitor"][1].onBuy = ::OnBuyRadar;
 	level.ttt.items["traitor"][1].getIsAvailable = ::getIsAvailablePassive;
@@ -42,6 +42,7 @@ init()
 	level.ttt.items["traitor"][3] = spawnStruct();
 	level.ttt.items["traitor"][3].name = "BOMB";
 	level.ttt.items["traitor"][3].description = "^3Deployable item\n^7Causes a ^2huge explosion ^7after ^3" + getDvarInt("ttt_bomb_timer") + " ^7s.\nCan be ^1defused^7. Emits a ^1sound^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	level.ttt.items["traitor"][3].activateHint = &"Hold [ ^3[{+attack}]^7 ] to ^3plant ^7the bomb";
 	level.ttt.items["traitor"][3].icon = "hud_suitcase_bomb";
 	level.ttt.items["traitor"][3].onBuy = ::OnBuyBomb;
 	level.ttt.items["traitor"][3].onActivate = ::OnActivateBomb;
@@ -50,7 +51,7 @@ init()
 
 	level.ttt.items["traitor"][4] = spawnStruct();
 	level.ttt.items["traitor"][4].name = "ROCKET LAUNCHER";
-	level.ttt.items["traitor"][4].description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds 1 rocket. ^1Can't pick up ammo^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	level.ttt.items["traitor"][4].description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds ^31 ^7rocket. ^1Can't pick up ammo^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
 	level.ttt.items["traitor"][4].icon = "weapon_rpg7";
 	level.ttt.items["traitor"][4].iconWidth = 44;
 	level.ttt.items["traitor"][4].iconHeight = 22;
@@ -72,7 +73,7 @@ init()
 
 	level.ttt.items["traitor"][6] = spawnStruct();
 	level.ttt.items["traitor"][6].name = "THROWING KNIFE";
-	level.ttt.items["traitor"][6].description = "^3Exclusive equipment\n^7Kills ^2silently^7. Can be ^2picked up\n^7by anyone if it doesn't kill.";
+	level.ttt.items["traitor"][6].description = "^3Exclusive equipment\n^7Kills ^2silently^7. Can be ^2picked up\n^7by anyone if it doesn't kill.\n\nPress [ ^3[{+frag}]^7 ] to throw.";
 	level.ttt.items["traitor"][6].icon = "equipment_throwing_knife";
 	level.ttt.items["traitor"][6].iconOffsetX = 1;
 	level.ttt.items["traitor"][6].onBuy = ::OnBuyKnife;
@@ -80,7 +81,7 @@ init()
 
 	level.ttt.items["traitor"][7] = spawnStruct();
 	level.ttt.items["traitor"][7].name = "CLAYMORE";
-	level.ttt.items["traitor"][7].description = "^3Exclusive equipment\n^7Triggers for anyone ^1including traitors^7.\n^2Highlighted ^7to other traitors.";
+	level.ttt.items["traitor"][7].description = "^3Exclusive equipment\n^7Triggers for anyone ^1including yourself^7.\n^2Highlighted ^7to other traitors.\n\nPress [ ^3[{+frag}]^7 ] to set down.";
 	level.ttt.items["traitor"][7].icon = "equipment_claymore";
 	level.ttt.items["traitor"][7].iconOffsetX = 1;
 	level.ttt.items["traitor"][7].onBuy = ::OnBuyClaymore;
@@ -88,7 +89,7 @@ init()
 
 	level.ttt.items["traitor"][8] = spawnStruct();
 	level.ttt.items["traitor"][8].name = "FLASHBANG";
-	level.ttt.items["traitor"][8].description = "^3Exclusive special grenade\n^2Blinds ^7anyone who is caught in\nor looking at the explosion.";
+	level.ttt.items["traitor"][8].description = "^3Exclusive special grenade\n^2Blinds ^7anyone who is caught in\nor looking at the explosion.\n\nPress [ ^3[{+smoke}]^7 ] to throw.";
 	level.ttt.items["traitor"][8].icon = "weapon_flashbang";
 	level.ttt.items["traitor"][8].onBuy = ::OnBuyFlash;
 	level.ttt.items["traitor"][8].getIsAvailable = ::getIsAvailableOffhand;
@@ -120,7 +121,7 @@ init()
 
 	level.ttt.items["detective"][3] = spawnStruct();
 	level.ttt.items["detective"][3].name = "STUN GRENADE";
-	level.ttt.items["detective"][3].description = "^3Exclusive special grenade\n^2Disorients ^7and ^2slows ^7targets\ncaught in the explosion.";
+	level.ttt.items["detective"][3].description = "^3Exclusive special grenade\n^2Disorients ^7and ^2slows ^7targets\ncaught in the explosion.\n\nPress [ ^3[{+smoke}]^7 ] to throw.";
 	level.ttt.items["detective"][3].icon = "weapon_concgrenade";
 	level.ttt.items["detective"][3].onBuy = ::OnBuyConcussion;
 	level.ttt.items["detective"][3].getIsAvailable = ::getIsAvailableOffhand;
@@ -128,6 +129,7 @@ init()
 	level.ttt.items["detective"][4] = spawnStruct();
 	level.ttt.items["detective"][4].name = "HEALTH STATION";
 	level.ttt.items["detective"][4].description = "^3Deployable item\n^7Slowly ^2regenerates health ^7on use.\nCan be placed anywhere.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	level.ttt.items["detective"][4].activateHint = &"Press [ ^3[{+attack}]^7 ] to ^3place ^7the health station";
 	level.ttt.items["detective"][4].icon = "hint_health";
 	level.ttt.items["detective"][4].onBuy = ::OnBuyHealthStation;
 	level.ttt.items["detective"][4].onActivate = ::OnActivateHealthStation;
@@ -136,7 +138,7 @@ init()
 
 	level.ttt.items["detective"][5] = spawnStruct();
 	level.ttt.items["detective"][5].name = "INSANE BICEPS";
-	level.ttt.items["detective"][5].description = "^3Passive item\n^7Drop weapons with ^2deadly velocity^7.\nDeal ^2more damage ^7at far distances.\n\nPress [ ^3[{+actionslot 1}]^7 ] to drop a weapon.";
+	level.ttt.items["detective"][5].description = "^3Passive item\n^7Drop weapons with ^2deadly velocity^7.\nDeal ^2more damage ^7at far distances.\n\nPress [ ^3[{+actionslot 1}]^7 ] to throw a weapon.";
 	level.ttt.items["detective"][5].icon = "specialty_onemanarmy_upgrade";
 	level.ttt.items["detective"][5].onBuy = ::OnBuyLob;
 	level.ttt.items["detective"][5].getIsAvailable = ::getIsAvailablePassive;
@@ -389,6 +391,7 @@ equipRoleWeapon()
 	self switchToWeapon(weaponName);
 	self thread OnRoleWeaponEquipCancel();
 	self thread OnRoleWeaponStow();
+	self thread OnRoleWeaponEquip();
 }
 
 OnRoleWeaponEquipCancel()
@@ -417,6 +420,46 @@ OnRoleWeaponStow()
 		self takeRoleWeapon();
 		break;
 	}
+}
+
+displayRoleWeaponActivateHint()
+{
+	item = self.ttt.items.roleInventory.item;
+	if (isDefined(item) && isDefined(item.activateHint))
+	{
+		self scripts\ttt\ui::destroyActivateHint();
+		self scripts\ttt\ui::displayActivateHint(item.name, item.activateHint);
+	}
+}
+destroyRoleWeaponActivateHint()
+{
+	self scripts\ttt\ui::destroyActivateHint();
+}
+
+OnRoleWeaponEquip()
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("role_weapon_taken");
+
+	for (;;)
+	{
+		self waittill("weapon_change", weaponName);
+		if (!isRoleWeapon(weaponName)) continue;
+
+		self displayRoleWeaponActivateHint();
+		self thread OnRoleWeaponUnequip(weaponName);
+	}
+
+}
+
+OnRoleWeaponUnequip(weaponName)
+{
+	self endon("disconnect");
+	self endon("death");
+
+	while (self getCurrentWeapon() == weaponName) wait(0.05);
+	self destroyRoleWeaponActivateHint();
 }
 
 OnPlayerRoleWeaponActivate()
@@ -482,7 +525,7 @@ awardBodyInspectCredits(victim)
 {
 	if (!isDefined(self.ttt.role) || !isDefined(victim.ttt.role)) return;
 
-	if (self.ttt.role == "detective" && victim.ttt.role == "traitor")
+	if (self.ttt.role == "detective" && victim.ttt.items.credits > 0 && isPlayer(victim))
 	{
 		self awardCredits(victim.ttt.items.credits);
 		victim.ttt.items.credits = 0;
@@ -727,7 +770,7 @@ OnDefuseBomb(bombEnt)
 	self setWeaponAmmoStock(BOMB_WEAPON, 0);
 	self switchToWeapon(BOMB_WEAPON);
 
-	bombEnt hideBomb();
+	bombEnt hideBomb(self);
 
 	self thread OnBombInteractionInterrupt(bombEnt);
 
@@ -804,9 +847,9 @@ showBomb()
 	);
 }
 
-hideBomb()
+hideBomb(player)
 {
-	self.interactingPlayer = self;
+	self.interactingPlayer = player;
 	self hide();
 	self.fxEnt delete();
 	self scripts\ttt\use::makeUnusableCustom();
@@ -924,13 +967,14 @@ bombThink()
 explodeBomb()
 {
 	RADIUS = getDvarInt("ttt_bomb_radius");
-	// radiusDamage(self.origin, RADIUS, level.ttt.maxhealth * 2, 0, attacker);
+
 	foreach (player in getLivingPlayers())
 	{
 		distance = distance(self.origin, player.origin);
 		damageNormalized = 1 - distance / RADIUS;
+		if (damageNormalized <= 0) continue;
 		damage = int(damageNormalized * level.ttt.maxhealth * 3);
-		if (damage <= 0) continue;
+
 		player thread [[level.callbackPlayerDamage]](
 			self, // eInflictor The entity that causes the damage. ( e.g. a turret )
 			self.owner, // eAttacker The entity that is attacking.
@@ -942,6 +986,56 @@ explodeBomb()
 			player.origin - self.origin, // vDir The direction of the damage
 			"none", // sHitLoc The location of the hit
 			0 // psOffsetTime The time offset for the damage
+		);
+	}
+
+	destructibleEnts = [];
+	destructibleEnts = array_combine(getEntArray("destructible_toy", "targetname"), destructibleEnts);
+	destructibleEnts = array_combine(getEntArray("destructible_vehicle", "targetname"), destructibleEnts);
+	destructibleEnts = array_combine(getEntArray("explodable_barrel", "targetname"), destructibleEnts);
+	destructibleEnts = array_combine(getEntArray("vending_machine", "targetname"), destructibleEnts);
+
+	foreach (ent in destructibleEnts)
+	{
+		distance = distance(self.origin, ent.origin);
+		damageNormalized = 1 - distance / RADIUS;
+		if (damageNormalized <= 0) continue;
+		damage = int(damageNormalized * 1000);
+
+		ent notify(
+			"damage",
+			damage,
+			self.owner,
+			ent.origin - self.origin,
+			self.origin,
+			"MOD_EXPLOSIVE",
+			"", ""
+		);
+	}
+
+	scriptVehicles = getEntArray("script_vehicle", "classname");
+
+	foreach (vehicle in scriptVehicles)
+	{
+		distance = distance(self.origin, vehicle.origin);
+		damageNormalized = 1 - distance / (RADIUS * 1.5);
+		if (damageNormalized <= 0) continue;
+		damage = int(damageNormalized * 2000);
+
+		if (vehicle.damageTaken + damage >= vehicle.maxhealth) vehicle.largeProjectileDamage = true;
+		vehicle maps\mp\gametypes\_callbacksetup::CodeCallback_VehicleDamage(
+			self,
+			self.owner,
+			damage,
+			0,
+			"MOD_EXPLOSIVE",
+			"none",
+			self.origin,
+			vehicle.origin - self.origin,
+			"none",
+			0,
+			0,
+			""
 		);
 	}
 
@@ -957,19 +1051,24 @@ explodeBomb()
 	}
 	*/
 
-	physicsExplosionSphere(self.origin, RADIUS, int(RADIUS / 3), 2.5);
+	glassRadiusDamage(self.origin + (0, 0, 24), RADIUS, 300, 20);
+	physicsExplosionSphere(self.origin, RADIUS + 512, RADIUS, 2.5);
 	earthquake(0.75, 2.0, self.origin, RADIUS * 2);
 	self playSound("exp_suitcase_bomb_main");
 	playFX(level.ttt.effects.bombExplosion, self.origin);
-	FX_COUNT = 8;
-	for (i = 0; i < FX_COUNT; i++)
+
+	if (RADIUS >= 640)
 	{
-		forward = anglesToForward(combineAngles((0, 360 / FX_COUNT * i, 0), (0, randomFloatRange(-10, 10), 0)));
-		thread playFXDelayed(
-			level.ttt.effects.bombOuterExplosion,
-			self.origin + forward * (RADIUS - 800) + (0, 0, randomIntRange(-128, 384)),
-			randomFloatRange(0.05, 0.8)
-		);
+		FX_COUNT = 8;
+		for (i = 0; i < FX_COUNT; i++)
+		{
+			forward = anglesToForward(combineAngles((0, 360 / FX_COUNT * i, 0), (0, randomFloatRange(-10, 10), 0)));
+			thread playFXDelayed(
+				level.ttt.effects.bombOuterExplosion,
+				self.origin + forward * (RADIUS - 800) + (0, 0, randomIntRange(-128, 384)),
+				randomFloatRange(0.05, 0.8)
+			);
+		}
 	}
 
 	self.killCamEnt delete();
@@ -979,7 +1078,8 @@ explodeBomb()
 
 OnBuyHelicopter()
 {
-	level.heli_turretClipSize = 35; // helicopter only gets accurate after ~20 shots
+	level.heli_target_spawnprotection = 8;
+	level.heli_turretClipSize = 32; // helicopter only gets accurate after ~20 shots
 	level.heli_maxhealth = 500;
 	self maps\mp\killstreaks\_helicopter::startHelicopter(-1);
 }

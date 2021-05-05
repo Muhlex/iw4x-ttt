@@ -1198,7 +1198,7 @@ heli_damage_monitor()
 			else if ( !isDefined(self.owner) || attacker != self.owner )
 				validAttacker = attacker;
 
-			if ( isDefined( validAttacker ) )
+			if ( isDefined( validAttacker ) && !level.ttt.enabled )
 			{
 				attacker notify( "destroyed_helicopter" );
 
@@ -2038,6 +2038,7 @@ heli_leave()
 	self Vehicle_SetSpeed( 100, 45 );
 	self setvehgoalpos( leaveNode.origin, 1 );
 	self waittillmatch( "goal" );
+	self notify( "sentry_burstFireStop" );
 	self notify( "death" );
 
 	// give "death" notify time to process
