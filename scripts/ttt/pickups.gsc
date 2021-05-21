@@ -6,6 +6,8 @@ init()
 {
 	precacheModel("weapon_scavenger_grenadebag");
 
+	if (level.ttt.modEnabled) precacheItem("winchester1200_mp");
+
 	level.ttt.pickups = spawnStruct();
 	level.ttt.effects.trailEffect = loadFX("props/throwingknife_geotrail");
 }
@@ -13,6 +15,7 @@ init()
 initPlayer()
 {
 	self.ttt.pickups = spawnStruct();
+	self.ttt.pickups.canDropWeapons = true;
 	self.ttt.pickups.dropVelocity = 64;
 	self.ttt.pickups.dropCanDamage = false;
 }
@@ -38,7 +41,7 @@ getRandomWeapon()
 	tieredWeapons[1][5] = "kriss";
 	tieredWeapons[1][6] = "rpd";
 	tieredWeapons[1][7] = "m1014";
-	tieredWeapons[1][8] = "beretta393";
+	tieredWeapons[1][8] = "beretta393_reflex";
 	tieredWeapons[1][9] = "glock";
 
 	tieredWeapons[2][0] = "fn2000";
@@ -51,6 +54,8 @@ getRandomWeapon()
 	tieredWeapons[2][7] = "pp2000";
 	tieredWeapons[2][8] = "tmp";
 	tieredWeapons[2][9] = "model1887";
+	if (level.ttt.modEnabled)
+		tieredWeapons[2][9] = "winchester1200";
 
 	weighting = randomInt(100);
 	result = undefined;
@@ -61,12 +66,34 @@ getRandomWeapon()
 	return result + "_mp";
 }
 
-createWeaponEnt(weaponName, ammoClip, ammoStock, item, origin, angles, velocity)
+isWeaponDroppable(weaponName)
+{
+	return maps\mp\gametypes\_weapons::mayDropWeapon(weaponName) || scripts\ttt\items::isRoleWeapon(weaponName);
+}
+
+isWeaponLaptop(weaponName)
+{
+	switch (weaponName)
+	{
+		case "killstreak_ac130_mp": // hides UI when active
+		case "killstreak_harrier_airstrike_mp":
+		case "killstreak_helicopter_minigun_mp": // hides UI when active
+		case "killstreak_precision_airstrike_mp":
+		case "killstreak_predator_missile_mp": // hides UI when active
+		case "killstreak_stealth_airstrike_mp":
+			return true;
+	}
+
+	return isSubStr(weaponName, "laptop");
+}
+
+createWeaponEnt(weaponName, ammoClip, ammoStock, item, data, origin, angles, velocity)
 {
 	if (!isDefined(weaponName)) return;
 	if (!isDefined(ammoClip)) ammoClip = 0;
 	if (!isDefined(ammoStock)) ammoStock = 0;
 	if (!isDefined(item)) item = undefined;
+	if (!isDefined(data)) data = undefined;
 	if (!isDefined(origin)) origin = (0, 0, 0);
 	if (!isDefined(angles)) angles = (0, 0, 0);
 	if (!isDefined(velocity)) velocity = (0, 0, 0);
@@ -100,7 +127,8 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, item, origin, angles, velocity)
 			break;
 	}
 	if (weaponName == "riotshield_mp") weaponEnt.angles = combineAngles(angles, (0, 90, 90));
-	if (weaponName == "onemanarmy_mp")
+	if (isWeaponLaptop(weaponName)) weaponEnt.angles = combineAngles(angles, (90, 90, 0));
+	if (weaponName == "onemanarmy_mp" || isSubStr(weaponName, "oma"))
 	{
 		weaponEnt.angles = combineAngles(angles, (-90, 100, -35));
 		weaponEnt.origin += anglesToRight(angles) * -2;
@@ -115,6 +143,7 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, item, origin, angles, velocity)
 	weaponEnt.ammoClip = ammoClip;
 	weaponEnt.ammoStock = ammoStock;
 	weaponEnt.item = item;
+	weaponEnt.data = data;
 
 	// magic numbers to make the item receive velocity around it's center of mass
 	launchOffset = 0 * anglesToRight(angles) + -10 * anglesToForward(angles) + 10 * anglesToUp(angles);
@@ -136,7 +165,7 @@ OnWeaponPickupAvailable(ent)
 {
 	self scripts\ttt\ui::destroyUseAvailableHint();
 	displayName = level.ttt.localizedWeaponNames[ent.weaponName];
-	if (ent.weaponName == "onemanarmy_mp" && isDefined(ent.item)) displayName = ent.item.name;
+	if (scripts\ttt\items::isRoleWeapon(ent.weaponName) && isDefined(ent.item)) displayName = ent.item.name;
 	self scripts\ttt\ui::displayUseAvailableHint(&"[ ^3[{+activate}] ^7] for ^3", displayName);
 }
 OnWeaponPickupAvailableEnd(ent)
@@ -162,6 +191,10 @@ OnWeaponEntPhysicsFinish()
 	self.physicsEnt waittill("physics_finished");
 
 	stopFXOnTag(level.ttt.effects.trailEffect, self, "tag_weapon");
+
+	// Rotate the laptop if it is facing the ground:
+	if (isWeaponLaptop(self.weaponName) && anglesToUp(self.angles)[2] < 0)
+		self.physicsEnt rotateRoll(-180, 0.5, 0.25, 0.25);
 
 	self thread weaponEntThink();
 }
@@ -229,7 +262,8 @@ tryPickUpWeapon(weaponEnt, explicitPickup)
 	if (!isDefined(explicitPickup)) explicitPickup = false;
 
 	hasRoleWeapon = self scripts\ttt\items::hasRoleWeapon();
-	isRoleWeaponEquipped = self scripts\ttt\items::isRoleWeaponEquipped();
+	isRoleWeaponOnPlayer = self scripts\ttt\items::isRoleWeaponOnPlayer();
+	roleWeaponInvType = weaponInventoryType(weaponEnt.weaponName) == "primary";
 	newIsRoleWeapon = scripts\ttt\items::isRoleWeapon(weaponEnt.weaponName);
 
 	if (self hasWeapon(weaponEnt.weaponName) || (hasRoleWeapon && newIsRoleWeapon)) return;
@@ -239,15 +273,15 @@ tryPickUpWeapon(weaponEnt, explicitPickup)
 	if (newIsRoleWeapon)
 	{
 		if (!explicitPickup) return;
-		scripts\ttt\items::setRoleInventory(weaponEnt.item, weaponEnt.ammoClip, weaponEnt.ammoStock);
-		if (isDefined(weaponEnt.item.onPickUp)) self thread [[weaponEnt.item.onPickUp]](weaponEnt.item);
+		scripts\ttt\items::setRoleInventory(weaponEnt.item, weaponEnt.ammoClip, weaponEnt.ammoStock, weaponEnt.data);
+		if (isDefined(weaponEnt.item.onPickUp)) self thread [[weaponEnt.item.onPickUp]](weaponEnt.item, weaponEnt.data);
 		self playLocalSound("weap_pickup");
 	}
 	else
 	{
-		hasDefaultWeapon = self hasWeapon(level.ttt.defaultWeapon);
+		hasKnife = self hasWeapon(level.ttt.knifeWeapon);
 		primariesList = self getWeaponsListPrimaries();
-		weaponCount = primariesList.size - int(hasDefaultWeapon) - int(isRoleWeaponEquipped);
+		weaponCount = primariesList.size - int(hasKnife) - int(isRoleWeaponOnPlayer && roleWeaponInvType == "primary");
 		lastValidWeapon = self getLastValidWeapon();
 
 		if (weaponCount >= 2 && !explicitPickup) return;
@@ -255,19 +289,19 @@ tryPickUpWeapon(weaponEnt, explicitPickup)
 		self giveWeapon(weaponEnt.weaponName);
 		self setWeaponAmmoClip(weaponEnt.weaponName, weaponEnt.ammoClip);
 		self setWeaponAmmoStock(weaponEnt.weaponName, weaponEnt.ammoStock);
-		if (hasDefaultWeapon && weaponCount == 1) self takeWeapon(level.ttt.defaultWeapon);
+		if (hasKnife && weaponCount == 1) self takeWeapon(level.ttt.knifeWeapon);
 		self thread maps\mp\gametypes\_weapons::stowedWeaponsRefresh();
 		self playLocalSound("weap_pickup");
 
 		if (weaponCount >= 2 && explicitPickup)
 		{
-			if (maps\mp\gametypes\_weapons::mayDropWeapon(currentWeapon) && !isRoleWeaponEquipped)
+			if (isWeaponDroppable(currentWeapon) && !isRoleWeaponOnPlayer)
 				self dropWeapon(currentWeapon);
 			else
 				self dropWeapon(lastValidWeapon);
 		}
 
-		if ((weaponCount == 0 || explicitPickup || currentWeapon == level.ttt.defaultWeapon) && !isRoleWeaponEquipped)
+		if ((weaponCount == 0 || explicitPickup || currentWeapon == level.ttt.knifeWeapon) && !isRoleWeaponOnPlayer)
 			self switchToWeapon(weaponEnt.weaponName);
 	}
 
@@ -279,7 +313,7 @@ tryPickUpWeapon(weaponEnt, explicitPickup)
 tryPickUpAmmo(ammoEnt, weaponName)
 {
 	if (!self maps\mp\gametypes\_weapons::mayDropWeapon(weaponName)) return;
-	if (weaponName == level.ttt.defaultWeapon) return;
+	if (weaponName == level.ttt.knifeWeapon) return;
 	if (weaponName == "rpg_mp") return;
 
 	maxClip = weaponClipSize(weaponName);
@@ -329,7 +363,7 @@ spawnWorldPickups()
 
 		weaponName = getRandomWeapon();
 
-		createWeaponEnt(weaponName, 0, weaponClipSize(weaponName), undefined, origin, (0, randomInt(360), 0));
+		createWeaponEnt(weaponName, 0, weaponClipSize(weaponName), undefined, undefined, origin, (0, randomInt(360), 0));
 
 		// Spawn ammo
 		AMMO_COUNT = 3;
@@ -353,15 +387,17 @@ OnPlayerDropWeapon()
 	self endon("disconnect");
 	self endon("death");
 
-	self notifyOnPlayerCommand("drop_weapon", "+actionslot 1");
+	self notifyOnPlayerCommand("ttt_drop_weapon", "+actionslot 1");
 
 	for (;;)
 	{
-		self waittill("drop_weapon");
+		self waittill("ttt_drop_weapon");
+
+		if (!self.ttt.pickups.canDropWeapons) continue;
 
 		weaponName = self getCurrentWeapon();
-		if (weaponName == level.ttt.defaultWeapon) continue;
-		if (!maps\mp\gametypes\_weapons::mayDropWeapon(weaponName)) continue;
+		if (weaponName == level.ttt.knifeWeapon) continue;
+		if (!isWeaponDroppable(weaponName)) continue;
 
 		self dropWeapon(
 			weaponName,
@@ -379,10 +415,13 @@ dropWeapon(weaponName, velocity)
 	ammoClip = self getWeaponAmmoClip(weaponName);
 	ammoStock = self getWeaponAmmoStock(weaponName);
 	item = undefined;
+	data = undefined;
 
 	if (scripts\ttt\items::isRoleWeapon(weaponName))
 	{
-		item = self.ttt.items.roleInventory.item;
+		inv = self.ttt.items.roleInventory;
+		if (isDefined(inv.item)) item = inv.item;
+		if (isDefined(inv.data)) data = inv.data;
 		self scripts\ttt\items::resetRoleInventory();
 	}
 
@@ -394,7 +433,7 @@ dropWeapon(weaponName, velocity)
 	spawnPos -= anglesToForward(self.angles) * 24;
 	spawnPos = physicsTrace(spawnPos, spawnPos + (0, 0, -16)) + (0, 0, 8);
 
-	weaponEnt = createWeaponEnt(weaponName, ammoClip, ammoStock, item, spawnPos, self getPlayerAngles() + (0, 90, 0), velocity);
+	weaponEnt = createWeaponEnt(weaponName, ammoClip, ammoStock, item, data, spawnPos, self getPlayerAngles() + (0, 90, 0), velocity);
 
 	if (self.ttt.pickups.dropCanDamage)
 	{
@@ -411,12 +450,14 @@ dropWeapon(weaponName, velocity)
 	self takeWeapon(weaponName);
 	if (!weaponWasActive) return;
 
-	hasDefaultWeapon = self hasWeapon(level.ttt.defaultWeapon);
-	weaponCount = self getWeaponsListPrimaries().size - int(hasDefaultWeapon);
+	hasKnife = self hasWeapon(level.ttt.knifeWeapon);
+	weaponCount = self getWeaponsListPrimaries().size - int(hasKnife);
 
-	if (weaponCount <= 1 && !hasDefaultWeapon) self giveDefaultWeapon();
+	if (weaponCount <= 1 && !hasKnife) self giveDefaultWeapon();
 
 	self switchToLastWeapon();
+
+	self notify("ttt_weapon_drop_success");
 }
 
 setTrailEffect()
@@ -506,6 +547,7 @@ OnWeaponEntDamagePlayer(attacker)
 						self.ammoClip,
 						self.ammoStock,
 						self.item,
+						self.data,
 						origins[1],
 						self.physicsEnt.angles,
 						trace["normal"] * 64 + (0, 0, 48)
@@ -527,7 +569,7 @@ OnWeaponEntDamagePlayer(attacker)
 
 giveDefaultWeapon()
 {
-	self giveWeapon(level.ttt.defaultWeapon);
-	self SetWeaponAmmoClip(level.ttt.defaultWeapon, 0);
-	self SetWeaponAmmoStock(level.ttt.defaultWeapon, 0);
+	self giveWeapon(level.ttt.knifeWeapon);
+	self SetWeaponAmmoClip(level.ttt.knifeWeapon, 0);
+	self SetWeaponAmmoStock(level.ttt.knifeWeapon, 0);
 }

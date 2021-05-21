@@ -1263,7 +1263,11 @@ Callback_PlayerConnect()
 		}
 
 		self [[level.spectator]]();
-		self maps\mp\gametypes\_menus::beginTeamChoice();
+
+		if (level.ttt.enabled)
+			self notify("menuresponse", game["menu_team"], "allies");
+		else
+			self maps\mp\gametypes\_menus::beginTeamChoice();
 	}
 	else
 	{
@@ -1278,7 +1282,12 @@ Callback_PlayerConnect()
 		self thread spawnSpectator();
 
 		if ( self.pers["team"] == "spectator" )
-			self maps\mp\gametypes\_menus::beginTeamChoice();
+		{
+			if (level.ttt.enabled)
+				self notify("menuresponse", game["menu_team"], "allies");
+			else
+				self maps\mp\gametypes\_menus::beginTeamChoice();
+		}
 		else
 			self maps\mp\gametypes\_menus::beginClassChoice();
 	}

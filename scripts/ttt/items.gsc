@@ -7,14 +7,33 @@ init()
 	level.ttt.effects.bombBlink = loadFX("misc/aircraft_light_red_blink");
 	level.ttt.effects.bombExplosion = loadFX("explosions/tanker_explosion");
 	level.ttt.effects.bombOuterExplosion = loadFX("explosions/aerial_explosion_large");
+	level.ttt.effects.cameraIdle = loadFX("misc/aircraft_light_wingtip_green");
+	level.ttt.effects.cameraActive = loadFX("misc/aircraft_light_red_blink");
 
 	precacheModel("prop_suitcase_bomb");
+	precacheModel("sentry_minigun");
+
+	if (level.ttt.modEnabled)
+	{
+		precacheModel("com_security_camera_tilt_animated");
+		precacheModel("com_security_camera_tilt_animated_bombsquad");
+		precacheModel("com_security_camera_d_tilt_animated");
+		precacheMPAnim("security_camera_idle");
+		precacheMPAnim("security_camera_destroy");
+		level.ttt.effects.cameraExplosion = loadFX("props/security_camera_explosion_moving");
+	}
+	else
+	{
+		precacheModel("weapon_c4");
+		precacheModel("weapon_c4_bombsquad");
+	}
 
 	level.ttt.bombs = [];
 
 	level.ttt.items = [];
 	level.ttt.items["traitor"] = [];
 	level.ttt.items["detective"] = [];
+	level.ttt.items["internal"] = [];
 
 	armor = spawnStruct();
 	armor.name = "ARMOR";
@@ -48,6 +67,8 @@ init()
 	level.ttt.items["traitor"][3].onActivate = ::OnActivateBomb;
 	level.ttt.items["traitor"][3].getIsAvailable = ::getIsAvailableRoleItem;
 	level.ttt.items["traitor"][3].weaponName = "onemanarmy_mp";
+	if (level.ttt.modEnabled)
+		level.ttt.items["traitor"][3].weaponName = "oma_bomb_mp";
 
 	level.ttt.items["traitor"][4] = spawnStruct();
 	level.ttt.items["traitor"][4].name = "ROCKET LAUNCHER";
@@ -98,7 +119,7 @@ init()
 
 	level.ttt.items["detective"][1] = spawnStruct();
 	level.ttt.items["detective"][1].name = "RIOT SHIELD";
-	level.ttt.items["detective"][1].description = "^3Exclusive weapon\n^2Blocks bullets^7, even when\nit is on your back.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	level.ttt.items["detective"][1].description = "^3Exclusive weapon\n^2Blocks bullets^7, even when it is\non your back.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
 	level.ttt.items["detective"][1].icon = "weapon_riotshield";
 	level.ttt.items["detective"][1].iconWidth = 64;
 	level.ttt.items["detective"][1].iconHeight = 32;
@@ -135,6 +156,8 @@ init()
 	level.ttt.items["detective"][4].onActivate = ::OnActivateHealthStation;
 	level.ttt.items["detective"][4].getIsAvailable = ::getIsAvailableRoleItem;
 	level.ttt.items["detective"][4].weaponName = "onemanarmy_mp";
+	if (level.ttt.modEnabled)
+		level.ttt.items["detective"][4].weaponName = "oma_healthstation_mp";
 
 	level.ttt.items["detective"][5] = spawnStruct();
 	level.ttt.items["detective"][5].name = "INSANE BICEPS";
@@ -143,7 +166,33 @@ init()
 	level.ttt.items["detective"][5].onBuy = ::OnBuyLob;
 	level.ttt.items["detective"][5].getIsAvailable = ::getIsAvailablePassive;
 
-	foreach (roleItems in level.ttt.items) foreach (item in roleItems) precacheShader(item.icon);
+	level.ttt.items["detective"][6] = spawnStruct();
+	level.ttt.items["detective"][6].name = "CAMERA";
+	level.ttt.items["detective"][6].description = "^3Deployable item\n^7Place on walls to ^2remotely observe an\narea^7. Equip the receiver once placed.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	level.ttt.items["detective"][6].activateHint = &"Press [ ^3[{+attack}]^7 ] ^3on a wall ^7to place the camera";
+	level.ttt.items["detective"][6].icon = "cardicon_binoculars_1";
+	level.ttt.items["detective"][6].onBuy = ::OnBuyCamera;
+	level.ttt.items["detective"][6].onEquip = ::OnEquipCamera;
+	level.ttt.items["detective"][6].onUnequip = ::OnUnequipCamera;
+	level.ttt.items["detective"][6].onActivate = ::OnActivateCamera;
+	level.ttt.items["detective"][6].getIsAvailable = ::getIsAvailableRoleItem;
+	level.ttt.items["detective"][6].weaponName = "onemanarmy_mp";
+	if (level.ttt.modEnabled)
+		level.ttt.items["detective"][6].weaponName = "oma_camera_mp";
+
+	level.ttt.items["internal"]["camera_receiver"] = spawnStruct();
+	level.ttt.items["internal"]["camera_receiver"].name = "CAMERA RECEIVER";
+	level.ttt.items["internal"]["camera_receiver"].onBuy = ::OnBuyCamReceiver;
+	level.ttt.items["internal"]["camera_receiver"].onEquip = ::OnEquipCamReceiver;
+	level.ttt.items["internal"]["camera_receiver"].onStartUnequip = ::OnStartUnequipCamReceiver;
+	level.ttt.items["internal"]["camera_receiver"].onUnequip = ::OnUnequipCamReceiver;
+	level.ttt.items["internal"]["camera_receiver"].weaponName = "killstreak_ac130_mp";
+
+	foreach (roleItems in level.ttt.items) foreach (item in roleItems)
+	{
+		precacheShader(item.icon);
+		if (level.ttt.modEnabled) precacheItem(item.weaponName);
+	}
 }
 
 initPlayer()
@@ -161,15 +210,15 @@ OnPlayerBuyMenu()
 	self endon("disconnect");
 	self endon("death");
 
-	self notifyOnPlayerCommand("buymenu_toggle", "+actionslot 2");
-	self notifyOnPlayerCommand("buymenu_close", "weapnext");
-	self notifyOnPlayerCommand("buymenu_close", "weapprev");
+	self notifyOnPlayerCommand("ttt_buymenu_toggle", "+actionslot 2");
+	self notifyOnPlayerCommand("ttt_buymenu_close", "weapnext");
+	self notifyOnPlayerCommand("ttt_buymenu_close", "weapprev");
 
 	for (;;)
 	{
-		eventName = self waittill_any_return("buymenu_toggle", "buymenu_close");
+		eventName = self waittill_any_return("ttt_buymenu_toggle", "ttt_buymenu_close");
 
-		if (!self.ttt.items.inBuyMenu && eventName == "buymenu_close") continue;
+		if (!self.ttt.items.inBuyMenu && eventName == "ttt_buymenu_close") continue;
 		if (!isAlive(self) || !isDefined(self.ttt.role) || (self.ttt.role != "traitor" && self.ttt.role != "detective")) continue;
 
 		if (self.ttt.items.inBuyMenu) self thread unsetPlayerBuyMenu(true);
@@ -177,14 +226,29 @@ OnPlayerBuyMenu()
 	}
 }
 
+OnPlayerBuyMenuEsc()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	for (;;)
+	{
+		self waittill("menuresponse", menu, response);
+
+		if (response != "ttt_esc_menu_blocked") continue;
+
+		if (self.ttt.items.inBuyMenu) self thread unsetPlayerBuyMenu(true);
+	}
+}
+
 setPlayerBuyMenu()
 {
 	self endon("disconnect");
 	self endon("death");
-	self endon("buymenu_toggle");
-	self endon("buymenu_close");
+	self endon("ttt_buymenu_toggle");
+	self endon("ttt_buymenu_close");
 
-	LAPTOP_WEAPON = "killstreak_ac130_mp";
+	LAPTOP_WEAPON = "killstreak_harrier_airstrike_mp";
 
 	self giveWeapon(LAPTOP_WEAPON);
 	self switchToWeapon(LAPTOP_WEAPON);
@@ -203,10 +267,10 @@ setPlayerBuyMenu()
 	}
 
 	self.ttt.items.inBuyMenu = true;
+	self setClientDvar("ui_ttt_block_esc_menu", true);
 
 	self setBlurForPlayer(6, 1.5);
 	self freezePlayer();
-	self scripts\ttt\ui::destroySelfHud();
 	self scripts\ttt\ui::destroyHeadIcons();
 	self scripts\ttt\ui::destroyBuyMenu();
 	self scripts\ttt\ui::displayBuyMenu(self.ttt.role);
@@ -219,6 +283,7 @@ unsetPlayerBuyMenu(switchToLastWeapon)
 	if (!isDefined(switchToLastWeapon)) switchToLastWeapon = false;
 
 	self.ttt.items.inBuyMenu = false;
+	self setClientDvar("ui_ttt_block_esc_menu", false);
 
 	self unfreezePlayer();
 	if (switchToLastWeapon)
@@ -229,11 +294,7 @@ unsetPlayerBuyMenu(switchToLastWeapon)
 	self setBlurForPlayer(0, 0.75);
 	self scripts\ttt\ui::destroyBuyMenu();
 
-	if (isAlive(self))
-	{
-		self scripts\ttt\ui::displaySelfHud();
-		self scripts\ttt\ui::displayHeadIcons();
-	}
+	if (isAlive(self)) self scripts\ttt\ui::displayHeadIcons();
 }
 
 playLaptopSound()
@@ -242,19 +303,20 @@ playLaptopSound()
 	 * Stowing the laptop makes a distinct sound that only other players can hear.
 	 * We recreate this sound for the local player here.
 	 */
-	self playSoundToPlayer("weap_c4detpack_safety_plr", self);
+	if (!level.ttt.modEnabled)
+		self playSoundToPlayer("weap_c4detpack_safety_plr", self);
 }
 
 buyMenuThinkLaptop(weaponName)
 {
 	self endon("disconnect");
 	self endon("death");
-	self endon("buymenu_toggle");
-	self endon("buymenu_close");
+	self endon("ttt_buymenu_toggle");
+	self endon("ttt_buymenu_close");
 
 	for (;;)
 	{
-		if (self getCurrentWeapon() != weaponName) self notify("buymenu_close");
+		if (self getCurrentWeapon() != weaponName) self notify("ttt_buymenu_close");
 		wait(0.2);
 	}
 }
@@ -263,31 +325,31 @@ buyMenuThink()
 {
 	self endon("disconnect");
 	self endon("death");
-	self endon("buymenu_toggle");
-	self endon("buymenu_close");
+	self endon("ttt_buymenu_toggle");
+	self endon("ttt_buymenu_close");
 
-	self notifyOnPlayerCommand("menu_up", "+forward");
-	self notifyOnPlayerCommand("menu_down", "+back");
-	self notifyOnPlayerCommand("menu_left", "+moveleft");
-	self notifyOnPlayerCommand("menu_right", "+moveright");
-	self notifyOnPlayerCommand("menu_activate", "+activate");
-	self notifyOnPlayerCommand("menu_activate", "+attack");
-	self notifyOnPlayerCommand("menu_activate", "+gostand");
+	self notifyOnPlayerCommand("ttt_menu_up", "+forward");
+	self notifyOnPlayerCommand("ttt_menu_down", "+back");
+	self notifyOnPlayerCommand("ttt_menu_left", "+moveleft");
+	self notifyOnPlayerCommand("ttt_menu_right", "+moveright");
+	self notifyOnPlayerCommand("ttt_menu_activate", "+activate");
+	self notifyOnPlayerCommand("ttt_menu_activate", "+attack");
+	self notifyOnPlayerCommand("ttt_menu_activate", "+gostand");
 
 	for (;;)
 	{
-		eventName = self waittill_any_return("menu_up", "menu_down", "menu_left", "menu_right", "menu_activate");
+		eventName = self waittill_any_return("ttt_menu_up", "ttt_menu_down", "ttt_menu_left", "ttt_menu_right", "ttt_menu_activate");
 		moveDown = 0;
 		moveRight = 0;
-		if (eventName == "menu_up") moveDown = -1;
-		else if (eventName == "menu_down") moveDown = 1;
-		else if (eventName == "menu_left") moveRight = -1;
-		else if (eventName == "menu_right") moveRight = 1;
+		if (eventName == "ttt_menu_up") moveDown = -1;
+		else if (eventName == "ttt_menu_down") moveDown = 1;
+		else if (eventName == "ttt_menu_left") moveRight = -1;
+		else if (eventName == "ttt_menu_right") moveRight = 1;
 
 		if (moveDown != 0 || moveRight != 0)
 			self scripts\ttt\ui::updateBuyMenu(self.ttt.role, moveDown, moveRight);
 
-		if (eventName == "menu_activate")
+		if (eventName == "ttt_menu_activate")
 			self scripts\ttt\items::tryBuyItem(level.ttt.items[self.ttt.role][self.ttt.items.selectedIndex]);
 	}
 }
@@ -296,15 +358,18 @@ resetRoleInventory()
 {
 	self.ttt.items.roleInventory = spawnStruct();
 }
-setRoleInventory(item, ammoClip, ammoStock)
+setRoleInventory(item, ammoClip, ammoStock, data)
 {
 	if (!isDefined(item)) return;
 	if (!isDefined(ammoClip)) ammoClip = 1;
 	if (!isDefined(ammoStock)) ammoStock = 0;
+	if (!isDefined(data)) data = spawnStruct();
 
-	self.ttt.items.roleInventory.item = item;
-	self.ttt.items.roleInventory.ammoClip = ammoClip;
-	self.ttt.items.roleInventory.ammoStock = ammoStock;
+	inv = self.ttt.items.roleInventory;
+	inv.item = item;
+	inv.ammoClip = ammoClip;
+	inv.ammoStock = ammoStock;
+	inv.data = data;
 }
 isRoleWeapon(weaponName)
 {
@@ -320,36 +385,43 @@ hasRoleWeapon(weaponName)
 	if (!isDefined(weaponName)) return hasAnyRoleWeapon;
 	else return hasAnyRoleWeapon && self.ttt.items.roleInventory.item.weaponName == weaponName;
 }
-isRoleWeaponEquipped()
+isRoleWeaponOnPlayer()
 {
 	return self hasRoleWeapon() && self hasWeapon(self.ttt.items.roleInventory.item.weaponName);
 }
 isRoleWeaponCurrent()
 {
-	return self isRoleWeaponEquipped() && self getCurrentWeapon() == self.ttt.items.roleInventory.item.weaponName;
+	return self isRoleWeaponOnPlayer() && self getCurrentWeapon() == self.ttt.items.roleInventory.item.weaponName;
 }
 giveRoleWeapon()
 {
+	if (self isRoleWeaponOnPlayer()) return;
+	if (!maps\mp\gametypes\_weapons::mayDropWeapon(self getCurrentWeapon())) return;
+
 	inv = self.ttt.items.roleInventory;
 	if (!isDefined(inv.item.weaponName)) return;
 
 	self giveWeapon(inv.item.weaponName);
 	self setWeaponAmmoClip(inv.item.weaponName, inv.ammoClip);
 	self setWeaponAmmoStock(inv.item.weaponName, inv.ammoStock);
+	self switchToWeapon(inv.item.weaponName);
+
+	self thread OnPlayerRoleWeaponInterrupt(inv.item, inv.data, false);
+	self thread OnPlayerRoleWeaponCancelEquip(inv.item, inv.data);
+	if (isDefined(inv.item.onStartEquip)) self thread [[inv.item.onStartEquip]](inv.item, inv.data);
 
 	return inv.item.weaponName;
 }
 takeRoleWeapon()
 {
+	if (!self isRoleWeaponOnPlayer()) return;
+
 	weaponName = self.ttt.items.roleInventory.item.weaponName;
-	if (!self isRoleWeaponEquipped()) return;
 
 	self.ttt.items.roleInventory.ammoClip = self getWeaponAmmoClip(weaponName);
 	self.ttt.items.roleInventory.ammoStock = self getWeaponAmmoStock(weaponName);
 	self takeWeapon(weaponName);
-
 	self thread maps\mp\gametypes\_weapons::stowedWeaponsRefresh();
-	self notify("role_weapon_taken");
 
 	return weaponName;
 }
@@ -359,72 +431,104 @@ OnPlayerRoleWeaponToggle()
 	self endon("disconnect");
 	self endon("death");
 
-	self notifyOnPlayerCommand("roleweapon_toggle", "+actionslot 3");
+	self notifyOnPlayerCommand("ttt_roleweapon_toggle", "+actionslot 3");
 
 	for (;;)
 	{
-		self waittill("roleweapon_toggle");
+		self waittill("ttt_roleweapon_toggle");
 		if (!self hasRoleWeapon()) continue;
 
-		if (self isRoleWeaponEquipped()) self switchFromRoleWeapon();
-		else self equipRoleWeapon();
+		if (self isRoleWeaponOnPlayer()) self switchToLastWeapon();
+		else self giveRoleWeapon();
 	}
 }
 
-switchFromRoleWeapon()
-{
-	if (!self isRoleWeaponEquipped()) return;
-
-	switchToWeaponName = getLastWeapon();
-	if (!isDefined(switchToWeaponName) || switchToWeaponName == self.ttt.items.roleInventory.item.weaponName)
-		switchToWeaponName = self getWeaponsListPrimaries()[0];
-
-	self switchToWeapon(switchToWeaponName);
-}
-
-equipRoleWeapon()
-{
-	if (self isRoleWeaponEquipped()) return;
-	if (!maps\mp\gametypes\_weapons::mayDropWeapon(self getCurrentWeapon())) return;
-
-	weaponName = self giveRoleWeapon();
-	self switchToWeapon(weaponName);
-	self thread OnRoleWeaponEquipCancel();
-	self thread OnRoleWeaponStow();
-	self thread OnRoleWeaponEquip();
-}
-
-OnRoleWeaponEquipCancel()
+OnPlayerRoleWeaponCancelEquip(item, data)
 {
 	self endon("disconnect");
 	self endon("death");
-	self endon("weapon_change");
-	self endon("role_weapon_taken");
+	self endon("ttt_roleweapon_equipped");
+	self endon("ttt_roleweapon_unequipped");
 
-	self waittill("weapon_switch_cancelled");
+	self waittill_any("ttt_weapon_switch_canceled");
 
 	self takeRoleWeapon();
+
+	if (isDefined(item.onCancelEquip)) self thread [[item.onCancelEquip]](item, data);
 }
 
-OnRoleWeaponStow()
+OnPlayerRoleWeaponEquip()
 {
 	self endon("disconnect");
 	self endon("death");
-	self endon("role_weapon_taken");
 
 	for (;;)
 	{
-		self waittill("weapon_change", newWeaponName);
-		if (newWeaponName == self.ttt.items.roleInventory.item.weaponName || newWeaponName == "none") continue;
+		self waittill("weapon_change", weaponName);
+		if (!isRoleWeapon(weaponName))
+		{
+			// The player might have cycled over the role weapon and equipped something else instead:
+			if (weaponName != "none" && self isRoleWeaponOnPlayer()) self takeRoleWeapon();
+			continue;
+		};
 
-		self takeRoleWeapon();
-		break;
+		self notify("ttt_roleweapon_equipped");
+
+		inv = self.ttt.items.roleInventory;
+		self thread OnPlayerRoleWeaponStartUnequip(inv.item, inv.data);
+		self thread OnPlayerRoleWeaponUnequip(inv.item, inv.data);
+		self thread OnPlayerRoleWeaponInterrupt(inv.item, inv.data, true);
+		self displayRoleWeaponActivateHint(inv.item);
+		if (isDefined(inv.item.onEquip)) self thread [[inv.item.onEquip]](inv.item, inv.data);
 	}
 }
 
-displayRoleWeaponActivateHint()
+OnPlayerRoleWeaponStartUnequip(item, data)
 {
-	item = self.ttt.items.roleInventory.item;
+	self endon("ttt_roleweapon_unequipped");
+
+	for (;;)
+	{
+		self waittill("weapon_switch_started", switchToWeaponName);
+
+		if (isDefined(item.onStartUnequip)) self thread [[item.onStartUnequip]](item, data, switchToWeaponName);
+	}
+}
+
+OnPlayerRoleWeaponUnequip(item, data)
+{
+	self endon("disconnect");
+	self endon("death");
+
+	while (self getCurrentWeapon() == item.weaponName) wait(0.05);
+
+	self notify("ttt_roleweapon_unequipped");
+
+	self destroyRoleWeaponActivateHint();
+	if (isDefined(item.onUnequip)) self thread [[item.onUnequip]](item, data);
+
+	if (self getCurrentWeapon() != "none") self takeRoleWeapon();
+}
+
+OnPlayerRoleWeaponInterrupt(item, data, wasEquipped)
+{
+	self endon("ttt_roleweapon_equipped"); // is re-hooked after equip with wasEquipped set to true
+	self endon("ttt_roleweapon_unequipped");
+
+	self waittill_any("disconnect", "death");
+
+	if (wasEquipped)
+	{
+		self destroyRoleWeaponActivateHint();
+		if (isDefined(item.onUnequip)) self thread [[item.onUnequip]](item, data);
+		self notify("ttt_roleweapon_unequipped");
+	}
+	else
+		if (isDefined(item.onCancelEquip)) self thread [[item.onCancelEquip]](item, data);
+}
+
+displayRoleWeaponActivateHint(item)
+{
 	if (isDefined(item) && isDefined(item.activateHint))
 	{
 		self scripts\ttt\ui::destroyActivateHint();
@@ -436,47 +540,23 @@ destroyRoleWeaponActivateHint()
 	self scripts\ttt\ui::destroyActivateHint();
 }
 
-OnRoleWeaponEquip()
-{
-	self endon("disconnect");
-	self endon("death");
-	self endon("role_weapon_taken");
-
-	for (;;)
-	{
-		self waittill("weapon_change", weaponName);
-		if (!isRoleWeapon(weaponName)) continue;
-
-		self displayRoleWeaponActivateHint();
-		self thread OnRoleWeaponUnequip(weaponName);
-	}
-
-}
-
-OnRoleWeaponUnequip(weaponName)
-{
-	self endon("disconnect");
-	self endon("death");
-
-	while (self getCurrentWeapon() == weaponName) wait(0.05);
-	self destroyRoleWeaponActivateHint();
-}
-
 OnPlayerRoleWeaponActivate()
 {
 	self endon("disconnect");
 	self endon("death");
 
-	self notifyOnPlayerCommand("roleweapon_activate", "+attack");
+	self notifyOnPlayerCommand("ttt_roleweapon_activate", "+attack");
 
 	for (;;)
 	{
-		self waittill("roleweapon_activate");
+		self waittill("ttt_roleweapon_activate");
 		if (!self isRoleWeaponCurrent()) continue;
 
-		item = self.ttt.items.roleInventory.item;
-		if (!isDefined(item.onActivate)) continue;
-		self thread [[item.onActivate]](item);
+		self notify("ttt_roleweapon_activated");
+
+		inv = self.ttt.items.roleInventory;
+		if (!isDefined(inv.item.onActivate)) continue;
+		self thread [[inv.item.onActivate]](inv.item, inv.data);
 	}
 }
 
@@ -532,10 +612,10 @@ awardBodyInspectCredits(victim)
 	}
 }
 
-giveItem(item)
+giveItem(item, data)
 {
 	self.ttt.items.boughtItems[self.ttt.items.boughtItems.size] = item;
-	self thread [[item.onBuy]](item);
+	self thread [[item.onBuy]](item, data);
 	self iPrintLn("^3" + item.name + "^7 received");
 }
 
@@ -693,6 +773,7 @@ OnActivateBomb()
 		if (startTime + TIMEOUT < getTime())
 		{
 			if (self getCurrentWeapon() == BOMB_WEAPON) switchToLastWeapon();
+			self notify("ttt_bomb_interaction_canceled");
 			return;
 		}
 	}
@@ -758,6 +839,8 @@ OnDefuseBomb(bombEnt)
 	self endon("death");
 	bombEnt endon("death");
 
+	if (isDefined(bombEnt.interactingPlayer)) return;
+
 	self notify("ttt_defusing_bomb");
 	self endon("ttt_defusing_bomb");
 
@@ -781,7 +864,9 @@ OnDefuseBomb(bombEnt)
 		wait(0.05);
 		if (startTime + TIMEOUT < getTime())
 		{
+			if (self getCurrentWeapon() == BOMB_WEAPON) switchToLastWeapon();
 			bombEnt showBomb();
+			self notify("ttt_bomb_interaction_canceled");
 			return;
 		}
 	}
@@ -859,7 +944,7 @@ stopBombInteraction(isDone, bombWeaponName)
 {
 	if (!isDefined(isDone)) isDone = false;
 
-	self notify("ttt_bomb_interaction_stopped");
+	self notify("ttt_bomb_interaction_canceled");
 
 	self unfreezePlayer();
 	self thread detachBombModel();
@@ -875,6 +960,7 @@ OnBombInteractionInterrupt(bombEnt)
 {
 	self endon("ttt_planted_bomb");
 	self endon("ttt_defused_bomb");
+	self endon("ttt_bomb_interaction_canceled");
 
 	self waittill_any("disconnect", "death");
 
@@ -886,7 +972,7 @@ attachBombModel()
 {
 	self endon("death");
 	self endon("disconnect");
-	self endon("ttt_bomb_interaction_stopped");
+	self endon("ttt_bomb_interaction_canceled");
 
 	self thread detachBombModel();
 
@@ -939,6 +1025,9 @@ bombThink()
 {
 	self endon("death");
 
+	TICK_SOUND = "weap_fraggrenade_pin";
+	if (level.ttt.modEnabled) TICK_SOUND = "bomb_tick_world";
+
 	for (;;)
 	{
 		wait(1.0);
@@ -946,13 +1035,12 @@ bombThink()
 		scripts\ttt\ui::updateBombHuds();
 
 		secondsRemaining = getBombSecondsRemaining(self);
-		self playSound("weap_fraggrenade_pin");
-		playFXOnTag("tag_origin", self, level.ttt.effects.bombBlink);
-		if (secondsRemaining <= 10) self thread playSoundDelayed("weap_fraggrenade_pin", 0.5);
+		self playSound(TICK_SOUND);
+		if (secondsRemaining <= 10) self thread playSoundDelayed(TICK_SOUND, 0.5);
 		if (secondsRemaining <= 5)
 		{
-			self thread playSoundDelayed("weap_fraggrenade_pin", 0.25);
-			self thread playSoundDelayed("weap_fraggrenade_pin", 0.75);
+			self thread playSoundDelayed(TICK_SOUND, 0.25);
+			self thread playSoundDelayed(TICK_SOUND, 0.75);
 		}
 
 		foreach (player in scripts\ttt\use::getUseEntAvailablePlayers(self))
@@ -979,23 +1067,26 @@ explodeBomb()
 			self, // eInflictor The entity that causes the damage. ( e.g. a turret )
 			self.owner, // eAttacker The entity that is attacking.
 			damage, // iDamage Integer specifying the amount of damage done
-			0, // iDFlags Integer specifying flags that are to be applied to the damage
+			level.iDFLAGS_RADIUS, // iDFlags Integer specifying flags that are to be applied to the damage
 			"MOD_EXPLOSIVE", // sMeansOfDeath Integer specifying the method of death
 			"none", // sWeapon The weapon number of the weapon used to inflict the damage
 			self.origin, // vPoint The point the damage is from?
-			player.origin - self.origin, // vDir The direction of the damage
+			vectorNormalize(player.origin - self.origin), // vDir The direction of the damage
 			"none", // sHitLoc The location of the hit
 			0 // psOffsetTime The time offset for the damage
 		);
 	}
 
-	destructibleEnts = [];
-	destructibleEnts = array_combine(getEntArray("destructible_toy", "targetname"), destructibleEnts);
-	destructibleEnts = array_combine(getEntArray("destructible_vehicle", "targetname"), destructibleEnts);
-	destructibleEnts = array_combine(getEntArray("explodable_barrel", "targetname"), destructibleEnts);
-	destructibleEnts = array_combine(getEntArray("vending_machine", "targetname"), destructibleEnts);
+	damageableEnts = [];
+	damageableEnts = array_combine(getEntArray("grenade", "classname"), damageableEnts);
+	damageableEnts = array_combine(getEntArray("misc_turret", "classname"), damageableEnts);
+	damageableEnts = array_combine(getEntArray("ttt_destructible_item", "targetname"), damageableEnts);
+	damageableEnts = array_combine(getEntArray("destructible_toy", "targetname"), damageableEnts);
+	damageableEnts = array_combine(getEntArray("destructible_vehicle", "targetname"), damageableEnts);
+	damageableEnts = array_combine(getEntArray("explodable_barrel", "targetname"), damageableEnts);
+	damageableEnts = array_combine(getEntArray("vending_machine", "targetname"), damageableEnts);
 
-	foreach (ent in destructibleEnts)
+	foreach (ent in damageableEnts)
 	{
 		distance = distance(self.origin, ent.origin);
 		damageNormalized = 1 - distance / RADIUS;
@@ -1004,12 +1095,15 @@ explodeBomb()
 
 		ent notify(
 			"damage",
-			damage,
-			self.owner,
-			ent.origin - self.origin,
-			self.origin,
-			"MOD_EXPLOSIVE",
-			"", ""
+			damage, // damage
+			self.owner, // attacker
+			vectorNormalize(ent.origin - self.origin), // direction_vec
+			self.origin, // point
+			"MOD_EXPLOSIVE", // type
+			"", // modelName
+			"", // tagName
+			"", // partName
+			level.iDFLAGS_RADIUS // iDFlags
 		);
 	}
 
@@ -1135,7 +1229,7 @@ OnActivateHealthStation(item)
 	spawnPosRight = spawnPos + anglesToRight(self.angles) * 20;
 	if (positionWouldTelefrag(spawnPos) || positionWouldTelefrag(spawnPosLeft) || positionWouldTelefrag(spawnPosRight))
 	{
-		self iPrintLnBold("You cannot place a health station here.");
+		self iPrintLnBold("You cannot place a health station here");
 		return;
 	}
 
@@ -1144,6 +1238,7 @@ OnActivateHealthStation(item)
 	self resetRoleInventory();
 
 	healthStation = spawn("script_model", spawnPos);
+	healthStation.targetname = "ttt_destructible_item";
 	healthStation setModel("com_plasticcase_friendly");
 	healthStation.angles = self.angles + (0, 90, 0);
 	healthStation cloneBrushmodelToScriptmodel(level.airDropCrateCollision);
@@ -1155,6 +1250,7 @@ OnActivateHealthStation(item)
 	healthStation setCanDamage(true);
 	healthStation.maxhealth = 500;
 	healthStation.health = healthStation.maxhealth;
+	healthStation.damageTaken = 0;
 	healthStation thread OnHealthStationDamage();
 	healthStation thread OnHealthStationDeath();
 
@@ -1171,17 +1267,23 @@ OnHealthStationDamage()
 
 	for (;;)
 	{
-		self waittill("damage");
+		self waittill("damage", damage, attacker);
 
+		self.damageTaken += damage;
+
+		attacker thread maps\mp\gametypes\_damagefeedback::updateDamageFeedback("ttt_item");
 		playFX(level._effect["sentry_smoke_mp"], self.origin);
 		self playSound("bullet_ap_crate");
+
+		if (self.damageTaken > self.maxhealth) self notify("death");
 	}
 }
 
 OnHealthStationDeath()
 {
-	self waittill("death");
+	self waittill("death", attacker);
 
+	attacker thread maps\mp\gametypes\_damagefeedback::updateDamageFeedback("ttt_item");
 	playFX(level._effect["sentry_explode_mp"], self.origin);
 	self playSound("sentry_explode");
 	wait(4);
@@ -1240,4 +1342,344 @@ OnHealthStationAvailable(healthStation)
 OnHealthStationAvailableEnd(healthStation)
 {
 	self scripts\ttt\ui::destroyUseAvailableHint();
+}
+
+OnBuyCamera(item)
+{
+	self setRoleInventory(item);
+}
+
+OnEquipCamera(item, data)
+{
+	cameraEnt = spawn("script_model", self.origin);
+	cameraEnt notSolid();
+	cameraEnt hide();
+	cameraEnt showToPlayer(self);
+	cameraEnt.placed = false;
+	cameraEnt.validPosition = false;
+	data.cameraEnt = cameraEnt;
+
+	if (level.ttt.modEnabled) cameraEnt scriptModelPlayAnim("security_camera_idle");
+
+	self thread cameraPlacementThink(cameraEnt);
+}
+
+cameraPlacementThink(cameraEnt)
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("ttt_camera_placed");
+	self endon("ttt_roleweapon_unequipped");
+
+	for (i = 0; ; i++)
+	{
+		eyePos = self getEye();
+		forward = anglesToForward(self getPlayerAngles());
+
+		trace = bulletTrace(eyePos, eyePos + forward * 128, false, cameraEnt);
+		normal = trace["normal"];
+		position = trace["position"];
+		if (!level.ttt.modEnabled) position += normal * 1.6;
+
+		// If a surface is hit, flip the normal to have the correct orientation:
+		if (trace["fraction"] == 1.0) normal *= -1;
+		surfaceAngle = vectorToAngles(normal)[0];
+
+		if (trace["fraction"] < 1.0 && (surfaceAngle < 40 || surfaceAngle > 360 - 40))
+		{
+			cameraEnt.validPosition = true;
+
+			if (level.ttt.modEnabled)
+				cameraEnt setModel("com_security_camera_tilt_animated");
+			else
+				cameraEnt setModel("weapon_c4");
+		}
+		else
+		{
+			cameraEnt.validPosition = false;
+
+			if (level.ttt.modEnabled)
+				cameraEnt setModel("com_security_camera_tilt_animated_bombsquad");
+			else
+				cameraEnt setModel("weapon_c4_bombsquad");
+		}
+
+		angles = vectorToAngles(normal);
+		if (level.ttt.modEnabled)
+			angles = combineAngles(angles, (0, 90, 0));
+		else
+			angles = combineAngles(angles, (90, 0, 0));
+
+		if (i == 0)
+		{
+			cameraEnt.origin = position;
+			cameraEnt.angles = angles;
+		}
+		else
+		{
+			cameraEnt moveTo(position, 0.05);
+			cameraEnt rotateTo(angles, 0.05);
+		}
+
+		wait(0.05);
+
+		cameraEnt.origin = position;
+		cameraEnt.angles = angles;
+	}
+}
+
+OnUnequipCamera(item, data)
+{
+	if (!isDefined(data.cameraEnt.placed) || !data.cameraEnt.placed) data.cameraEnt delete();
+}
+
+OnActivateCamera(item, data)
+{
+	cameraEnt = data.cameraEnt;
+	if (cameraEnt.placed) return;
+
+	if (!isDefined(cameraEnt.validPosition) || !cameraEnt.validPosition)
+	{
+		self iPrintLnBold("Camera needs to be placed on a wall");
+		return;
+	}
+
+	cameraEnt.placed = true;
+
+	angles = cameraEnt.angles;
+	if (level.ttt.modEnabled)
+		angles = combineAngles(angles, (0, -90, 0));
+	else
+		angles = combineAngles(angles, (-90, 0, 0));
+	cameraEnt.viewTargetEnt = spawn("script_model", cameraEnt.origin + anglesToForward(angles) * 32 + anglesToUp(angles) * -48);
+	cameraEnt.viewTargetEnt.angles = angles;
+	cameraEnt.viewTargetEnt setModel("sentry_minigun");
+	cameraEnt.viewTargetEnt linkTo(cameraEnt);
+	cameraEnt.viewTargetEnt hide();
+
+	offset = (-3.5, 2, -3);
+	if (level.ttt.modEnabled) offset = (-0.5, 7, 0.75);
+	cameraEnt.fxTargetIdle = spawn(
+		"script_model",
+		cameraEnt.origin + anglesToRight(angles) * offset[0] + anglesToForward(angles) * offset[1] + anglesToUp(angles) * offset[2]
+	);
+	cameraEnt.fxTargetIdle setModel("tag_origin");
+	cameraEnt.fxTargetIdle linkTo(cameraEnt);
+	// It's necessary to wait for the entity to be networked to players or something.
+	// Waiting a single tick isn't always enough:
+	thread playFxOnTagDelayed(level.ttt.effects.cameraIdle, cameraEnt.fxTargetIdle, "tag_origin", 0.25);
+
+	cameraEnt.fxTargetActive = spawn(
+		"script_model",
+		cameraEnt.fxTargetIdle.origin + anglesToRight(angles) * 2.5
+	);
+	cameraEnt.fxTargetActive setModel("tag_origin");
+	cameraEnt.fxTargetActive linkTo(cameraEnt);
+
+	cameraEnt.targetname = "ttt_destructible_item";
+	cameraEnt solid();
+	cameraEnt setCanDamage(true);
+	cameraEnt.maxhealth = 300;
+	cameraEnt.health = cameraEnt.maxhealth;
+	cameraEnt.damageTaken = 0;
+	cameraEnt.destroyed = false;
+	cameraEnt.usingPlayer = undefined;
+	cameraEnt thread OnCameraDamage();
+	cameraEnt thread OnCameraDeath(data);
+
+	self notify("ttt_camera_placed");
+	cameraEnt show();
+
+	self takeRoleWeapon();
+	self switchToLastWeapon();
+	self resetRoleInventory();
+
+	receiverData = spawnStruct();
+	receiverData.beingUsed = false;
+	receiverData.cameraEnt = cameraEnt;
+	self giveItem(level.ttt.items["internal"]["camera_receiver"], receiverData);
+}
+
+OnCameraDamage()
+{
+	self endon("death");
+
+	for (;;)
+	{
+		self waittill("damage", damage, attacker);
+
+		self.damageTaken += damage;
+
+		attacker thread maps\mp\gametypes\_damagefeedback::updateDamageFeedback("ttt_item");
+		playFX(level._effect["sentry_smoke_mp"], self.origin);
+		self playSound("bullet_ap_crate");
+
+		if (self.damageTaken > self.maxhealth) self notify("death");
+	}
+}
+
+OnCameraDeath(data)
+{
+	self waittill("death", attacker);
+
+	self.destroyed = true;
+
+	attacker thread maps\mp\gametypes\_damagefeedback::updateDamageFeedback("ttt_item");
+	self.viewTargetEnt delete(); // automatically disconnects the player's view
+	self.fxTargetIdle delete();
+	self.fxTargetActive delete();
+
+	self notify("destroyed");
+
+	if (level.ttt.modEnabled)
+	{
+		self scriptModelClearAnim();
+		self setModel("com_security_camera_d_tilt_animated");
+		self scriptModelPlayAnim("security_camera_destroy");
+		self playSound("security_camera_sparks");
+		thread playFxOnTagDelayed(level.ttt.effects.cameraExplosion, self, "tag_fx", 0.1);
+	}
+	else
+	{
+		self playSound("sentry_explode");
+		playFX(level._effect["sentry_explode_mp"], self.origin);
+
+		wait(4);
+
+		self delete();
+	}
+}
+
+OnBuyCamReceiver(item, data)
+{
+	self setRoleInventory(item, 1, 0, data);
+}
+
+OnEquipCamReceiver(item, data)
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("ttt_roleweapon_unequipped");
+	self endon("ttt_cam_receiver_unequip_started");
+
+	self scripts\ttt\ui::destroySelfHud();
+
+	wait (1.1);
+
+	self thread trySetPlayerToCamera(data);
+	self thread OnCamReceiverEsc(data);
+}
+
+OnCamReceiverEsc(data)
+{
+	self endon("ttt_roleweapon_unequipped");
+
+	for (;;)
+	{
+		self waittill("menuresponse", menu, response);
+		if (response != "ttt_esc_menu_blocked") continue;
+
+		self notify("ttt_roleweapon_toggle");
+		break;
+	}
+}
+
+OnStartUnequipCamReceiver(item, data, switchToWeaponName)
+{
+	if (switchToWeaponName == "none") return;
+
+	self thread tryUnsetPlayerFromCamera(data);
+	self notify("ttt_cam_receiver_unequip_started");
+}
+
+OnUnequipCamReceiver(item, data)
+{
+	if (isAlive(self))
+	{
+		self scripts\ttt\ui::destroySelfHud();
+		self scripts\ttt\ui::displaySelfHud();
+	}
+	self thread tryUnsetPlayerFromCamera(data);
+
+	if (self getCurrentWeapon() == "none") self switchToLastWeapon();
+}
+
+trySetPlayerToCamera(data)
+{
+	if (data.beingUsed) return;
+	data.beingUsed = true;
+
+	cameraEnt = data.cameraEnt;
+	cameraValid = isDefined(cameraEnt) && !cameraEnt.destroyed;
+
+	if (cameraValid) cameraEnt.usingPlayer = self;
+	self.ttt.use.canUse = false;
+	self.ttt.pickups.canDropWeapons = false;
+	self setClientDvar("ui_ttt_block_esc_menu", true);
+
+	if (cameraValid)
+		playFxOnTag(level.ttt.effects.cameraActive, cameraEnt.fxTargetActive, "tag_origin");
+
+	self visionSetNakedForPlayer("black_bw", 0.25);
+
+	wait(0.25);
+
+	// Camera view could have been unset in the meantime, so don't continue in that case:
+	if (!data.beingUsed) return;
+
+	self visionSetThermalForPlayer("black_bw", 0);
+	self visionSetThermalForPlayer(game["thermal_vision"], 0.25);
+	self thermalVisionOn();
+	self visionSetNakedForPlayer(getDvar("mapname"), 0);
+
+	/**
+	 * The killstreak weapons have very low a ADS FoV of 26. When the player's view is linked to
+	 * an external entity, the ADS FoV of the current weapon is used. To increase and customize the
+	 * FoV, the min FoV on the client is forced with this dvar:
+	 */
+	self setClientDvar("cg_fovMin", 60);
+
+	self _disableOffhandWeapons();
+	self scripts\ttt\ui::displayCameraHud(cameraEnt);
+
+	if (cameraValid)
+	{
+		self playerLinkWeaponviewToDelta(cameraEnt.viewTargetEnt, "tag_player", 1.0, 60, 60, 25, 25);
+		self setPlayerAngles(cameraEnt.viewTargetEnt.angles);
+	}
+}
+
+tryUnsetPlayerFromCamera(data)
+{
+	if (!data.beingUsed) return;
+	data.beingUsed = false;
+
+	cameraEnt = data.cameraEnt;
+	cameraValid = isDefined(cameraEnt) && !cameraEnt.destroyed;
+
+	if (cameraValid) cameraEnt.usingPlayer = undefined;
+	self setClientDvar("ui_ttt_block_esc_menu", false);
+
+	stopFxOnTag(level.ttt.effects.cameraActive, cameraEnt.fxTargetActive, "tag_origin");
+
+	if (isAlive(self))
+	{
+		self visionSetThermalForPlayer("black_bw", 0.25);
+
+		wait (0.25);
+	}
+
+	self.ttt.use.canUse = true;
+	self.ttt.pickups.canDropWeapons = true;
+
+	self visionSetNakedForPlayer("black_bw", 0);
+	self visionSetNakedForPlayer(getDvar("mapname"), 0.25);
+	self thermalVisionOff();
+	self visionSetThermalForPlayer(game["thermal_vision"], 0);
+
+	self setClientDvar("cg_fovMin", 1);
+
+	self _enableOffhandWeapons();
+	self unlink();
+	self scripts\ttt\ui::destroyCameraHud();
 }

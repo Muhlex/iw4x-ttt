@@ -8,14 +8,23 @@ init()
 	level.ttt.enabled = getDvar("g_gametype") == "ttt";
 	if (!level.ttt.enabled) return;
 
+	level.ttt.modEnabled = isSubStr(getDvar("fs_game"), "ttt");
 	level.ttt.maxhealth = getDvarInt("scr_player_maxhealth");
 	level.ttt.headshotMultiplier = getDvarFloat("ttt_headshot_multiplier");
 	level.ttt.headshotMultiplierSniper = getDvarFloat("ttt_headshot_multiplier_sniper");
+	level.ttt.knifeDamage = getDvarInt("ttt_knife_damage");
+	level.ttt.knifeWeaponBackstabAngle = getDvarFloat("ttt_knife_weapon_backstab_angle");
 	level.ttt.rpgMultiplier = getDvarFloat("ttt_rpg_multiplier");
 	level.ttt.claymoreMultiplier = getDvarFloat("ttt_claymore_multiplier");
-	level.ttt.preptime = getDvarInt("ttt_preptime");
-	if (level.ttt.preptime < 1) level.ttt.preptime = 1;
-	level.ttt.defaultWeapon = "beretta_tactical_mp";
+	level.ttt.preptime = max(getDvarInt("ttt_preptime"), 1);
+
+	level.ttt.knifeWeapon = "beretta_tactical_mp";
+	if (level.ttt.modEnabled)
+	{
+		precacheMenu("client_exec");
+		precacheItem("combat_knife_mp");
+		level.ttt.knifeWeapon = "combat_knife_mp";
+	}
 
 	level.ttt.prematch = true;
 	level.ttt.preparing = true;
@@ -76,6 +85,8 @@ initPlayer()
 		"cg_deadHearAllLiving", 1,
 		"cg_everyoneHearsEveryone", 0
 	);
+
+	self setClientDvar("ui_ttt_block_esc_menu", false);
 }
 
 OnPrematchOver()
@@ -91,7 +102,7 @@ OnPrematchOver()
 
 OnRoundRestart()
 {
-	level waittill("restarting");
+	level waittill("ttt_restarting");
 
 	thread OnRoundStart();
 }
@@ -167,7 +178,7 @@ OnAftertimeEnd()
 
 	game["state"] = "playing";
 	map_restart(true);
-	level notify("restarting");
+	level notify("ttt_restarting");
 }
 
 OnPlayerConnect()
@@ -213,7 +224,7 @@ OnPlayerSpawn()
 		self scripts\ttt\items::resetPlayerEquipment();
 
 		self scripts\ttt\pickups::giveDefaultWeapon();
-		self setSpawnWeapon(level.ttt.defaultWeapon);
+		self setSpawnWeapon(level.ttt.knifeWeapon);
 		self scripts\ttt\ui::setupHeadIconAnchor();
 		self scripts\ttt\ui::displaySelfHud();
 
@@ -221,9 +232,12 @@ OnPlayerSpawn()
 		self thread scripts\ttt\use::playerUseEntsThink();
 		self thread scripts\ttt\pickups::OnPlayerDropWeapon();
 		self thread scripts\ttt\items::OnPlayerRoleWeaponToggle();
+		self thread scripts\ttt\items::OnPlayerRoleWeaponEquip();
 		self thread scripts\ttt\items::OnPlayerRoleWeaponActivate();
 		self thread scripts\ttt\items::OnPlayerBuyMenu();
+		self thread scripts\ttt\items::OnPlayerBuyMenuEsc();
 		self thread OnPlayerHealthUpdate();
+		self thread OnPlayerAttack();
 	}
 }
 
@@ -344,7 +358,7 @@ OnPlayerWeaponSwitchCancel(weaponName)
 	{
 		while (self isSwitchingWeapon() || self getCurrentWeapon() == "none") wait(0.05);
 
-		self notify("weapon_switch_cancelled", weaponName);
+		self notify("ttt_weapon_switch_canceled", weaponName);
 		break;
 	}
 }
@@ -361,15 +375,29 @@ OnPlayerHealthUpdate()
 	}
 }
 
+OnPlayerAttack()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	self notifyOnPlayerCommand("ttt_attack", "+attack");
+
+	for (;;)
+	{
+		self waittill("ttt_attack");
+		if (self getCurrentWeapon() == level.ttt.knifeWeapon) self clientExec("+melee; -melee");
+	}
+}
+
 OnPlayerScoreboardOpen()
 {
 	self endon("disconnect");
 
-	self notifyOnPlayerCommand("scoreboard_open", "+scores");
+	self notifyOnPlayerCommand("ttt_scoreboard_open", "+scores");
 
 	for (;;)
 	{
-		self waittill("scoreboard_open");
+		self waittill("ttt_scoreboard_open");
 
 		// Hide the scoreboard using a hack
 		self setClientDvar("cg_scoreboardWidth", 10000);
@@ -384,11 +412,11 @@ OnPlayerScoreboardClose()
 {
 	self endon("disconnect");
 
-	self notifyOnPlayerCommand("scoreboard_close", "-scores");
+	self notifyOnPlayerCommand("ttt_scoreboard_close", "-scores");
 
 	for (;;)
 	{
-		self waittill("scoreboard_close");
+		self waittill("ttt_scoreboard_close");
 
 		self scripts\ttt\ui::destroyScoreboard();
 		//self scripts\ttt\ui::displayHeadIcons();
@@ -406,7 +434,7 @@ OnPlayerScoreboardClose()
 scoreboardThink()
 {
 	self endon("disconnect");
-	self endon("scoreboard_close");
+	self endon("ttt_scoreboard_close");
 
 	for (;;)
 	{
@@ -444,7 +472,13 @@ drawPlayerRoles()
 
 	if (detectiveCount > playerCount) detectiveCount = playerCount;
 
-	randomizedPlayers = array_randomize(getLivingPlayers());
+	// I don't trust the engine's array_randomize function enough...
+	randomizeCount = randomInt(8) + 1;
+	randomizedPlayers = getLivingPlayers();
+
+	for (i = 0; i < randomizeCount; i++)
+		randomizedPlayers = array_randomize(randomizedPlayers);
+
 	for (i = 0; i < randomizedPlayers.size; i++)
 	{
 		role = "innocent";

@@ -580,7 +580,7 @@ PlayerKilled_internal( eInflictor, attacker, victim, iDamage, sMeansOfDeath, sWe
 	{
 		foreach (victimWeaponName in victim getWeaponsListPrimaries())
 		{
-			if (victimWeaponName == level.ttt.defaultWeapon) continue;
+			if (victimWeaponName == level.ttt.knifeWeapon) continue;
 			if (!maps\mp\gametypes\_weapons::mayDropWeapon(victimWeaponName)) continue;
 
 			victim scripts\ttt\pickups::dropWeapon(
@@ -588,7 +588,7 @@ PlayerKilled_internal( eInflictor, attacker, victim, iDamage, sMeansOfDeath, sWe
 				anglesToForward((0, randomInt(360), 0)) * 64 + (0, 0, 64)
 			);
 		}
-		if (victim scripts\ttt\items::hasRoleWeapon() && !victim scripts\ttt\items::isRoleWeaponEquipped())
+		if (victim scripts\ttt\items::hasRoleWeapon() && !victim scripts\ttt\items::isRoleWeaponOnPlayer())
 		{
 			inv = victim.ttt.items.roleInventory;
 
@@ -1310,7 +1310,15 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 			}
 
 			if (sMeansOfDeath == "MOD_MELEE" && sWeapon != "riotshield_mp")
-				iDamage = 100;
+			{
+				iDamage = level.ttt.knifeDamage;
+
+				if (sWeapon == level.ttt.knifeWeapon)
+				{
+					angleDiff = 180 - ((vectorDot(anglesToForward(victim.angles), anglesToForward(eAttacker.angles)) + 1) * 90);
+					if (angleDiff < level.ttt.knifeWeaponBackstabAngle) iDamage = level.ttt.maxhealth;
+				}
+			}
 
 			if (sWeapon == "throwingknife_mp")
 			{

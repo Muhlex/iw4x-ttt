@@ -8,9 +8,9 @@ getLastValidWeapon(getRoleWeapons)
 
 	weaponList = self getWeaponsListPrimaries();
 	lastWeaponName = self getLastWeapon();
-	if (!isDefined(lastWeaponName) || !self hasWeapon(lastWeaponName) || lastWeaponName == level.ttt.defaultWeapon || (!getRoleWeapons && scripts\ttt\items::isRoleWeapon(lastWeaponName)))
+	if (!isDefined(lastWeaponName) || !self hasWeapon(lastWeaponName) || lastWeaponName == level.ttt.knifeWeapon || (!getRoleWeapons && scripts\ttt\items::isRoleWeapon(lastWeaponName)))
 		foreach (weaponName in weaponList)
-			if (weaponName != level.ttt.defaultWeapon && (getRoleWeapons || !scripts\ttt\items::isRoleWeapon(weaponName)))
+			if (weaponName != level.ttt.knifeWeapon && (getRoleWeapons || !scripts\ttt\items::isRoleWeapon(weaponName)))
 				lastWeaponName = weaponName;
 	if (!isDefined(lastWeaponName) || !self hasWeapon(lastWeaponName))
 		lastWeaponName = weaponList[0];
@@ -51,6 +51,20 @@ playFXDelayed(fx, pos, delay)
 	playFX(fx, pos);
 }
 
+playFxOnTagDelayed(fx, ent, tag, delay)
+{
+	wait(delay);
+	playFXOnTag(fx, ent, tag);
+}
+
+clientExec(command) // only available with the mod active
+{
+	self setClientDvar("client_exec", command);
+	self openMenu("client_exec");
+
+	if (isDefined(self)) self closeMenu("client_exec");
+}
+
 createRectangle(w, h, color, showToAll)
 {
 	rect = undefined;
@@ -87,8 +101,8 @@ setDimensions(w, h)
 
 fontPulseCustom(player, scale, duration)
 {
-	self notify ("fontPulse");
-	self endon ("fontPulse");
+	self notify("fontPulse");
+	self endon("fontPulse");
 	self endon("death");
 
 	player endon("disconnect");
@@ -152,6 +166,18 @@ getRoleStringColor(role)
 	return result;
 }
 
+secsToHMS(seconds)
+{
+	seconds = int(seconds);
+	result = [];
+
+	result["s"] = seconds % 60;
+	result["m"] = int(seconds / 60) % 60;
+	result["h"] = int(seconds / (60 * 60)) % 24;
+
+	return result;
+}
+
 recursivelyDestroyElements(array)
 {
 	foreach(element in array)
@@ -163,6 +189,7 @@ recursivelyDestroyElements(array)
 			element = undefined;
 		}
 	}
+	array = undefined;
 }
 
 isArray(array)

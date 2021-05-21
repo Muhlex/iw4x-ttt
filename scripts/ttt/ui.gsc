@@ -11,6 +11,9 @@ init()
 	precacheShader("cardicon_comic_shepherd");
 	precacheShader("cardtitle_silencer");
 
+	precacheShader("nightvision_overlay_goggles");
+	precacheShader("compassping_enemy");
+
 	level.ttt.ui = [];
 	level.ttt.ui["hud"] = [];
 
@@ -167,12 +170,14 @@ destroyUseAvailableHint()
 displayActivateHint(title, hint)
 {
 	self.ttt.ui["hud"]["self"]["activate_hint"] = [];
+
 	self.ttt.ui["hud"]["self"]["activate_hint"]["title"] = self createFontString("objective", 1.4);
-	self.ttt.ui["hud"]["self"]["activate_hint"]["title"] setPoint("TOP CENTER", "CENTER", 0, -64);
+	self.ttt.ui["hud"]["self"]["activate_hint"]["title"] setPoint("TOP CENTER", "TOP CENTER", 0, 80);
 	self.ttt.ui["hud"]["self"]["activate_hint"]["title"].color = (1, 1, 1);
 	self.ttt.ui["hud"]["self"]["activate_hint"]["title"].alpha = 0.85;
 	self.ttt.ui["hud"]["self"]["activate_hint"]["title"].archived = false;
 	self.ttt.ui["hud"]["self"]["activate_hint"]["title"].hidewheninmenu = true;
+
 	self.ttt.ui["hud"]["self"]["activate_hint"]["hint"] = self createFontString("default", 1.5);
 	self.ttt.ui["hud"]["self"]["activate_hint"]["hint"] setParent(self.ttt.ui["hud"]["self"]["activate_hint"]["title"]);
 	self.ttt.ui["hud"]["self"]["activate_hint"]["hint"] setPoint("TOP CENTER", "BOTTOM CENTER", 0, 12);
@@ -180,6 +185,7 @@ displayActivateHint(title, hint)
 	self.ttt.ui["hud"]["self"]["activate_hint"]["hint"].alpha = 0.85;
 	self.ttt.ui["hud"]["self"]["activate_hint"]["hint"].archived = false;
 	self.ttt.ui["hud"]["self"]["activate_hint"]["hint"].hidewheninmenu = true;
+
 	updateActivateHint(title, hint);
 }
 
@@ -671,4 +677,142 @@ displayBombHud()
 destroyBombHud()
 {
 	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["bombs"]);
+}
+
+displayCameraHud(cameraEnt)
+{
+	destroyed = !isDefined(cameraEnt) || cameraEnt.destroyed;
+
+	self.ttt.ui["hud"]["self"]["camera"] = [];
+
+	self.ttt.ui["hud"]["self"]["camera"]["static"] = newClientHudElem(self);
+	self.ttt.ui["hud"]["self"]["camera"]["static"].horzAlign = "fullscreen";
+	self.ttt.ui["hud"]["self"]["camera"]["static"].vertAlign = "fullscreen";
+	self.ttt.ui["hud"]["self"]["camera"]["static"] setShader("ac130_overlay_grain", 640, 480);
+	self.ttt.ui["hud"]["self"]["camera"]["static"].sort = 1;
+	self.ttt.ui["hud"]["self"]["camera"]["static"].alpha = 0.4;
+
+	if (destroyed)
+	{
+		self.ttt.ui["hud"]["self"]["camera"]["static"].alpha = 1.0;
+
+		self.ttt.ui["hud"]["self"]["camera"]["white"] = newClientHudElem(self);
+		self.ttt.ui["hud"]["self"]["camera"]["white"].horzAlign = "fullscreen";
+		self.ttt.ui["hud"]["self"]["camera"]["white"].vertAlign = "fullscreen";
+		self.ttt.ui["hud"]["self"]["camera"]["white"] setShader("black", 640, 480);
+		self.ttt.ui["hud"]["self"]["camera"]["white"].alpha = 0.5;
+
+		self.ttt.ui["hud"]["self"]["camera"]["nosignal_text"] = self createFontString("objective", 3);
+		self.ttt.ui["hud"]["self"]["camera"]["nosignal_text"] setPoint("CENTER", "CENTER", 0, 0);
+		self.ttt.ui["hud"]["self"]["camera"]["nosignal_text"].label = &"NO SIGNAL ...";
+		self.ttt.ui["hud"]["self"]["camera"]["nosignal_text"].glowColor = (0.4, 0.45, 0.8);
+		self.ttt.ui["hud"]["self"]["camera"]["nosignal_text"].glowAlpha = 1;
+		self.ttt.ui["hud"]["self"]["camera"]["nosignal_text"].sort = 5;
+		self.ttt.ui["hud"]["self"]["camera"]["nosignal_text"].hidewheninmenu = true;
+	}
+	else
+	{
+		self.ttt.ui["hud"]["self"]["camera"]["overlay"] = newClientHudElem(self);
+		self.ttt.ui["hud"]["self"]["camera"]["overlay"].horzAlign = "fullscreen";
+		self.ttt.ui["hud"]["self"]["camera"]["overlay"].vertAlign = "fullscreen";
+		self.ttt.ui["hud"]["self"]["camera"]["overlay"] setShader("nightvision_overlay_goggles", 640, 480);
+		self.ttt.ui["hud"]["self"]["camera"]["overlay"].alpha = 1.0;
+
+		self.ttt.ui["hud"]["self"]["camera"]["live_dot"] = self createIcon("compassping_enemy", 40, 40);
+		self.ttt.ui["hud"]["self"]["camera"]["live_dot"].color = (1.0, 0.5, 0.5);
+		self.ttt.ui["hud"]["self"]["camera"]["live_dot"] setPoint("TOP LEFT", "TOP LEFT", 16, 16);
+		self.ttt.ui["hud"]["self"]["camera"]["live_dot"].sort = 5;
+		self.ttt.ui["hud"]["self"]["camera"]["live_dot"].hidewheninmenu = true;
+
+		self.ttt.ui["hud"]["self"]["camera"]["live_text"] = self createFontString("objective", 1.5);
+		self.ttt.ui["hud"]["self"]["camera"]["live_text"] setParent(self.ttt.ui["hud"]["self"]["camera"]["live_dot"]);
+		self.ttt.ui["hud"]["self"]["camera"]["live_text"] setPoint("CENTER LEFT", "CENTER RIGHT", -2, -1.5);
+		self.ttt.ui["hud"]["self"]["camera"]["live_text"].label = &"LIVE";
+		self.ttt.ui["hud"]["self"]["camera"]["live_text"].glowColor = (0.7, 0.7, 0.7);
+		self.ttt.ui["hud"]["self"]["camera"]["live_text"].glowAlpha = 1;
+		self.ttt.ui["hud"]["self"]["camera"]["live_text"].sort = 5;
+		self.ttt.ui["hud"]["self"]["camera"]["live_text"].hidewheninmenu = true;
+
+		self.ttt.ui["hud"]["self"]["camera"]["time"] = [];
+
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["h"] = self createFontString("objective", 1.5);
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["h"] setPoint("BOTTOM CENTER", "BOTTOM LEFT", 28, -24);
+
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_1"] = self createFontString("objective", 1.5);
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_1"] setParent(self.ttt.ui["hud"]["self"]["camera"]["time"]["h"]);
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_1"] setPoint("CENTER", "CENTER", 14, 0);
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_1"].label = &":";
+
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["m"] = self createFontString("objective", 1.5);
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["m"] setPoint("CENTER", "CENTER", 14, 0);
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["m"] setParent(self.ttt.ui["hud"]["self"]["camera"]["time"]["col_1"]);
+
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_2"] = self createFontString("objective", 1.5);
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_2"] setParent(self.ttt.ui["hud"]["self"]["camera"]["time"]["m"]);
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_2"] setPoint("CENTER", "CENTER", 14, 0);
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_2"].label = &":";
+
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["s"] = self createFontString("objective", 1.5);
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["s"] setParent(self.ttt.ui["hud"]["self"]["camera"]["time"]["col_2"]);
+		self.ttt.ui["hud"]["self"]["camera"]["time"]["s"] setPoint("CENTER", "CENTER", 14, 0);
+
+		foreach (timeEl in self.ttt.ui["hud"]["self"]["camera"]["time"])
+		{
+			timeEl.glowColor = (0.7, 0.7, 0.7);
+			timeEl.glowAlpha = 1;
+			timeEl.sort = 5;
+			timeEl.hidewheninmenu = true;
+		}
+
+		self thread cameraHudThink(cameraEnt);
+		self thread OnPlayerCameraDestroyed(cameraEnt);
+	}
+}
+
+cameraHudThink(cameraEnt)
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("ttt_ui_camera_hud_destroyed");
+
+	for (;;)
+	{
+		hms = secsToHMS((getTime() - cameraEnt.birthtime) / 1000);
+
+		foreach (key, value in hms)
+		{
+			self.ttt.ui["hud"]["self"]["camera"]["time"][key] setValue(value);
+			if (value < 10)
+				self.ttt.ui["hud"]["self"]["camera"]["time"][key].label = &"0";
+			else
+				self.ttt.ui["hud"]["self"]["camera"]["time"][key].label = &"";
+		}
+
+		wait(0.5);
+		self.ttt.ui["hud"]["self"]["camera"]["live_dot"].alpha = 0.0;
+
+		wait(0.5);
+		self.ttt.ui["hud"]["self"]["camera"]["live_dot"].alpha = 1.0;
+	}
+}
+
+OnPlayerCameraDestroyed(cameraEnt)
+{
+	self endon("ttt_ui_camera_hud_destroyed");
+
+	cameraEnt waittill("destroyed");
+
+	self thread restartCameraHud(cameraEnt);
+}
+
+restartCameraHud(cameraEnt)
+{
+	self destroyCameraHud();
+	self displayCameraHud(cameraEnt);
+}
+
+destroyCameraHud(cameraEnt)
+{
+	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["camera"]);
+	self notify("ttt_ui_camera_hud_destroyed");
 }

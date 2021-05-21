@@ -9,6 +9,7 @@ init() {
 initPlayer()
 {
 	self.ttt.use = spawnStruct();
+	self.ttt.use.canUse = true;
 	self.ttt.use.availableEnt = undefined;
 }
 
@@ -69,6 +70,8 @@ getAvailableUseEnt()
 
 	foreach (ent in level.ttt.use.ents)
 	{
+		if (!self.ttt.use.canUse) continue;
+
 		playerEyeOrigin = self getEye();
 		vecEntPlayer = ent.origin - playerEyeOrigin;
 		distanceSq = lengthSquared(vecEntPlayer);
@@ -141,11 +144,11 @@ OnPlayerUse()
 	self endon("disconnect");
 	self endon("death");
 
-	self notifyOnPlayerCommand("activate", "+activate");
+	self notifyOnPlayerCommand("ttt_activate", "+activate");
 
 	for (;;)
 	{
-		self waittill("activate");
+		self waittill("ttt_activate");
 		if (self isInKillcam()) continue;
 		if (self.ttt.items.inBuyMenu) continue;
 
