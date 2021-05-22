@@ -232,28 +232,67 @@ displayHeadIcons()
 		if (self == target) continue;
 
 		if (self.ttt.role == "traitor" && target.ttt.role == "traitor")
-			self displayHeadIconOnPlayer(target, game["entity_headicon_axis"]);
+			self displayHeadIconOnPlayer(target, game["entity_headicon_axis"], true);
 		if (target.ttt.role == "detective")
-			self displayHeadIconOnPlayer(target, game["entity_headicon_allies"]);
+		{
+			headIcon = self displayHeadIconOnPlayer(target, game["entity_headicon_allies"], false);
+			self thread headIconLookAtThink(headIcon, target);
+		}
+	}
+}
+
+headIconLookAtThink(headIcon, target)
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("ttt_ui_headicons_destroyed");
+
+	RANGE = 8192;
+	MAX_POINT_DISTANCE_SQ = 48 * 48;
+	MIN_VISIBLE_PCT = 0.8;
+
+	for (;;)
+	{
+		eyePos = self getEye();
+		eyeAngles = self getPlayerAngles();
+		eyeDir = anglesToForward(eyeAngles);
+		isLookingAtTarget = false;
+
+		vec = vectorFromLineToPoint(eyePos, eyePos + eyeDir * RANGE, target getTagOrigin("tag_stowed_hip_rear"));
+		if (lengthSquared(vec) < MAX_POINT_DISTANCE_SQ)
+			if (target sightConeTrace(eyePos, self) > MIN_VISIBLE_PCT)
+				isLookingAtTarget = true;
+
+		if (isLookingAtTarget && headIcon.visible || !isLookingAtTarget && !headIcon.visible)
+			headIcon fadeOverTime(0.15);
+
+		headIcon.visible = isLookingAtTarget;
+		headIcon.alpha = isLookingAtTarget * 0.75;
+
+		wait(0.05);
 	}
 }
 
 destroyHeadIcons()
 {
 	recursivelyDestroyElements(self.ttt.ui["hud"]["headicons"]);
+	self notify("ttt_ui_headicons_destroyed");
 }
 
-displayHeadIconOnPlayer(target, image)
+displayHeadIconOnPlayer(target, image, visible)
 {
 	i = self.ttt.ui["hud"]["headicons"].size;
 
 	self.ttt.ui["hud"]["headicons"][i] = newClientHudElem(self);
 	self.ttt.ui["hud"]["headicons"][i] setShader(image, 8, 8);
 	self.ttt.ui["hud"]["headicons"][i].color = level.ttt.colors[target.ttt.role];
-	self.ttt.ui["hud"]["headicons"][i].alpha = 0.75;
+	self.ttt.ui["hud"]["headicons"][i].alpha = visible * 0.75;
+	self.ttt.ui["hud"]["headicons"][i].visible = visible;
 	self.ttt.ui["hud"]["headicons"][i] setWaypoint(false, false);
 	self.ttt.ui["hud"]["headicons"][i] setTargetEnt(target.headiconAnchor);
 	self.ttt.ui["hud"]["headicons"][i] thread OnHeadIconDestroy(self, target);
+
+	return self.ttt.ui["hud"]["headicons"][i];
 }
 
 OnHeadIconDestroy(showToPlayer, target)
