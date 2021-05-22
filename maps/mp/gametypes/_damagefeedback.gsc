@@ -5,6 +5,9 @@ init()
 	precacheShader("damage_feedback_endgame");
 	precacheShader("scavenger_pickup");
 
+	if (level.ttt.enabled && level.ttt.modEnabled)
+		precacheShader("damage_feedback_headshot");
+
 	level thread onPlayerConnect();
 }
 
@@ -44,6 +47,8 @@ updateDamageFeedback( typeHit )
 	feedbackDurationOverride = 0;
 	startAlpha = 1;
 
+	self.hud_damagefeedback.color = (1.0, 1.0, 1.0);
+
 	if ( typeHit == "hitBodyArmor" )
 	{
 		self.hud_damagefeedback setShader("damage_feedback_j", 24, 48);
@@ -74,13 +79,28 @@ updateDamageFeedback( typeHit )
 		x = -9;
 		y = -9;
 		startAlpha = 0.65;
-		self.hud_damagefeedback.color = (0.4, 0.4, 0.4);
+		self.hud_damagefeedback.color = (0.75, 0.75, 0.75);
 		self.hud_damagefeedback setShader("damage_feedback", 18, 36);
 		self playLocalSound("MP_hit_alert");
 	}
+	else if (typeHit == "ttt_headshot")
+	{
+		self playLocalSound("MP_hit_alert");
+
+		if (level.ttt.enabled && level.ttt.modEnabled)
+		{
+			self.hud_damagefeedback setShader("damage_feedback_headshot", 24, 48);
+			self playLocalSound("headshot_hit_feedback");
+		}
+		else
+		{
+			self.hud_damagefeedback.color = (1.0, 0.4, 0.4);
+			self.hud_damagefeedback setShader("damage_feedback", 24, 48);
+			for (i = 0; i < 3; i++) self playLocalSound("bullet_mega_flesh");
+		}
+	}
 	else
 	{
-		self.hud_damagefeedback.color = (1.0, 1.0, 1.0);
 		self.hud_damagefeedback setShader("damage_feedback", 24, 48);
 		self playlocalsound("MP_hit_alert");
 	}

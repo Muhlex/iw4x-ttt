@@ -1525,6 +1525,8 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 				typeHit = "hitBodyArmor";
 			else if ( victim _hasPerk( "specialty_combathigh") )
 				typeHit = "hitEndGame";
+			else if (level.ttt.enabled && sMeansOfDeath == "MOD_HEAD_SHOT")
+				typeHit = "ttt_headshot";
 			else
 				typeHit = "standard";
 
