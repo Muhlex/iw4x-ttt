@@ -35,12 +35,18 @@ init()
 	level.ttt.items["detective"] = [];
 	level.ttt.items["internal"] = [];
 
+	unavailableHints = [];
+	unavailableHints["roleitem"] = &"^1Item inventory ^7[ [{+actionslot 3}] ]^1 is occupied";
+	unavailableHints["equipment"] = &"^1Already carrying equipment ^7[ [{+frag}] ]^1";
+	unavailableHints["offhand"] = &"^1Already carrying special grenade ^7[ [{+smoke}] ]^1";
+
 	armor = spawnStruct();
 	armor.name = "ARMOR";
 	armor.description = "^3Passive item\n^7Reduces incoming bullet damage\nby ^220 percent^7.\n\nDefault equipment for detectives.";
 	armor.icon = "cardicon_vest_1";
 	armor.onBuy = ::OnBuyArmor;
 	armor.getIsAvailable = ::getIsAvailablePassive;
+	armor.unavailableHint = &"^1Already wearing armor";
 
 	level.ttt.items["traitor"][0] = armor;
 
@@ -50,6 +56,7 @@ init()
 	level.ttt.items["traitor"][1].icon = "specialty_uav";
 	level.ttt.items["traitor"][1].onBuy = ::OnBuyRadar;
 	level.ttt.items["traitor"][1].getIsAvailable = ::getIsAvailablePassive;
+	level.ttt.items["traitor"][1].unavailableHint = &"^1Radar already active";
 
 	level.ttt.items["traitor"][2] = spawnStruct();
 	level.ttt.items["traitor"][2].name = "ATTACK HELICOPTER";
@@ -57,6 +64,7 @@ init()
 	level.ttt.items["traitor"][2].icon = "specialty_helicopter_support_crate";
 	level.ttt.items["traitor"][2].onBuy = ::OnBuyHelicopter;
 	level.ttt.items["traitor"][2].getIsAvailable = ::getIsAvailableHelicopter;
+	level.ttt.items["traitor"][2].unavailableHint = &"^1Air space too crowded";
 
 	level.ttt.items["traitor"][3] = spawnStruct();
 	level.ttt.items["traitor"][3].name = "BOMB";
@@ -66,6 +74,7 @@ init()
 	level.ttt.items["traitor"][3].onBuy = ::OnBuyBomb;
 	level.ttt.items["traitor"][3].onActivate = ::OnActivateBomb;
 	level.ttt.items["traitor"][3].getIsAvailable = ::getIsAvailableRoleItem;
+	level.ttt.items["traitor"][3].unavailableHint = unavailableHints["roleitem"];
 	level.ttt.items["traitor"][3].weaponName = "onemanarmy_mp";
 	if (level.ttt.modEnabled)
 		level.ttt.items["traitor"][3].weaponName = "oma_bomb_mp";
@@ -79,6 +88,7 @@ init()
 	level.ttt.items["traitor"][4].iconOffsetX = 1;
 	level.ttt.items["traitor"][4].onBuy = ::OnBuyRPG;
 	level.ttt.items["traitor"][4].getIsAvailable = ::getIsAvailableRoleItem;
+	level.ttt.items["traitor"][4].unavailableHint = unavailableHints["roleitem"];
 	level.ttt.items["traitor"][4].weaponName = "rpg_mp";
 
 	level.ttt.items["traitor"][5] = spawnStruct();
@@ -90,6 +100,7 @@ init()
 	level.ttt.items["traitor"][5].iconOffsetX = -1;
 	level.ttt.items["traitor"][5].onBuy = ::OnBuyRanger;
 	level.ttt.items["traitor"][5].getIsAvailable = ::getIsAvailableRoleItem;
+	level.ttt.items["traitor"][5].unavailableHint = unavailableHints["roleitem"];
 	level.ttt.items["traitor"][5].weaponName = "ranger_mp";
 
 	level.ttt.items["traitor"][6] = spawnStruct();
@@ -99,6 +110,7 @@ init()
 	level.ttt.items["traitor"][6].iconOffsetX = 1;
 	level.ttt.items["traitor"][6].onBuy = ::OnBuyKnife;
 	level.ttt.items["traitor"][6].getIsAvailable = ::getIsAvailableEquipment;
+	level.ttt.items["traitor"][6].unavailableHint = unavailableHints["equipment"];
 
 	level.ttt.items["traitor"][7] = spawnStruct();
 	level.ttt.items["traitor"][7].name = "CLAYMORE";
@@ -107,6 +119,7 @@ init()
 	level.ttt.items["traitor"][7].iconOffsetX = 1;
 	level.ttt.items["traitor"][7].onBuy = ::OnBuyClaymore;
 	level.ttt.items["traitor"][7].getIsAvailable = ::getIsAvailableEquipment;
+	level.ttt.items["traitor"][7].unavailableHint = unavailableHints["equipment"];
 
 	level.ttt.items["traitor"][8] = spawnStruct();
 	level.ttt.items["traitor"][8].name = "FLASHBANG";
@@ -114,6 +127,7 @@ init()
 	level.ttt.items["traitor"][8].icon = "weapon_flashbang";
 	level.ttt.items["traitor"][8].onBuy = ::OnBuyFlash;
 	level.ttt.items["traitor"][8].getIsAvailable = ::getIsAvailableOffhand;
+	level.ttt.items["traitor"][8].unavailableHint = unavailableHints["offhand"];
 
 	level.ttt.items["detective"][0] = armor;
 
@@ -127,6 +141,7 @@ init()
 	level.ttt.items["detective"][1].onBuy = ::OnBuyRiot;
 	level.ttt.items["detective"][1].onPickup = ::OnPickupRiot;
 	level.ttt.items["detective"][1].getIsAvailable = ::getIsAvailableRoleItem;
+	level.ttt.items["detective"][1].unavailableHint = unavailableHints["roleitem"];
 	level.ttt.items["detective"][1].weaponName = "riotshield_mp";
 
 	level.ttt.items["detective"][2] = spawnStruct();
@@ -138,6 +153,7 @@ init()
 	level.ttt.items["detective"][2].iconOffsetX = 1;
 	level.ttt.items["detective"][2].onBuy = ::OnBuySpas;
 	level.ttt.items["detective"][2].getIsAvailable = ::getIsAvailableRoleItem;
+	level.ttt.items["detective"][2].unavailableHint = unavailableHints["roleitem"];
 	level.ttt.items["detective"][2].weaponName = "spas12_mp";
 
 	level.ttt.items["detective"][3] = spawnStruct();
@@ -146,6 +162,7 @@ init()
 	level.ttt.items["detective"][3].icon = "weapon_concgrenade";
 	level.ttt.items["detective"][3].onBuy = ::OnBuyConcussion;
 	level.ttt.items["detective"][3].getIsAvailable = ::getIsAvailableOffhand;
+	level.ttt.items["detective"][3].unavailableHint = unavailableHints["offhand"];
 
 	level.ttt.items["detective"][4] = spawnStruct();
 	level.ttt.items["detective"][4].name = "HEALTH STATION";
@@ -155,6 +172,7 @@ init()
 	level.ttt.items["detective"][4].onBuy = ::OnBuyHealthStation;
 	level.ttt.items["detective"][4].onActivate = ::OnActivateHealthStation;
 	level.ttt.items["detective"][4].getIsAvailable = ::getIsAvailableRoleItem;
+	level.ttt.items["detective"][4].unavailableHint = unavailableHints["roleitem"];
 	level.ttt.items["detective"][4].weaponName = "onemanarmy_mp";
 	if (level.ttt.modEnabled)
 		level.ttt.items["detective"][4].weaponName = "oma_healthstation_mp";
@@ -165,6 +183,7 @@ init()
 	level.ttt.items["detective"][5].icon = "specialty_onemanarmy_upgrade";
 	level.ttt.items["detective"][5].onBuy = ::OnBuyLob;
 	level.ttt.items["detective"][5].getIsAvailable = ::getIsAvailablePassive;
+	level.ttt.items["detective"][5].unavailableHint = &"^1You can't get more muscular than this";
 
 	level.ttt.items["detective"][6] = spawnStruct();
 	level.ttt.items["detective"][6].name = "CAMERA";
@@ -176,6 +195,7 @@ init()
 	level.ttt.items["detective"][6].onUnequip = ::OnUnequipCamera;
 	level.ttt.items["detective"][6].onActivate = ::OnActivateCamera;
 	level.ttt.items["detective"][6].getIsAvailable = ::getIsAvailableRoleItem;
+	level.ttt.items["detective"][6].unavailableHint = unavailableHints["roleitem"];
 	level.ttt.items["detective"][6].weaponName = "onemanarmy_mp";
 	if (level.ttt.modEnabled)
 		level.ttt.items["detective"][6].weaponName = "oma_camera_mp";

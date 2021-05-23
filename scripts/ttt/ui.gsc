@@ -584,6 +584,12 @@ displayBuyMenu(role)
 	self.ttt.ui["bm"]["name"].hidewheninmenu = true;
 	self.ttt.ui["bm"]["name"].foreground = true;
 
+	self.ttt.ui["bm"]["unavailable_hint"] = self createFontString("default", 1.0);
+	self.ttt.ui["bm"]["unavailable_hint"] setParent(self.ttt.ui["bm"]["name"]);
+	self.ttt.ui["bm"]["unavailable_hint"] setPoint("TOP LEFT", "BOTTOM LEFT", 0, PADDING);
+	self.ttt.ui["bm"]["unavailable_hint"].hidewheninmenu = true;
+	self.ttt.ui["bm"]["unavailable_hint"].foreground = true;
+
 	self.ttt.ui["bm"]["desc"] = self createFontString("default", 1.0);
 	self.ttt.ui["bm"]["desc"] setParent(self.ttt.ui["bm"]["name"]);
 	self.ttt.ui["bm"]["desc"] setPoint("TOP LEFT", "BOTTOM LEFT", 0, PADDING);
@@ -616,6 +622,8 @@ updateBuyMenu(role, moveDown, moveRight, buySelected)
 	if (!isDefined(buySelected)) buySelected = false;
 
 	COLUMNS = level.ttt.buyMenu["columns"];
+	PADDING = level.ttt.buyMenu["padding"];
+
 	rowCount = intUp(level.ttt.items[role].size / COLUMNS);
 	columnCount = level.ttt.items[role].size;
 	if (level.ttt.items[role].size > COLUMNS) columnCount = COLUMNS;
@@ -636,14 +644,33 @@ updateBuyMenu(role, moveDown, moveRight, buySelected)
 		self.ttt.items.selectedIndex = level.ttt.items[role].size - 1;
 
 	// Update item texts
-	self.ttt.ui["bm"]["name"] setText(level.ttt.items[role][self.ttt.items.selectedIndex].name);
-	self.ttt.ui["bm"]["desc"] setText(level.ttt.items[role][self.ttt.items.selectedIndex].description);
+	selectedItem = level.ttt.items[role][self.ttt.items.selectedIndex];
+	selectedIsAvailable = [[selectedItem.getIsAvailable]](selectedItem);
+
+	self.ttt.ui["bm"]["name"] setText(selectedItem.name);
+	self.ttt.ui["bm"]["name"].alpha = 1 - (!(selectedIsAvailable && self.ttt.items.credits) * 0.5);
+	self.ttt.ui["bm"]["desc"] setText(selectedItem.description);
+	self.ttt.ui["bm"]["desc"].alpha = 1 - (!(selectedIsAvailable && self.ttt.items.credits) * 0.5);
+
+	// Update unavailability hints
+	if (!selectedIsAvailable)
+		self.ttt.ui["bm"]["unavailable_hint"].label = selectedItem.unavailableHint;
+	else if (!self.ttt.items.credits)
+		self.ttt.ui["bm"]["unavailable_hint"].label = &"^1No credits available";
+	else
+		self.ttt.ui["bm"]["unavailable_hint"].label = &"";
+
+	if (selectedIsAvailable && self.ttt.items.credits)
+		self.ttt.ui["bm"]["desc"] setPoint("TOP LEFT", "BOTTOM LEFT", 0, PADDING);
+	else // move down the description by the space the unavailability hint takes up
+		self.ttt.ui["bm"]["desc"] setPoint("TOP LEFT", "BOTTOM LEFT", 0, PADDING * 2 + 12);
+
 
 	// Update rectangle colors
 	foreach (itemBg in self.ttt.ui["bm"]["items_bg"]) itemBg.color = level.ttt.colorsBuyMenu["item_bg"];
 	self.ttt.ui["bm"]["items_bg"][self.ttt.items.selectedIndex].color = level.ttt.colorsBuyMenu["item_selected"];
 
-	// Update owned items
+	// Update available item icons
 	foreach (i, itemIcon in self.ttt.ui["bm"]["items_icon"])
 	{
 		itemIcon.alpha = 1.0;
