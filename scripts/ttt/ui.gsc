@@ -592,7 +592,6 @@ displayBuyMenu(role)
 
 	self.ttt.ui["bm"]["desc"] = self createFontString("default", 1.0);
 	self.ttt.ui["bm"]["desc"] setParent(self.ttt.ui["bm"]["name"]);
-	self.ttt.ui["bm"]["desc"] setPoint("TOP LEFT", "BOTTOM LEFT", 0, PADDING);
 	self.ttt.ui["bm"]["desc"].hidewheninmenu = true;
 	self.ttt.ui["bm"]["desc"].foreground = true;
 
@@ -660,11 +659,18 @@ updateBuyMenu(role, moveDown, moveRight, buySelected)
 	else
 		self.ttt.ui["bm"]["unavailable_hint"].label = &"";
 
+	// >>> TODO: setPoint seems to cause a circular reference in HUD children in rare cases: <<<
+
+	foreach (child in self.ttt.ui["bm"]["desc"].children)
+	{
+		iPrintLn("X:" + child.x + " | Y:" + child.y);
+		logPrint("X:" + child.x + " | Y:" + child.y);
+	}
+
 	if (selectedIsAvailable && self.ttt.items.credits)
 		self.ttt.ui["bm"]["desc"] setPoint("TOP LEFT", "BOTTOM LEFT", 0, PADDING);
 	else // move down the description by the space the unavailability hint takes up
 		self.ttt.ui["bm"]["desc"] setPoint("TOP LEFT", "BOTTOM LEFT", 0, PADDING * 2 + 12);
-
 
 	// Update rectangle colors
 	foreach (itemBg in self.ttt.ui["bm"]["items_bg"]) itemBg.color = level.ttt.colorsBuyMenu["item_bg"];
@@ -674,8 +680,14 @@ updateBuyMenu(role, moveDown, moveRight, buySelected)
 	foreach (i, itemIcon in self.ttt.ui["bm"]["items_icon"])
 	{
 		itemIcon.alpha = 1.0;
+		itemIcon.color = (1.0, 1.0, 1.0);
 		item = level.ttt.items[role][i];
-		if (![[item.getIsAvailable]](item) || self.ttt.items.credits <= 0) itemIcon.alpha = 0.25;
+		isAvailable = [[item.getIsAvailable]](item);
+		if (!isAvailable || self.ttt.items.credits <= 0)
+		{
+			itemIcon.alpha = 0.25;
+			if (!isAvailable) itemIcon.color = (1.0, 0.4, 0.4);
+		}
 	}
 
 	// Update credit count
@@ -695,17 +707,14 @@ updateBombHuds()
 {
 	foreach (player in level.players)
 	{
-		if ((isDefined(player.ttt.role) && player.ttt.role == "traitor" && isDefined(player.ttt.ui["hud"]["self"]["role"])) || !isAlive(player))
-		{
-			player destroyBombHud();
-			player displayBombHud();
-		}
+		player destroyBombHud();
+		player displayBombHud();
 	}
 }
 
 displayBombHud()
 {
-	if (!isDefined(self.ttt.role) || self.ttt.role != "traitor") return;
+	if ((isAlive(self) && (!isDefined(self.ttt.role) || self.ttt.role != "traitor")) || self.ttt.items.inBuyMenu) return;
 
 	self.ttt.ui["hud"]["self"]["bombs"] = [];
 

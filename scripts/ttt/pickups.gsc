@@ -272,24 +272,28 @@ tryPickUpWeapon(weaponEnt, explicitPickup)
 {
 	if (!isDefined(explicitPickup)) explicitPickup = false;
 
+	prevWeaponName = self getCurrentWeapon();
 	hasSameWeapon = self hasWeapon(weaponEnt.weaponName);
 	hasRoleWeapon = self scripts\ttt\items::hasRoleWeapon();
 	isRoleWeaponOnPlayer = self scripts\ttt\items::isRoleWeaponOnPlayer();
 	newIsRoleWeapon = scripts\ttt\items::isRoleWeapon(weaponEnt.weaponName);
 
-	if ((hasSameWeapon && !explicitPickup) || (hasRoleWeapon && newIsRoleWeapon)) return;
-
-	currentWeapon = self getCurrentWeapon();
-
 	if (newIsRoleWeapon)
 	{
 		if (!explicitPickup) return;
+
+		if (hasRoleWeapon) self dropWeapon(self.ttt.items.roleInventory.item.weaponName);
+
 		scripts\ttt\items::setRoleInventory(weaponEnt.item, weaponEnt.ammoClip, weaponEnt.ammoStock, weaponEnt.data);
 		if (isDefined(weaponEnt.item.onPickUp)) self thread [[weaponEnt.item.onPickUp]](weaponEnt.item, weaponEnt.data);
 		self playLocalSound("weap_pickup");
+
+		if (isRoleWeaponOnPlayer) self scripts\ttt\items::giveRoleWeapon();
 	}
 	else
 	{
+		if (hasSameWeapon && !explicitPickup) return;
+
 		weaponCountPrev = self getPrimaryWeaponCount();
 		lastValidWeapon = self getLastValidWeapon();
 
@@ -299,8 +303,8 @@ tryPickUpWeapon(weaponEnt, explicitPickup)
 			self dropWeapon(weaponEnt.weaponName);
 		else if (weaponCountPrev >= 2)
 		{
-			if (isWeaponDroppable(currentWeapon) && !isRoleWeaponOnPlayer)
-				self dropWeapon(currentWeapon);
+			if (isWeaponDroppable(prevWeaponName) && !isRoleWeaponOnPlayer)
+				self dropWeapon(prevWeaponName);
 			else
 				self dropWeapon(lastValidWeapon);
 		}
@@ -315,7 +319,7 @@ tryPickUpWeapon(weaponEnt, explicitPickup)
 		self thread maps\mp\gametypes\_weapons::stowedWeaponsRefresh();
 		self playLocalSound("weap_pickup");
 
-		if ((weaponCountNew == 1 || explicitPickup || currentWeapon == level.ttt.knifeWeapon) && !isRoleWeaponOnPlayer)
+		if ((weaponCountNew == 1 || explicitPickup || prevWeaponName == level.ttt.knifeWeapon) && !isRoleWeaponOnPlayer)
 			self switchToWeapon(weaponEnt.weaponName);
 	}
 
@@ -423,19 +427,30 @@ OnPlayerDropWeapon()
 dropWeapon(weaponName, velocity)
 {
 	if (!isDefined(weaponName)) return;
+	if (!self hasWeapon(weaponName) && !scripts\ttt\items::hasRoleWeapon(weaponName)) return;
 
 	weaponWasActive = (weaponName == self getCurrentWeapon());
+	isRoleWeapon = scripts\ttt\items::isRoleWeapon(weaponName);
+	isRoleWeaponOnPlayer = self scripts\ttt\items::isRoleWeaponOnPlayer();
 
 	ammoClip = self getWeaponAmmoClip(weaponName);
 	ammoStock = self getWeaponAmmoStock(weaponName);
 	item = undefined;
 	data = undefined;
 
-	if (scripts\ttt\items::isRoleWeapon(weaponName))
+	if (isRoleWeapon)
 	{
 		inv = self.ttt.items.roleInventory;
-		if (isDefined(inv.item)) item = inv.item;
-		if (isDefined(inv.data)) data = inv.data;
+		item = inv.item;
+		data = inv.data;
+
+		if (!isRoleWeaponOnPlayer)
+		{
+			ammoClip = inv.ammoClip;
+			ammoStock = inv.ammoStock;
+		}
+
+		if (isDefined(inv.item.onDrop)) self thread [[inv.item.onDrop]](item, data);
 		self scripts\ttt\items::resetRoleInventory();
 	}
 
@@ -466,9 +481,7 @@ dropWeapon(weaponName, velocity)
 	if (self getPrimaryWeaponCount() <= 1 && !self hasWeapon(level.ttt.knifeWeapon))
 		self giveKnifeWeapon();
 
-	if (!weaponWasActive) return;
-
-	self switchToLastWeapon();
+	if (weaponWasActive) self switchToLastWeapon();
 }
 
 setTrailEffect()

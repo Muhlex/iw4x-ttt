@@ -575,30 +575,29 @@ PlayerKilled_internal( eInflictor, attacker, victim, iDamage, sMeansOfDeath, sWe
 	//prof_begin( " PlayerKilled_3_drop" );
 	// drop weapons from killed player
 	victim maps\mp\gametypes\_weapons::dropScavengerForDeath( attacker );	// must be done before dropWeaponForDeath, since we use some weapon information
-	if (!level.randomizer.enabled && !level.ttt.enabled) victim maps\mp\gametypes\_weapons::dropWeaponForDeath( attacker );
+	if (!level.randomizer.enabled && !level.ttt.enabled)
+		victim maps\mp\gametypes\_weapons::dropWeaponForDeath( attacker );
+
 	if (level.ttt.enabled)
 	{
-		foreach (victimWeaponName in victim getWeaponsListPrimaries())
+		weaponsList = victim getWeaponsListPrimaries();
+		hasRoleWeapon = victim scripts\ttt\items::hasRoleWeapon();
+		isRoleWeaponOnPlayer = victim scripts\ttt\items::isRoleWeaponOnPlayer();
+		roleWeaponName = victim.ttt.items.roleInventory.item.weaponName;
+		isRoleWeaponPrimary = isDefined(roleWeaponName) && weaponInventoryType(roleWeaponName) == "primary";
+
+		if (hasRoleWeapon && (!isRoleWeaponOnPlayer || !isRoleWeaponPrimary))
+			weaponsList[weaponsList.size] = roleWeaponName;
+
+		foreach (victimWeaponName in weaponsList)
 		{
 			if (victimWeaponName == level.ttt.knifeWeapon) continue;
-			if (!maps\mp\gametypes\_weapons::mayDropWeapon(victimWeaponName)) continue;
+			if (!scripts\ttt\pickups::isWeaponDroppable(victimWeaponName)) continue;
 
 			victim scripts\ttt\pickups::dropWeapon(
 				victimWeaponName,
-				anglesToForward((0, randomInt(360), 0)) * 64 + (0, 0, 64)
+				anglesToForward((0, randomInt(360), 0)) * 64 + (0, 0, 96)
 			);
-		}
-		if (victim scripts\ttt\items::hasRoleWeapon() && !victim scripts\ttt\items::isRoleWeaponOnPlayer())
-		{
-			inv = victim.ttt.items.roleInventory;
-
-			if (victim scripts\ttt\items::hasRoleWeapon("riotshield_mp") && !victim.hasRiotShieldEquipped)
-				victim DetachShieldModel("weapon_riot_shield_mp", "tag_shield_back");
-
-			victim giveWeapon(inv.item.weaponName);
-			victim setWeaponAmmoClip(inv.item.weaponName, inv.ammoClip);
-			victim setWeaponAmmoStock(inv.item.weaponName, inv.ammoStock);
-			victim scripts\ttt\pickups::dropWeapon(inv.item.weaponName, anglesToForward((0, randomInt(360), 0)) * 64 + (0, 0, 64));
 		}
 	}
 	//prof_end( " PlayerKilled_3_drop" );

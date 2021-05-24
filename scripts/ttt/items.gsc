@@ -140,6 +140,7 @@ init()
 	level.ttt.items["detective"][1].iconOffsetX = -16;
 	level.ttt.items["detective"][1].onBuy = ::OnBuyRiot;
 	level.ttt.items["detective"][1].onPickup = ::OnPickupRiot;
+	level.ttt.items["detective"][1].onDrop = ::OnDropRiot;
 	level.ttt.items["detective"][1].getIsAvailable = ::getIsAvailableRoleItem;
 	level.ttt.items["detective"][1].unavailableHint = unavailableHints["roleitem"];
 	level.ttt.items["detective"][1].weaponName = "riotshield_mp";
@@ -292,6 +293,7 @@ setPlayerBuyMenu()
 	self setBlurForPlayer(6, 1.5);
 	self freezePlayer();
 	self scripts\ttt\ui::destroyHeadIcons();
+	self scripts\ttt\ui::destroyBombHud();
 	self scripts\ttt\ui::destroyBuyMenu();
 	self scripts\ttt\ui::displayBuyMenu(self.ttt.role);
 	self thread buyMenuThink();
@@ -314,7 +316,11 @@ unsetPlayerBuyMenu(switchToLastWeapon)
 	self setBlurForPlayer(0, 0.75);
 	self scripts\ttt\ui::destroyBuyMenu();
 
-	if (isAlive(self)) self scripts\ttt\ui::displayHeadIcons();
+	if (isAlive(self))
+	{
+		self scripts\ttt\ui::displayHeadIcons();
+		self scripts\ttt\ui::displayBombHud();
+	}
 }
 
 playLaptopSound()
@@ -416,7 +422,6 @@ isRoleWeaponCurrent()
 giveRoleWeapon()
 {
 	if (self isRoleWeaponOnPlayer()) return;
-	if (!maps\mp\gametypes\_weapons::mayDropWeapon(self getCurrentWeapon())) return;
 
 	inv = self.ttt.items.roleInventory;
 	if (!isDefined(inv.item.weaponName)) return;
@@ -459,7 +464,7 @@ OnPlayerRoleWeaponToggle()
 		if (!self hasRoleWeapon()) continue;
 
 		if (self isRoleWeaponOnPlayer()) self switchToLastWeapon();
-		else self giveRoleWeapon();
+		else if (scripts\ttt\pickups::isWeaponDroppable(self getCurrentWeapon())) self giveRoleWeapon();
 	}
 }
 
@@ -768,7 +773,7 @@ OnBuyBomb(item)
 	self setRoleInventory(item);
 }
 
-OnActivateBomb()
+OnActivateBomb(item)
 {
 	self endon("disconnect");
 	self endon("death");
@@ -802,10 +807,10 @@ OnActivateBomb()
 	self freezePlayer();
 	self thread attachBombModel();
 
-	self thread activateBombThink();
+	self thread activateBombThink(item);
 }
 
-activateBombThink()
+activateBombThink(item)
 {
 	self endon("disconnect");
 	self endon("death");
@@ -818,7 +823,7 @@ activateBombThink()
 	{
 		wait(0.05);
 
-		if (self getCurrentWeapon() != BOMB_WEAPON || (!self attackButtonPressed() && !self useButtonPressed()))
+		if (self.ttt.items.roleInventory.item != item || self getCurrentWeapon() != BOMB_WEAPON || (!self attackButtonPressed() && !self useButtonPressed()))
 		{
 			self stopBombInteraction();
 			return;
@@ -1212,6 +1217,11 @@ OnPickupRiot(item)
 {
 	self.hasRiotShield = true;
 	self AttachShieldModel("weapon_riot_shield_mp", "tag_shield_back");
+}
+OnDropRiot(item)
+{
+	self.hasRiotShield = false;
+	self DetachShieldModel("weapon_riot_shield_mp", "tag_shield_back");
 }
 
 OnBuySpas(item)
