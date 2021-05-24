@@ -223,7 +223,7 @@ OnPlayerSpawn()
 		self _SetActionSlot(1, ""); // disable nightvision
 		self scripts\ttt\items::resetPlayerEquipment();
 
-		self scripts\ttt\pickups::giveDefaultWeapon();
+		self scripts\ttt\pickups::giveKnifeWeapon();
 		self setSpawnWeapon(level.ttt.knifeWeapon);
 		self scripts\ttt\ui::setupHeadIconAnchor();
 		self scripts\ttt\ui::displaySelfHud();

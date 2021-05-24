@@ -87,6 +87,17 @@ isWeaponLaptop(weaponName)
 	return isSubStr(weaponName, "laptop");
 }
 
+getPrimaryWeaponCount()
+{
+	primaryWeaponCount = self getWeaponsListPrimaries().size;
+	hasKnife = self hasWeapon(level.ttt.knifeWeapon);
+	isRoleWeaponOnPlayer = self scripts\ttt\items::isRoleWeaponOnPlayer();
+	roleWeapon = self.ttt.items.roleInventory.item.weaponName;
+	isRoleWeaponPrimary = isDefined(roleWeapon) && weaponInventoryType(roleWeapon) == "primary";
+
+	return primaryWeaponCount - int(hasKnife) - int(isRoleWeaponOnPlayer && isRoleWeaponPrimary);
+}
+
 createWeaponEnt(weaponName, ammoClip, ammoStock, item, data, origin, angles, velocity)
 {
 	if (!isDefined(weaponName)) return;
@@ -261,12 +272,12 @@ tryPickUpWeapon(weaponEnt, explicitPickup)
 {
 	if (!isDefined(explicitPickup)) explicitPickup = false;
 
+	hasSameWeapon = self hasWeapon(weaponEnt.weaponName);
 	hasRoleWeapon = self scripts\ttt\items::hasRoleWeapon();
 	isRoleWeaponOnPlayer = self scripts\ttt\items::isRoleWeaponOnPlayer();
-	roleWeaponInvType = weaponInventoryType(weaponEnt.weaponName) == "primary";
 	newIsRoleWeapon = scripts\ttt\items::isRoleWeapon(weaponEnt.weaponName);
 
-	if (self hasWeapon(weaponEnt.weaponName) || (hasRoleWeapon && newIsRoleWeapon)) return;
+	if ((hasSameWeapon && !explicitPickup) || (hasRoleWeapon && newIsRoleWeapon)) return;
 
 	currentWeapon = self getCurrentWeapon();
 
@@ -279,21 +290,14 @@ tryPickUpWeapon(weaponEnt, explicitPickup)
 	}
 	else
 	{
-		hasKnife = self hasWeapon(level.ttt.knifeWeapon);
-		primariesList = self getWeaponsListPrimaries();
-		weaponCount = primariesList.size - int(hasKnife) - int(isRoleWeaponOnPlayer && roleWeaponInvType == "primary");
+		weaponCountPrev = self getPrimaryWeaponCount();
 		lastValidWeapon = self getLastValidWeapon();
 
-		if (weaponCount >= 2 && !explicitPickup) return;
+		if (weaponCountPrev >= 2 && !explicitPickup) return;
 
-		self giveWeapon(weaponEnt.weaponName);
-		self setWeaponAmmoClip(weaponEnt.weaponName, weaponEnt.ammoClip);
-		self setWeaponAmmoStock(weaponEnt.weaponName, weaponEnt.ammoStock);
-		if (hasKnife && weaponCount == 1) self takeWeapon(level.ttt.knifeWeapon);
-		self thread maps\mp\gametypes\_weapons::stowedWeaponsRefresh();
-		self playLocalSound("weap_pickup");
-
-		if (weaponCount >= 2 && explicitPickup)
+		if (hasSameWeapon)
+			self dropWeapon(weaponEnt.weaponName);
+		else if (weaponCountPrev >= 2)
 		{
 			if (isWeaponDroppable(currentWeapon) && !isRoleWeaponOnPlayer)
 				self dropWeapon(currentWeapon);
@@ -301,7 +305,17 @@ tryPickUpWeapon(weaponEnt, explicitPickup)
 				self dropWeapon(lastValidWeapon);
 		}
 
-		if ((weaponCount == 0 || explicitPickup || currentWeapon == level.ttt.knifeWeapon) && !isRoleWeaponOnPlayer)
+		self giveWeapon(weaponEnt.weaponName);
+		self setWeaponAmmoClip(weaponEnt.weaponName, weaponEnt.ammoClip);
+		self setWeaponAmmoStock(weaponEnt.weaponName, weaponEnt.ammoStock);
+
+		weaponCountNew = self getPrimaryWeaponCount();
+
+		if (self hasWeapon(level.ttt.knifeWeapon) && weaponCountNew == 2) self takeWeapon(level.ttt.knifeWeapon);
+		self thread maps\mp\gametypes\_weapons::stowedWeaponsRefresh();
+		self playLocalSound("weap_pickup");
+
+		if ((weaponCountNew == 1 || explicitPickup || currentWeapon == level.ttt.knifeWeapon) && !isRoleWeaponOnPlayer)
 			self switchToWeapon(weaponEnt.weaponName);
 	}
 
@@ -448,16 +462,13 @@ dropWeapon(weaponName, velocity)
 	if (!isAlive(self)) return;
 
 	self takeWeapon(weaponName);
+
+	if (self getPrimaryWeaponCount() <= 1 && !self hasWeapon(level.ttt.knifeWeapon))
+		self giveKnifeWeapon();
+
 	if (!weaponWasActive) return;
 
-	hasKnife = self hasWeapon(level.ttt.knifeWeapon);
-	weaponCount = self getWeaponsListPrimaries().size - int(hasKnife);
-
-	if (weaponCount <= 1 && !hasKnife) self giveDefaultWeapon();
-
 	self switchToLastWeapon();
-
-	self notify("ttt_weapon_drop_success");
 }
 
 setTrailEffect()
@@ -567,7 +578,7 @@ OnWeaponEntDamagePlayer(attacker)
 	}
 }
 
-giveDefaultWeapon()
+giveKnifeWeapon()
 {
 	self giveWeapon(level.ttt.knifeWeapon);
 	self SetWeaponAmmoClip(level.ttt.knifeWeapon, 0);
