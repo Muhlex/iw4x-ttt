@@ -247,21 +247,6 @@ OnPlayerBuyMenu()
 	}
 }
 
-OnPlayerBuyMenuEsc()
-{
-	self endon("disconnect");
-	self endon("death");
-
-	for (;;)
-	{
-		self waittill("menuresponse", menu, response);
-
-		if (response != "ttt_esc_menu_blocked") continue;
-
-		if (self.ttt.items.inBuyMenu) self thread unsetPlayerBuyMenu(true);
-	}
-}
-
 setPlayerBuyMenu()
 {
 	self endon("disconnect");
@@ -298,6 +283,24 @@ setPlayerBuyMenu()
 	self scripts\ttt\ui::displayBuyMenu(self.ttt.role);
 	self thread buyMenuThink();
 	self thread buyMenuThinkLaptop(LAPTOP_WEAPON);
+	self thread OnPlayerBuyMenuEsc();
+}
+
+OnPlayerBuyMenuEsc()
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("ttt_buymenu_toggle");
+	self endon("ttt_buymenu_close");
+
+	for (;;)
+	{
+		self waittill("menuresponse", menu, response);
+
+		if (response != "ttt_esc_menu_blocked") continue;
+
+		if (self.ttt.items.inBuyMenu) self thread unsetPlayerBuyMenu(true);
+	}
 }
 
 unsetPlayerBuyMenu(switchToLastWeapon)

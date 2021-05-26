@@ -248,7 +248,7 @@ headIconLookAtThink(headIcon, target)
 	self endon("ttt_ui_headicons_destroyed");
 
 	RANGE = 8192;
-	MAX_POINT_DISTANCE_SQ = 48 * 48;
+	MAX_POINT_DISTANCE_SQ = 64 * 64;
 	MIN_VISIBLE_PCT = 0.8;
 
 	for (;;)
@@ -592,6 +592,7 @@ displayBuyMenu(role)
 
 	self.ttt.ui["bm"]["desc"] = self createFontString("default", 1.0);
 	self.ttt.ui["bm"]["desc"] setParent(self.ttt.ui["bm"]["name"]);
+	self.ttt.ui["bm"]["desc"] setPoint("TOP LEFT", "BOTTOM LEFT", 0, PADDING);
 	self.ttt.ui["bm"]["desc"].hidewheninmenu = true;
 	self.ttt.ui["bm"]["desc"].foreground = true;
 
@@ -659,18 +660,23 @@ updateBuyMenu(role, moveDown, moveRight, buySelected)
 	else
 		self.ttt.ui["bm"]["unavailable_hint"].label = &"";
 
-	// >>> TODO: setPoint seems to cause a circular reference in HUD children in rare cases: <<<
+	/**
+	 * Using setParent() / setPoint() here and then closing the menu with Esc (see OnPlayerBuyMenuEsc)
+	 * somehow creates an infinite loop with the updating of the element's children.
+	 * Even though it shouldn't have any, neither is this called when closing the menu. ?????
+	 * But it does work when first checking if the element is defined. I don't know why.
+	 */
 
-	foreach (child in self.ttt.ui["bm"]["desc"].children)
+	if (isDefined(self.ttt.ui["bm"]["desc"]))
 	{
-		iPrintLn("X:" + child.x + " | Y:" + child.y);
-		logPrint("X:" + child.x + " | Y:" + child.y);
+		if (selectedIsAvailable && self.ttt.items.credits)
+			self.ttt.ui["bm"]["desc"] setParent(self.ttt.ui["bm"]["name"]);
+		else // move down the description by the space the unavailability hint takes up
+			self.ttt.ui["bm"]["desc"] setParent(self.ttt.ui["bm"]["unavailable_hint"]);
 	}
 
-	if (selectedIsAvailable && self.ttt.items.credits)
-		self.ttt.ui["bm"]["desc"] setPoint("TOP LEFT", "BOTTOM LEFT", 0, PADDING);
-	else // move down the description by the space the unavailability hint takes up
-		self.ttt.ui["bm"]["desc"] setPoint("TOP LEFT", "BOTTOM LEFT", 0, PADDING * 2 + 12);
+	// self.ttt.ui["bm"]["desc"] setPoint("TOP LEFT", "BOTTOM LEFT", 0, PADDING);
+	// self.ttt.ui["bm"]["desc"] setPoint("TOP LEFT", "BOTTOM LEFT", 0, PADDING * + 12);
 
 	// Update rectangle colors
 	foreach (itemBg in self.ttt.ui["bm"]["items_bg"]) itemBg.color = level.ttt.colorsBuyMenu["item_bg"];

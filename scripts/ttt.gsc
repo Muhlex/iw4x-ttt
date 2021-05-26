@@ -235,7 +235,6 @@ OnPlayerSpawn()
 		self thread scripts\ttt\items::OnPlayerRoleWeaponEquip();
 		self thread scripts\ttt\items::OnPlayerRoleWeaponActivate();
 		self thread scripts\ttt\items::OnPlayerBuyMenu();
-		self thread scripts\ttt\items::OnPlayerBuyMenuEsc();
 		self thread OnPlayerHealthUpdate();
 		self thread OnPlayerAttack();
 	}
