@@ -37,6 +37,7 @@ Aims to replicate the [Trouble in Terrorist Town](https://www.troubleinterrorist
 | ttt_knife_weapon_backstab_angle | Maximum angle (in degrees) at which the knife weapon (standalone) can one-hit-kill players in the back.                         |            55 |
 | ttt_rpg_multiplier              | Damage multiplier for the RPG-7 traitor item.                                                                                   |           1.8 |
 | ttt_claymore_multiplier         | Damage multiplier for claymore traitor item.                                                                                    |           2.2 |
+| ttt_claymore_delay              | Delay (in seconds) until a claymore activates.                                                                                  |           3.0 |
 | ttt_bomb_radius                 | Radius (in world units) in which the bomb damages players. Damage is fatal in the inner 2/3 of the radius.                      |          1536 |
 | ttt_bomb_timer                  | Time (in seconds) until a planted bomb (traitor item) explodes.                                                                 |            45 |
 | ttt_bomb_defuse_failure_pct     | Chance (fraction) that a defusing a bomb will fail, resulting in an instant explosion.                                          |           0.2 |

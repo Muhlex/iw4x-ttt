@@ -163,6 +163,7 @@ init()
 	level.claymoreDetectionMinDist = 20;
 	level.claymoreDetectionGracePeriod = .75;
 	level.claymoreDetonateRadius = 192;
+	level.claymoreFXid = loadFX("misc/claymore_laser");
 
 	// this should move to _stinger.gsc
 	level.stingerFXid = loadfx ("explosions/aerial_explosion_large");
@@ -1387,6 +1388,7 @@ watchClaymores()
 			claymore thread c4EMPDamage();
 			claymore thread c4EMPKillstreakWait();
 			claymore thread claymoreDetonation();
+			if (level.ttt.enabled) claymore thread enableClaymoreDelayed(level.ttt.claymoreDelay);
 			//claymore thread claymoreDetectionTrigger_wait( self.pers[ "team" ] );
 			if (!level.ttt.enabled) claymore thread setClaymoreTeamHeadIcon( self.pers[ "team" ] );
 
@@ -1464,6 +1466,10 @@ claymoreDetonation()
 			if ( !friendlyFireCheck( self.owner, player, 0 ) )
 				continue;
 		}
+
+		if (level.ttt.enabled && (!isDefined(self.enabled) || !self.enabled))
+			continue;
+
 		if ( lengthsquared( player getVelocity() ) < 10 )
 			continue;
 
@@ -1483,6 +1489,21 @@ claymoreDetonation()
 		wait level.claymoreDetectionGracePeriod;
 
 	self detonate();
+}
+
+enableClaymoreDelayed(delay)
+{
+	self endon("death");
+
+	self.enabled = false;
+
+	self waittill("missile_stuck");
+	stopFXOnTag(level.claymoreFXid, self, "tag_fx");
+
+	wait delay;
+
+	self.enabled = true;
+	playFXOnTag(level.claymoreFXid, self, "tag_fx");
 }
 
 shouldAffectClaymore( claymore )
