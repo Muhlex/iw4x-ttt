@@ -751,7 +751,7 @@ displayBombHud()
 		self.ttt.ui["hud"]["self"]["bombs"][i]["text"].color = (1, 1, 1);
 		self.ttt.ui["hud"]["self"]["bombs"][i]["text"].hidewheninmenu = true;
 		self.ttt.ui["hud"]["self"]["bombs"][i]["text"].foreground = true;
-		self.ttt.ui["hud"]["self"]["bombs"][i]["text"] setValue(scripts\ttt\items::getBombSecondsRemaining(bombEnt));
+		self.ttt.ui["hud"]["self"]["bombs"][i]["text"] setValue(scripts\ttt\items\bomb::getBombSecondsRemaining(bombEnt));
 	}
 }
 
