@@ -65,6 +65,7 @@ registerItem(item, role, id)
 	key = role;
 	if (!isDefined(role)) key = "internal";
 	if (!isDefined(id)) id = level.ttt.items[key].size;
+	if (isDefined(role)) item.role = role;
 
 	level.ttt.items[key][id] = item;
 }

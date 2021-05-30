@@ -24,6 +24,7 @@ init()
 	receiver.onStartUnequip = ::OnStartUnequipReceiver;
 	receiver.onUnequip = ::OnUnequipReceiver;
 	receiver.weaponName = "killstreak_ac130_mp";
+	receiver.role = "detective";
 
 	scripts\ttt\items::registerItem(camera, "detective");
 	scripts\ttt\items::registerItem(receiver, undefined, "camera_receiver");

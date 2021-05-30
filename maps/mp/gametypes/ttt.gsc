@@ -49,7 +49,7 @@ onStartGameType()
 {
 	setClientNameMode("auto_change");
 
-	text = "^2Innocent^7 (^4Detectives^7): Try to stay alive and figure out who the traitors are.\n^1Traitors^7: Kill all innocent players without being detected.";
+	text = "^2Innocent^7 (^5Detectives^7): Try to stay alive and figure out who the traitors are.\n^1Traitors^7: Kill all innocent players without being detected.";
 	setObjectiveText("allies", text);
 	setObjectiveText("axis", text);
 	setObjectiveScoreText("allies", text);

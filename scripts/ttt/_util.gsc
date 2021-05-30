@@ -159,7 +159,7 @@ getRoleStringColor(role)
 			result = "^1";
 			break;
 		case "detective":
-			result = "^4";
+			result = "^5";
 			break;
 	}
 

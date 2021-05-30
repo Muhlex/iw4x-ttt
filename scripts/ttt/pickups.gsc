@@ -176,7 +176,8 @@ OnWeaponPickupAvailable(ent)
 {
 	self scripts\ttt\ui::destroyUseAvailableHint();
 	displayName = level.ttt.localizedWeaponNames[ent.weaponName];
-	if (scripts\ttt\items::isRoleWeapon(ent.weaponName) && isDefined(ent.item)) displayName = ent.item.name;
+	if (scripts\ttt\items::isRoleWeapon(ent.weaponName) && isDefined(ent.item))
+		displayName = getRoleStringColor(ent.item.role) + ent.item.name;
 	self scripts\ttt\ui::displayUseAvailableHint(&"[ ^3[{+activate}] ^7] for ^3", displayName);
 }
 OnWeaponPickupAvailableEnd(ent)
