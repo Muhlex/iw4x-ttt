@@ -544,7 +544,7 @@ PlayerKilled_internal( eInflictor, attacker, victim, iDamage, sMeansOfDeath, sWe
 	// override MOD
 	if ( isHeadShot( sWeapon, sHitLoc, sMeansOfDeath, attacker ) )
 		sMeansOfDeath = "MOD_HEAD_SHOT";
-	else if ( sMeansOfDeath != "MOD_MELEE" && !isDefined( victim.nuked ) )
+	else if ( sMeansOfDeath != "MOD_MELEE" && !isDefined( victim.nuked ) && (!level.ttt.enabled || sWeapon != "throwingknife_mp") )
 		victim playDeathSound();
 
 	friendlyFire = isFriendlyFire( victim, attacker );
