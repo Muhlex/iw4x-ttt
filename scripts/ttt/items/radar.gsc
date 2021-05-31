@@ -9,6 +9,9 @@ init()
 	radar.unavailableHint = &"^1Radar already active";
 
 	scripts\ttt\items::registerItem(radar, "traitor");
+
+	makeDvarServerInfo("compassRadarPingFadeTime", 8);
+	makeDvarServerInfo("compassRadarUpdateTime", 4);
 }
 
 OnBuy()
@@ -18,12 +21,13 @@ OnBuy()
 
 	self.isRadarBlocked = false;
 	RADAR_INTERVAL = 10;
+	WAIT_TIME = getDvarFloat("compassRadarUpdateTime");
 
 	for (;;)
 	{
 		self.hasRadar = true;
-		wait(4);
+		wait(WAIT_TIME);
 		self.hasRadar = false;
-		wait(RADAR_INTERVAL - 4);
+		wait(RADAR_INTERVAL - WAIT_TIME);
 	}
 }
