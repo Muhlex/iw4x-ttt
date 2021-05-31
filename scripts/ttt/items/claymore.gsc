@@ -2,7 +2,7 @@ init()
 {
 	claymore = spawnStruct();
 	claymore.name = "CLAYMORE";
-	claymore.description = "^3Exclusive equipment\n^7Triggers for anyone ^1including yourself^7.\n^2Highlighted ^7to other traitors.\n\nPress [ ^3[{+frag}]^7 ] to set down.";
+	claymore.description = "^3Exclusive equipment\n^7Triggers on anyone ^1including yourself^7.\nArms ^3" + getDvarFloat("ttt_claymore_delay") + " ^7sec after placement.\n\nPress [ ^3[{+frag}]^7 ] to set down.";
 	claymore.icon = "equipment_claymore";
 	claymore.iconOffsetX = 1;
 	claymore.onBuy = ::OnBuy;

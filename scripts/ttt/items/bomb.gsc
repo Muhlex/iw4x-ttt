@@ -6,7 +6,7 @@ init()
 {
 	bomb = spawnStruct();
 	bomb.name = "BOMB";
-	bomb.description = "^3Deployable item\n^7Causes a ^2huge explosion ^7after ^3" + getDvarInt("ttt_bomb_timer") + " ^7s.\nCan be ^1defused^7. Emits a ^1sound^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	bomb.description = "^3Deployable item\n^7Causes a ^2huge explosion ^7after ^3" + getDvarInt("ttt_bomb_timer") + " ^7sec.\nCan be ^1defused^7. Emits a ^1sound^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
 	bomb.activateHint = &"Hold [ ^3[{+attack}]^7 ] to ^3plant ^7the bomb";
 	bomb.icon = "hud_suitcase_bomb";
 	bomb.onBuy = ::OnBuy;
