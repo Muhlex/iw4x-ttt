@@ -472,12 +472,8 @@ drawPlayerRoles()
 
 	if (detectiveCount > playerCount) detectiveCount = playerCount;
 
-	// I don't trust the engine's array_randomize function enough...
-	randomizeCount = randomInt(8) + 1;
-	randomizedPlayers = getLivingPlayers();
-
-	for (i = 0; i < randomizeCount; i++)
-		randomizedPlayers = array_randomize(randomizedPlayers);
+	// The array_randomize function in common utils is biased.
+	randomizedPlayers = fisherYatesShuffle(getLivingPlayers());
 
 	for (i = 0; i < randomizedPlayers.size; i++)
 	{

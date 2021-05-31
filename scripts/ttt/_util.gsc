@@ -203,6 +203,18 @@ isInArray(array, searchValue)
 	return false;
 }
 
+fisherYatesShuffle(array)
+{
+	for (i = array.size - 1; i > 0; i--)
+	{
+		j = randomInt(i + 1);
+		temp = array[i];
+		array[i] = array[j];
+		array[j] = temp;
+	}
+	return array;
+}
+
 intUp(value)
 {
 	result = int(value);

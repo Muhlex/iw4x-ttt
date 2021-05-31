@@ -357,7 +357,7 @@ spawnWorldPickups()
 	spawnPoints = maps\mp\gametypes\_spawnlogic::getSpawnpointArray("mp_dm_spawn");
 	if (isDefined(level.ttt.coords.pickups[mapname]))
 		spawnPoints = array_combine(spawnPoints, level.ttt.coords.pickups[mapname]);
-	spawnPoints = array_randomize(spawnPoints);
+	spawnPoints = fisherYatesShuffle(spawnPoints);
 
 	foreach (spawnPoint in spawnPoints)
 	{
