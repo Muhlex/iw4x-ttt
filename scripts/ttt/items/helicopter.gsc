@@ -15,7 +15,8 @@ OnBuy()
 {
 	level.heli_target_spawnprotection = 8;
 	level.heli_turretClipSize = 32; // helicopter only gets accurate after ~20 shots
-	level.heli_maxhealth = 500;
+	livingPlayersCount = level.aliveCount["allies"] + level.aliveCount["axis"];
+	level.heli_maxhealth = 120 + min(livingPlayersCount, 6) * 80;
 	self maps\mp\killstreaks\_helicopter::startHelicopter(-1);
 }
 

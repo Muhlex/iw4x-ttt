@@ -47,6 +47,7 @@ init()
 
 	setDvar("bg_fallDamageMinHeight", getDvar("ttt_falldamage_min"));
 	setDvar("bg_fallDamageMaxHeight", getDvar("ttt_falldamage_max"));
+	setDvar("player_dmgtimer_flinchTime", 80); // reduce flinching for more consistent headshots
 
 	setDvar("scr_ttt_timelimit", (getDvarFloat("ttt_timelimit") + level.ttt.preptime / 60));
 
