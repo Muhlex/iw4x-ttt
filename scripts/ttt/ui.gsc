@@ -61,7 +61,7 @@ displaySelfHud()
 	self.ttt.ui["hud"]["self"]["armor"] = self createIcon("cardicon_vest_1", 16, 16);
 	self.ttt.ui["hud"]["self"]["armor"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -126, -15);
 	self.ttt.ui["hud"]["self"]["armor"].hidewheninmenu = true;
-	self.ttt.ui["hud"]["self"]["armor"].alpha = isInArray(self.ttt.items.boughtItems, level.ttt.items["traitor"][0]);
+	self.ttt.ui["hud"]["self"]["armor"].alpha = isInArray(self.ttt.items.boughtItems, level.ttt.items["internal"]["armor"]);
 
 	self displayBombHud();
 
@@ -105,7 +105,7 @@ updatePlayerArmorDisplay()
 {
 	if (!isDefined(self.ttt.ui["hud"]["self"]["armor"])) return;
 
-	self.ttt.ui["hud"]["self"]["armor"].alpha = isInArray(self.ttt.items.boughtItems, level.ttt.items["traitor"][0]);
+	self.ttt.ui["hud"]["self"]["armor"].alpha = isInArray(self.ttt.items.boughtItems, level.ttt.items["internal"]["armor"]);
 }
 
 updatePlayerRoleDisplay()
