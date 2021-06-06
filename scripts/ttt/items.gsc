@@ -485,14 +485,14 @@ awardKillCredits(victim)
 		self scripts\ttt\items::awardCredits(getDvarInt("ttt_detective_kill_credits"));
 }
 
-awardBodyInspectCredits(victim)
+awardBodyInspectCredits(bodyEnt)
 {
-	if (!isDefined(self.ttt.role) || !isDefined(victim.ttt.role)) return;
+	if (!isDefined(self.ttt.role) || !isDefined(bodyEnt.ownerData["role"])) return;
 
-	if (self.ttt.role == "detective" && victim.ttt.items.credits > 0 && isPlayer(victim))
+	if (self.ttt.role == "detective" && bodyEnt.credits > 0)
 	{
-		self awardCredits(victim.ttt.items.credits);
-		victim.ttt.items.credits = 0;
+		self awardCredits(bodyEnt.credits);
+		bodyEnt.credits = 0;
 	}
 }
 
