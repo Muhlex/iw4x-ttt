@@ -52,6 +52,7 @@ init()
 	scripts\ttt\items\healthstation::init();
 	scripts\ttt\items\lethaldrop::init();
 	scripts\ttt\items\camera::init();
+	scripts\ttt\items\smell::init();
 
 	foreach (roleItems in level.ttt.items) foreach (item in roleItems)
 	{
