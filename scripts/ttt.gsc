@@ -144,6 +144,8 @@ OnPreptimeEnd()
 	//visionSetNaked(getDvar("mapname"), 2.0);
 
 	checkRoundWinConditions();
+
+	level notify("ttt_preptime_end");
 }
 
 OnTimelimitReached()
@@ -291,6 +293,7 @@ OnPlayerRagdoll()
 			10
 		);
 
+		bodyEnt.owner = self;
 		bodyEnt.found = false;
 		bodyEnt.credits = self.ttt.items.credits;
 		bodyEnt.ownerData = []; // copy any needed data for if the dead player disconnects
@@ -309,6 +312,7 @@ OnBodyInspectTrigger(bodyEnt)
 
 	if (!bodyEnt.found)
 	{
+		bodyEnt.owner.ttt.bodyFound = true;
 		bodyEnt.found = true;
 		bodyEnt.usePriority = 0;
 		foreach (p in level.players)
