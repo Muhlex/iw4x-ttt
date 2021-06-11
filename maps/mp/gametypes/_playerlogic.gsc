@@ -685,8 +685,6 @@ spawnPlayer()
 		self openMenu( "perk_display" );
 		self thread hidePerksAfterTime( 5.0 );
 		self thread hidePerksOnDeath();
-
-		self thread handleReshowPerks();
 	}
 
 	prof_end( "spawnPlayer_postUTS" );
@@ -706,24 +704,6 @@ spawnPlayer()
 		assert( !level.intermission );
 		// We're in the victory screen, but before intermission
 		self maps\mp\gametypes\_gamelogic::freezePlayerForRoundEnd();
-	}
-}
-
-handleReshowPerks()
-{
-	self endon("disconnect");
-	self endon("death");
-
-	self notifyOnPlayerCommand("reshow_perks", "-scores");
-
-	for (;;)
-	{
-		self waittill("reshow_perks");
-
-		if (!getDvarInt("scr_scoreboard_reshows_perks")) continue;
-		self openMenu("perks_hidden");
-		wait(0.1);
-		self openMenu("perk_display");
 	}
 }
 

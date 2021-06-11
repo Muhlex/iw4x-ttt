@@ -866,21 +866,6 @@ setKillstreaks( streak1, streak2, streak3 )
 
 	killStreaks = [];
 
-	// MURLIS-EDIT
-	if (level.killstreakRewards)
-	{
-		streak1 = "none";
-		streak2 = "none";
-		streak3 = "none";
-
-		killStreaks[4 + modifier] = "airdrop";
-		killStreaks[5 + modifier] = "airdrop_sentry_minigun";
-		//killStreaks[6 + modifier] = "sentry";
-		killStreaks[8 + modifier] = "airdrop_mega";
-		killStreaks[10 + modifier] = "emp";
-		killStreaks[25] = "nuke";
-	}
-
 	if ( streak1 != "none" )
 	{
 		//if ( !level.splitScreen )

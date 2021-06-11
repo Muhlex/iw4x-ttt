@@ -814,6 +814,8 @@ initGametypeAwards()
 
 doLastDeathFinalKillcam()
 {
+	if (!getDvarInt("scr_sd_always_show_final_killcam")) return;
+
 	level thread maps\mp\gametypes\_damage::doFinalKillcam(
 		5.0,
 		level.lastDeath.victim,
