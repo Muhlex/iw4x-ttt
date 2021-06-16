@@ -112,6 +112,7 @@ OnRoundRestart()
 OnRoundStart()
 {
 	thread scripts\ttt\pickups::spawnWorldPickups();
+	setGameEndTime(int(getTime() + level.ttt.preptime * 1000));
 
 	thread OnPreptimeEnd();
 	thread OnTimelimitReached();
