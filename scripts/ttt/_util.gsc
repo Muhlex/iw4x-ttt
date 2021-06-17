@@ -99,24 +99,27 @@ setDimensions(w, h)
 	self maps\mp\gametypes\_hud_util::updateChildren();
 }
 
-fontPulseCustom(player, scale, duration)
+fontPulseCustom(scale, duration, player)
 {
 	self notify("fontPulse");
 	self endon("fontPulse");
 	self endon("death");
 
-	player endon("disconnect");
-	player endon("joined_team");
-	player endon("joined_spectators");
+	if (isDefined(player))
+	{
+		player endon("disconnect");
+		player endon("joined_team");
+		player endon("joined_spectators");
+	}
 
 	halfDuration = duration / 2;
 	prevFontScale = self.fontScale;
 
-	self ChangeFontScaleOverTime(halfDuration);
+	self changeFontScaleOverTime(halfDuration);
 	self.fontScale = self.fontScale * scale;
 	wait(halfDuration);
 
-	self ChangeFontScaleOverTime(halfDuration);
+	self changeFontScaleOverTime(halfDuration);
 	self.fontScale = prevFontScale;
 }
 
@@ -203,6 +206,16 @@ isInArray(array, searchValue)
 	return false;
 }
 
+arraySlice(array, start, end)
+{
+	result = [];
+	for (i = start; i < end; i++)
+	{
+		if (isDefined(array[i])) result[result.size] = array[i];
+	}
+	return result;
+}
+
 fisherYatesShuffle(array)
 {
 	for (i = array.size - 1; i > 0; i--)
@@ -268,4 +281,45 @@ printCloseEntities()
 	}
 	iPrintLnBold("Found " + count + " entities in 512 units proximity.");
 	#/
+}
+
+displayExampleRoundsSummary()
+{
+	exPlayerList = [];
+	exPlayerList[0] = "Player 1";
+	exPlayerList[1] = "Cool Dude";
+	exPlayerList[2] = "Another Player";
+	exPlayerList[3] = "Me";
+	exPlayerList[4] = "You";
+	exPlayerList[5] = "Them";
+	exPlayerList[6] = "Someone else";
+
+	exampleData = [];
+
+	for (i = 0; i < 7; i++)
+	{
+		ex = spawnStruct();
+		if (randomInt(2)) ex.winner = "traitor";
+		else ex.winner = "innocent";
+		ex.endReason = "death";
+		ex.ended = true;
+
+		ex.players = [];
+		exRandomizedPlayerList = fisherYatesShuffle(exPlayerList);
+
+		foreach (j, playerName in exRandomizedPlayerList)
+		{
+			ex.players[j]["name"] = playerName;
+			if (j < 2) ex.players[j]["role"] = "traitor";
+			else if (j < 3) ex.players[j]["role"] = "detective";
+			else ex.players[j]["role"] = "innocent";
+		}
+
+		exampleData[i] = ex;
+	}
+
+	scripts\ttt\ui::displayGameEnd(exampleData);
+
+	wait(30.0);
+	scripts\ttt\ui::destroyGameEnd();
 }

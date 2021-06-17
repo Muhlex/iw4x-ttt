@@ -35,6 +35,9 @@ gamemode of [Garry's Mod](https://store.steampowered.com/app/4000/Garrys_Mod/).
 | ttt_timelimit                   | Timelimit per round in minutes. (Not including preptime.)                                                                       |           5.0 |
 | ttt_preptime                    | Length of the preparation phase (in seconds), where players can pick up weapons before roles are drawn.                         |            30 |
 | ttt_aftertime                   | Delay between the round ending and the final killcam being shown (in seconds).                                                  |            10 |
+| ttt_summary_timelimit           | Total time period the round summary will be shown for (in seconds).                                                             |            25 |
+| ttt_summary_rounds_per_view     | Amount of rounds to show at once in the summary. Note that the GUI only supports up to 6-7 rounds displayed at once.            |             4 |
+| ttt_summary_time_per_view       | Time (in seconds) until the summary displays the next wave of rounds after the animation finishes.                              |            10 |
 | ttt_traitor_pct                 | Fraction of players that will become traitors. The number of players will be multiplied by this number and then rounded down.   |           0.4 |
 | ttt_detective_pct               | Fraction of players that will become detectives. The number of players will be multiplied by this number and then rounded down. |          0.17 |
 | ttt_headshot_multiplier         | Damage multiplier on headshot.                                                                                                  |           2.0 |

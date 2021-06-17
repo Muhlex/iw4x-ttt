@@ -38,12 +38,15 @@ init()
 	makeDvarServerInfo("cg_overheadRankSize", 0);
 	makeDvarServerInfo("cg_overheadNamesSize", 0.75);
 
-	setDvar("scr_player_forceautoassign", 1);
-	setDvar("scr_player_forcerespawn", 1);
-	setDvar("scr_game_hardpoints", 0);
-	setDvar("scr_teambalance", 0);
+	makeDvarServerInfo("ui_allow_classchange", false);
+	makeDvarServerInfo("ui_allow_teamchange", false);
+
+	setDvar("scr_player_forceautoassign", true);
+	setDvar("scr_player_forcerespawn", true);
+	setDvar("scr_game_hardpoints", false);
+	setDvar("scr_teambalance", false);
 	setDvar("scr_game_spectatetype", 2);
-	setDvar("scr_showperksonspawn", 0);
+	setDvar("scr_showperksonspawn", false);
 
 	setDvar("bg_fallDamageMinHeight", getDvar("ttt_falldamage_min"));
 	setDvar("bg_fallDamageMaxHeight", getDvar("ttt_falldamage_max"));
@@ -144,6 +147,19 @@ OnPreptimeEnd()
 	level.disableSpawning = true;
 	//visionSetNaked(getDvar("mapname"), 2.0);
 
+	if (!isDefined(game["ttt_rounds_data"])) game["ttt_rounds_data"] = [];
+	game["ttt_rounds_data"][game["roundsPlayed"]] = spawnStruct();
+	roundData = game["ttt_rounds_data"][game["roundsPlayed"]];
+	roundData.ended = false;
+	roundData.players = [];
+	foreach (i, player in getLivingPlayers())
+	{
+		roundData.players[i] = [];
+		roundData.players[i]["guid"] = player.guid;
+		roundData.players[i]["name"] = player.name;
+		roundData.players[i]["role"] = player.ttt.role;
+	}
+
 	checkRoundWinConditions();
 
 	level notify("ttt_preptime_end");
@@ -174,10 +190,7 @@ OnAftertimeEnd()
 	game["roundsPlayed"]++;
 	if (game["roundsPlayed"] >= getDvarInt("ttt_roundlimit"))
 	{
-		// reset these because endGame expects them to be
-		game["state"] = "playing";
-		level.gameEnded = false;
-		thread maps\mp\gametypes\_gamelogic::endGame("tie", "Round limit reached");
+		thread endGame();
 		return;
 	}
 
@@ -508,8 +521,12 @@ drawPlayerRoles()
 endRound(winner, reason)
 {
 	if (level.gameEnded) return;
+
 	level.gameEnded = true;
+	level.gameEndTime = getTime();
+	level.inGracePeriod = false;
 	game["state"] = "postgame";
+
 	setDvar("g_deadChat", "1");
 	if (reason == "death") setDvar("scr_gameended", 2); // primarily sets "Round Winning Kill" in killcam
 
@@ -524,6 +541,12 @@ endRound(winner, reason)
 
 	visionSetNaked("mpOutro", 2.0);
 	logPrint("TTT_ROUND_END;" + winner + ";" + reason + ";" + (getSecondsPassed() - level.ttt.preptime) + "\n");
+
+	roundData = game["ttt_rounds_data"][game["roundsPlayed"]];
+
+	roundData.ended = true;
+	roundData.winner = winner;
+	roundData.endReason = reason;
 
 	level thread maps\mp\gametypes\_damage::doFinalKillcam(
 		5.0,
@@ -540,4 +563,46 @@ endRound(winner, reason)
 	thread OnAftertimeEnd();
 
 	level notify("game_ended");
+}
+
+endGame()
+{
+	WAIT_TIME = getDvarFloat("ttt_summary_timelimit");
+
+	setDvar("scr_gameended", 1);
+	levelFlagSet("game_over");
+	levelFlagSet("block_notifies");
+
+	visionSetNaked("mpOutro", 0.0);
+
+	waitframe(); // give "game_ended" notifies time to process`/sp`
+
+	levelFlagClear("block_notifies");
+
+	level.intermission = true;
+	level notify("spawning_intermission");
+
+	foreach (player in level.players)
+	{
+		player maps\mp\gametypes\_gamelogic::freeGameplayHudElems();
+		player scripts\ttt\ui::destroySelfHud();
+
+		player thread maps\mp\gametypes\_playerlogic::spawnIntermission();
+		// sessionstate must be something other than "intermission" to allow displaying HUD elements
+		player.sessionstate = "playing";
+		// Replicate the behavior of "intermission" state:
+		player freezePlayer();
+		player freezeControls(true);
+		player playerHide();
+	}
+
+	thread scripts\ttt\ui::displayGameEnd(game["ttt_rounds_data"]);
+
+	setGameEndTime(getTime() + int(WAIT_TIME * 1000));
+	wait(WAIT_TIME);
+
+
+	scripts\ttt\ui::destroyGameEnd();
+	level notify("exitLevel_called");
+	exitLevel(false);
 }

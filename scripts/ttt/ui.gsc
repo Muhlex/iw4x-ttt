@@ -140,7 +140,7 @@ updatePlayerRoleDisplay()
 
 pulsePlayerRoleDisplay(duration)
 {
-	self.ttt.ui["hud"]["self"]["role"] thread scripts\ttt\_util::fontPulseCustom(self, 2.0, duration);
+	self.ttt.ui["hud"]["self"]["role"] thread scripts\ttt\_util::fontPulseCustom(2.0, duration, self);
 }
 
 displayUseAvailableHint(label, text, value)
@@ -351,6 +351,192 @@ displayRoundEnd(winner, reason)
 destroyRoundEnd()
 {
 	recursivelyDestroyElements(level.ttt.ui["hud"]["outcome"]);
+}
+
+displayGameEnd(data)
+{
+	teams = [];
+	teams[0] = "innocent";
+	teams[1] = "traitor";
+
+	displayData = spawnStruct();
+	displayData.winCount = [];
+	foreach (team in teams)
+		displayData.winCount[team] = 0;
+	displayData.rounds = [];
+
+	foreach (i, roundData in data)
+	{
+		if (!roundData.ended || roundData.players.size < 2) continue;
+
+		displayData.winCount[roundData.winner]++;
+
+		displayData.rounds[i] = spawnStruct();
+		displayData.rounds[i].winner = roundData.winner;
+		displayData.rounds[i].teams = [];
+		foreach (team in teams)
+		{
+			displayData.rounds[i].teams[team] = spawnStruct();
+			displayData.rounds[i].teams[team].players = [];
+			displayData.rounds[i].teams[team].playerListString = "";
+		}
+
+		foreach (playerData in roundData.players)
+		{
+			playerTeam = playerData["role"];
+			if (playerData["role"] == "detective") playerTeam = "innocent";
+
+			roundTeamData = displayData.rounds[i].teams[playerTeam];
+			roundTeamData.players[roundTeamData.players.size] = playerData;
+		}
+
+		foreach (team, teamData in displayData.rounds[i].teams)
+		{
+			foreach (playerIndex, playerData in teamData.players)
+			{
+				if (playerIndex > 0) teamData.playerListString += "^7, ";
+
+				if (roundData.winner == team || playerData["role"] == "detective")
+					teamData.playerListString += getRoleStringColor(playerData["role"]);
+				teamData.playerListString += playerData["name"];
+			}
+		}
+	}
+
+	displayData.roundsPerView = [];
+
+	roundsPerView = getDvarInt("ttt_summary_rounds_per_view");
+	numViews = ceil(displayData.rounds.size / roundsPerView);
+	for (i = 0; i < numViews; i++)
+	{
+		startIndex = i * roundsPerView;
+		roundsThisView = arraySlice(displayData.rounds, startIndex, startIndex + roundsPerView);
+		displayData.roundsPerView[displayData.roundsPerView.size] = roundsThisView;
+	}
+
+	level.ttt.ui["hud"]["end"] = [];
+
+	level.ttt.ui["hud"]["end"]["bg"] = createRectangle(600, 0, (0, 0, 0), true);
+	level.ttt.ui["hud"]["end"]["bg"] setPoint("CENTER", "CENTER", 0, 0);
+	level.ttt.ui["hud"]["end"]["bg"].archived = false;
+	level.ttt.ui["hud"]["end"]["bg"].hidewheninmenu = true;
+	level.ttt.ui["hud"]["end"]["bg"].alpha = 0.35;
+	level.ttt.ui["hud"]["end"]["bg"].sort = -1;
+
+	level.ttt.ui["hud"]["end"]["title"] = createServerFontString("objective", 2.0);
+	level.ttt.ui["hud"]["end"]["title"] setParent(level.ttt.ui["hud"]["end"]["bg"]);
+	level.ttt.ui["hud"]["end"]["title"] setPoint("TOP CENTER", "TOP CENTER", 0, 16);
+	level.ttt.ui["hud"]["end"]["title"].archived = false;
+	level.ttt.ui["hud"]["end"]["title"].hidewheninmenu = true;
+	level.ttt.ui["hud"]["end"]["title"].label = &"ROUNDS SUMMARY";
+
+	foreach (team in teams)
+	{
+		level.ttt.ui["hud"]["end"]["team_headings"][team] = createServerFontString("objective", 1.5);
+		level.ttt.ui["hud"]["end"]["team_headings"][team].archived = false;
+		level.ttt.ui["hud"]["end"]["team_headings"][team].hidewheninmenu = true;
+		level.ttt.ui["hud"]["end"]["team_headings"][team] setParent(level.ttt.ui["hud"]["end"]["title"]);
+
+		if (team == "innocent")
+		{
+			level.ttt.ui["hud"]["end"]["team_headings"][team] setPoint("TOP RIGHT", "BOTTOM CENTER", -16, 16);
+			level.ttt.ui["hud"]["end"]["team_headings"][team].label = &"^2INNOCENT ^7[^2&&1^7]";
+		}
+		else if (team == "traitor")
+		{
+			level.ttt.ui["hud"]["end"]["team_headings"][team] setPoint("TOP LEFT", "BOTTOM CENTER", 16, 16);
+			level.ttt.ui["hud"]["end"]["team_headings"][team].label = &"^1TRAITORS ^7[^1&&1^7]";
+		}
+
+		level.ttt.ui["hud"]["end"]["team_headings"][team] setValue(displayData.winCount[team]);
+	}
+
+	foreach (rounds in displayData.roundsPerView)
+	{
+		recursivelyDestroyElements(level.ttt.ui["hud"]["end"]["rounds"]);
+
+		foreach (i, round in rounds)
+		{
+			level.ttt.ui["hud"]["end"]["rounds"][i]["center"] = createServerFontString("objective", 1.5);
+			level.ttt.ui["hud"]["end"]["rounds"][i]["center"].alpha = 0.0;
+			level.ttt.ui["hud"]["end"]["rounds"][i]["center"].archived = false;
+			level.ttt.ui["hud"]["end"]["rounds"][i]["center"].hidewheninmenu = true;
+
+			centerLabel = undefined;
+			if (round.winner == "innocent") centerLabel = &"^3«";
+			else if (round.winner == "traitor") centerLabel = &"^3»";
+			level.ttt.ui["hud"]["end"]["rounds"][i]["center"].label = centerLabel;
+
+			if (i == 0)
+			{
+				level.ttt.ui["hud"]["end"]["rounds"][i]["center"] setParent(level.ttt.ui["hud"]["end"]["title"]);
+				level.ttt.ui["hud"]["end"]["rounds"][i]["center"] setPoint("CENTER", "BOTTOM CENTER", 0, 64);
+			}
+			else
+			{
+				level.ttt.ui["hud"]["end"]["rounds"][i]["center"] setParent(level.ttt.ui["hud"]["end"]["rounds"][i - 1]["center"]);
+				level.ttt.ui["hud"]["end"]["rounds"][i]["center"] setPoint("CENTER", "CENTER", 0, 32);
+			}
+
+			foreach (team in teams)
+			{
+				level.ttt.ui["hud"]["end"]["rounds"][i][team] = createServerFontString("default", 1.5);
+				level.ttt.ui["hud"]["end"]["rounds"][i][team].alpha = 0.0;
+				level.ttt.ui["hud"]["end"]["rounds"][i][team].archived = false;
+				level.ttt.ui["hud"]["end"]["rounds"][i][team].hidewheninmenu = true;
+				level.ttt.ui["hud"]["end"]["rounds"][i][team] setText(round.teams[team].playerListString);
+
+				level.ttt.ui["hud"]["end"]["rounds"][i][team] setParent(level.ttt.ui["hud"]["end"]["rounds"][i]["center"]);
+
+				if (team == "innocent")
+					level.ttt.ui["hud"]["end"]["rounds"][i][team] setPoint("CENTER RIGHT", "CENTER", -16, 0);
+				else if (team == "traitor")
+					level.ttt.ui["hud"]["end"]["rounds"][i][team] setPoint("CENTER LEFT", "CENTER", 16, 0);
+			}
+		}
+
+		bgHeight = 32; // padding
+		bgHeight += level.ttt.ui["hud"]["end"]["title"].height + 64;
+		foreach (line in level.ttt.ui["hud"]["end"]["rounds"])
+			bgHeight += 32;
+		bgHeight -= 32;
+		bgHeight += level.ttt.ui["hud"]["end"]["rounds"][0]["center"].height / 2;
+		level.ttt.ui["hud"]["end"]["bg"] setDimensions(undefined, int(bgHeight));
+
+		foreach (i, round in rounds)
+		{
+			wait(0.8);
+
+			foreach (player in level.players) player playLocalSound("explo_plant_no_tick");
+
+			level.ttt.ui["hud"]["end"]["rounds"][i]["center"] fadeOverTime(0.4);
+			level.ttt.ui["hud"]["end"]["rounds"][i]["center"].alpha = 1.0;
+
+			prevFontScale = level.ttt.ui["hud"]["end"]["rounds"][i]["center"].fontScale;
+			level.ttt.ui["hud"]["end"]["rounds"][i]["center"].fontScale = 6.0;
+			level.ttt.ui["hud"]["end"]["rounds"][i]["center"] changeFontScaleOverTime(0.4);
+			level.ttt.ui["hud"]["end"]["rounds"][i]["center"].fontScale = prevFontScale;
+
+			foreach (team in teams)
+			{
+				if (team == round.winner)
+				{
+					level.ttt.ui["hud"]["end"]["rounds"][i][team] fadeOverTime(0.25);
+					level.ttt.ui["hud"]["end"]["rounds"][i][team] thread fontPulseCustom(1.25, 0.6);
+				}
+				else
+					level.ttt.ui["hud"]["end"]["rounds"][i][team] fadeOverTime(0.6);
+				level.ttt.ui["hud"]["end"]["rounds"][i][team].alpha = 1.0;
+			}
+		}
+
+		wait(getDvarFloat("ttt_summary_time_per_view"));
+	}
+}
+
+destroyGameEnd()
+{
+	recursivelyDestroyElements(level.ttt.ui["hud"]["end"]);
 }
 
 displayScoreboard()
