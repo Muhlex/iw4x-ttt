@@ -398,7 +398,7 @@ displayGameEnd(data)
 
 				if (roundData.winner == team || playerData["role"] == "detective")
 					teamData.playerListString += getRoleStringColor(playerData["role"]);
-				teamData.playerListString += playerData["name"];
+				teamData.playerListString += removeColorsFromString(playerData["name"]);
 			}
 		}
 	}
