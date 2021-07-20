@@ -17,6 +17,7 @@ init()
 	level.ttt.rpgMultiplier = getDvarFloat("ttt_rpg_multiplier");
 	level.ttt.claymoreMultiplier = getDvarFloat("ttt_claymore_multiplier");
 	level.ttt.claymoreDelay = getDvarFloat("ttt_claymore_delay");
+	level.ttt.speedItemMultiplier = getDvarFloat("ttt_speed_item_mutiplier");
 	level.ttt.preptime = max(getDvarInt("ttt_preptime"), 1);
 
 	level.ttt.knifeWeapon = "beretta_tactical_mp";

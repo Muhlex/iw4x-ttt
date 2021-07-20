@@ -46,11 +46,12 @@ init()
 	scripts\ttt\items\claymore::init();
 	scripts\ttt\items\flash::init();
 
+	scripts\ttt\items\speed::init();
+	scripts\ttt\items\lethaldrop::init();
 	scripts\ttt\items\riotshield::init();
 	scripts\ttt\items\spas12::init();
 	scripts\ttt\items\concussion::init();
 	scripts\ttt\items\healthstation::init();
-	scripts\ttt\items\lethaldrop::init();
 	scripts\ttt\items\camera::init();
 	scripts\ttt\items\smell::init();
 
