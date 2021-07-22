@@ -5,7 +5,7 @@
 init()
 {
 	smell = spawnStruct();
-	smell.name = "SMELL-O-VISION (WIP)";
+	smell.name = "SMELL-O-VISION";
 	smell.description = "^3Passive item\n^2Smell ^7where other players were.\nPlayers leave ^2temporary trails^7.";
 	smell.icon = "cardicon_hyena";
 	smell.iconOffsetX = -2;
