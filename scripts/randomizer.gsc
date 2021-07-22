@@ -50,7 +50,7 @@ getRandomWeapon(type)
 	weapons["secondaries"][8] ="m79";
 	weapons["secondaries"][9] ="rpg";
 	weapons["secondaries"][10] ="at4";
-	weapons["secondaries"][11] ="stinger";
+	// weapons["secondaries"][11] ="stinger";
 	weapons["secondaries"][12] ="javelin";
 	weapons["secondaries"][13] ="ranger";
 	weapons["secondaries"][14] ="model1887";
