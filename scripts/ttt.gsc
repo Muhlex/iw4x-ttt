@@ -14,10 +14,11 @@ init()
 	level.ttt.headshotMultiplierSniper = getDvarFloat("ttt_headshot_multiplier_sniper");
 	level.ttt.knifeDamage = getDvarInt("ttt_knife_damage");
 	level.ttt.knifeWeaponBackstabAngle = getDvarFloat("ttt_knife_weapon_backstab_angle");
+	level.ttt.armorDamageMultiplier = getDvarFloat("ttt_armor_damage_multiplier");
+	level.ttt.speedItemMultiplier = getDvarFloat("ttt_speed_item_mutiplier");
 	level.ttt.rpgMultiplier = getDvarFloat("ttt_rpg_multiplier");
 	level.ttt.claymoreMultiplier = getDvarFloat("ttt_claymore_multiplier");
 	level.ttt.claymoreDelay = getDvarFloat("ttt_claymore_delay");
-	level.ttt.speedItemMultiplier = getDvarFloat("ttt_speed_item_mutiplier");
 	level.ttt.preptime = max(getDvarInt("ttt_preptime"), 1);
 
 	level.ttt.knifeWeapon = "beretta_tactical_mp";
