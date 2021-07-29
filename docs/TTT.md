@@ -110,6 +110,13 @@ Headshot damage is not reduced by armor either.
 🔵 Detectives are given armor by default and do not need to buy this item.
 
 ⚙️ The damage reduction value is [configurable](#configurable-settings) using the `ttt_armor_damage_multiplier` dvar.
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127512347-e813fabd-999a-49b9-9df9-109e9e8a0f27.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/radar.png)&ensp;Radar
@@ -117,6 +124,13 @@ The Radar acts similar to the MW2 UAV:
 The position of all players is periodically shown on the minimap.
 It does not discern between player roles.
 Contrary to the base game, the Radar cannot be destroyed and will stay active indefinitely.
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127513063-a90864e2-db46-40e6-96f7-258febb74a1c.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/helicopter.png)&ensp;Attack Helicopter
@@ -126,6 +140,13 @@ The helicopter's health scales with the amount of living players when it is call
 
 The item can be used to constrain players to buildings or to find an opening while players
 are distracted with shooting it down.
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127513804-c01663c9-ec5d-43ad-8106-63b9f83879d0.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/bomb.png)&ensp;Bomb
@@ -145,6 +166,12 @@ A defused bomb cannot be re-planted.
 - `ttt_bomb_timer`
 - `ttt_bomb_defuse_failure_pct`
 
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127529308-4a5d7641-3544-42a2-9254-e7829bfe34ab.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/rpg.png)&ensp;Rocket Launcher
@@ -154,18 +181,39 @@ The weapon cannot be refilled with ammo pickups.
 By default, the weapon only one-hit-kills at the center of the explosion.
 
 ⚙️ The damage is [configurable](#configurable-settings) with the `ttt_rpg_multiplier` dvar.
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127519737-66d459f2-5f07-4f75-9550-bdda6db943c8.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/ranger.png)&ensp;Ranger Shotgun
 The Ranger Shotgun is a high-damage role exclusive shotgun.
 As in base MW2, the weapon can shoot twice without any delay.
 This either allows for a single powerful attack, or damaging two targets within one reload.
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127519063-19cbe359-1ae7-490b-ab88-bba1829cde62.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/throwingknife.png)&ensp;Throwing Knife
 Similar to the Throwing Knife in the regular gamemodes, this weapon can one-hit-kill an enemy.
 What makes it especially viable is it's ability to hit silently:
 Neither using the weapon itself makes a sound, nor will the victim scream when killed by it.
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127521356-da34bb8a-ac40-4125-81e0-3066d400aea2.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/claymore.png)&ensp;Claymore
@@ -180,6 +228,13 @@ Additionally, it has a configurable delay until it is armed, to allow for placem
 ⚙️ [Configurable](#configurable-settings) via:
 - `ttt_claymore_multiplier`
 - `ttt_claymore_delay`
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127516710-f3043048-e640-4972-b91e-610f101e67e5.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/flashbang.png)&ensp;Flashbang
@@ -187,6 +242,13 @@ The Flashbang is equivalent to the one in the base game:
 It temporarily blinds and deafens targets, looking into or standing inside of the explosion.
 
 The Flashbang can be used to clear rooms, or to disorient groups of players.
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127517090-fd0797b9-c724-4aaa-9c3b-7752fd18fbcb.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/speed.png)&ensp;Hyperspeed
@@ -195,6 +257,13 @@ The effect can be used to follow players, escape situations, win fast-paced gunf
 or simply to get around the map quicker.
 
 ⚙️ The speed can be [configured](#configurable-settings) with the `ttt_speed_item_mutiplier` dvar.
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127518281-746f01e2-b874-4866-917f-72d0d1f89783.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/lethaldrop.png)&ensp;Insane Biceps
@@ -207,6 +276,13 @@ It will fly in a trajectory, killing any players hit on the way.
 Throwing a weapon comes in handy as a last resort when running out of ammo.
 Likewise it is possible to restrict weapon access by throwing them far away.
 Especially useful for the most stylish of kills, though.
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127518526-b8f7b3c3-0f8b-48f4-b092-6fc09095308c.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/riotshield.png)&ensp;Riot Shield
@@ -215,17 +291,38 @@ or passively on the wearer's back.
 
 As with other role exclusive weapons, the Riot Shield is equipped in an extra role weapon slot.
 Thus it can be carried alongside two regular weapons.
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127519277-1fd0f352-96a4-4154-bd1f-76de1ec98bf9.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/spas12.png)&ensp;SPAS-12 Shotgun
 The SPAS-12 Shotgun is an offensive option for the Detective.
 It is viable across longer ranges than other shotguns.
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127520821-ac435104-ab16-4a57-aa57-97676adb80e3.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/concussion.png)&ensp;Stun Grenade
 The Stun Grenade is equivalent to the one in the base game:
 It can be thrown faster than a flashbang
 and slows down movement and aiming of players caught in it's radius.
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127521072-1cd2b99d-e1d1-4a3f-9a3c-53563716e9f8.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/healthstation.png)&ensp;Health Station
@@ -235,6 +332,13 @@ It can be freely placed down, after which **anyone** can use it to slowly restor
 The item has a maximum amount of health it can dispense.
 Once the health points are depleted or when the Health Station takes too much damage,
 it will be destroyed.
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127517425-ca02a835-16f2-4d3e-8f04-17d654693e6c.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/camera.png)&ensp;Camera
@@ -246,6 +350,13 @@ This can be used to observe suspicious players, or to prevent traitor activity i
 
 The Camera can be destroyed after taking too much damage.
 This will stop the receiver from functioning.
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127515822-6a04672c-ba8c-4be7-b391-5fc1052269c4.mp4"></video>
+</details>
+
 ***
 
 ### ![](./items/smell.png)&ensp;Smell-O-Vision
@@ -253,6 +364,12 @@ Smell-O-Vision enables player-tracking via their smell:
 Whenever a player moves on the map, they will leave a visible trail to the owner of this item.
 
 This can be used to track players and investigate who was at a specific scene previously.
+
+<details>
+	<summary>🎥 <b>Demo Video</b></summary>
+	<br>
+	<video src="https://user-images.githubusercontent.com/21311428/127520125-4126eaca-0816-490d-b9cb-8a190a6849f2.mp4"></video>
+</details>
 
 <br>
 
