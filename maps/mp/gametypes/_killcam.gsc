@@ -8,6 +8,8 @@ init()
 	precacheString(&"PLATFORM_PRESS_TO_COPYCAT");
 	precacheShader("specialty_copycat");
 
+	setDvarIfUninitialized("scr_final_killcam_time", 4.0);
+
 	level.killcam = maps\mp\gametypes\_tweakables::getTweakableValue( "game", "allowkillcam" );
 }
 

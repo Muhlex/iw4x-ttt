@@ -73,6 +73,8 @@ main()
 	maps\mp\gametypes\_callbacksetup::SetupCallbacks();
 	maps\mp\gametypes\_globallogic::SetupCallbacks();
 
+	setDvarIfUninitialized("scr_sd_always_show_final_killcam", false);
+
 	registerRoundSwitchDvar( level.gameType, 3, 0, 9 );
 	registerTimeLimitDvar( level.gameType, 2.5, 0, 1440 );
 	registerScoreLimitDvar( level.gameType, 1, 0, 500 );

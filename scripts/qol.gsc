@@ -1,5 +1,7 @@
 init()
 {
+	setDvarIfUninitialized("scr_scoreboard_reshows_perks", false);
+
 	thread OnPlayerConnect();
 }
 

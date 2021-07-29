@@ -2,6 +2,8 @@
 
 init()
 {
+	setDvarIfUninitialized("scr_forced_killstreaks", "");
+
 	thread OnPlayerConnect();
 }
 
@@ -37,7 +39,7 @@ replacePlayerKillstreaks()
 
 	rawData = strTok(getDvar("scr_forced_killstreaks"), ",");
 
-	if (rawData.size % 2) return; // needs to be pairs of streak numbers and reward names
+	if (rawData.size == 0 || rawData.size % 2) return; // needs to be pairs of streak numbers and reward names
 
 	streaks = [];
 	// map e.g. ["3", "uav", "4", "counter_uav"] to streaks[3] = "uav"; streaks[4] = "counter_uav"

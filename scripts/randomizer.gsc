@@ -412,8 +412,23 @@ giveRandomizerLoadout(team, class, loadout, isSpawn)
 	self notify ( "giveLoadout" );
 }
 
+initDvars()
+{
+	d = [];
+	d["randomizer"] = 0;
+	d["randomizer_interval"] = 0;
+	d["randomizer_secondary_chance"] = 33;
+	d["randomizer_special_chance"] = 5;
+	d["randomizer_infinite_ammo"] = 0;
+	d["randomizer_perk_streaks"] = 0;
+
+	foreach (key, value in d) setDvarIfUninitialized(key, value);
+}
+
 init()
 {
+	initDvars();
+
 	enabled = false;
 	if (getdvarint("randomizer")) enabled = true;
 
