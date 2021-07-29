@@ -373,6 +373,18 @@ This can be used to track players and investigate who was at a specific scene pr
 
 <br>
 
+
+## Installation
+The gamemode features an (optional but strongly recommended) asset modification.
+This provides some custom weapons (e. g. the standalone knife),
+3D assets and sounds to flesh out and better balance the gamemode.
+
+The mod can be downloaded on this project's [releases page](../../../releases/).  
+To install, place the folder *inside* of the zip archive into: `<IW4X>/mods`
+
+The script files can either be placed in the extracted folder to be loaded with the mod
+(`<IW4X>/mods/ttt-<version>`), or inside of `<IW4X>/userraw` to always load them on startup.
+
 ## Configurable Settings
 | Dvar                            | Description                                                                                                                     | Default Value |
 |-------------------------------- |---------------------------------------------------------------------------------------------------------------------------------|--------------:|
