@@ -8,6 +8,8 @@ init()
 	level.ttt.enabled = getDvar("g_gametype") == "ttt";
 	if (!level.ttt.enabled) return;
 
+	scripts\ttt\dvars::init();
+
 	level.ttt.modEnabled = isSubStr(getDvar("fs_game"), "ttt");
 	level.ttt.maxhealth = getDvarInt("scr_player_maxhealth");
 	level.ttt.headshotMultiplier = getDvarFloat("ttt_headshot_multiplier");
