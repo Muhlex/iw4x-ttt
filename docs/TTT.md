@@ -103,7 +103,7 @@ Only traitors can additionally see, who is dead but not yet identified as such.
 <br>
 
 ### ![](./items/armor.png)&ensp;Armor
-Armor is a flat damage incoming reduction for the wearer.
+Armor is a flat incoming damage reduction for the wearer.
 It only reduces bullet damage and is thus ineffective against explosions.
 Headshot damage is not reduced by armor either.
 
@@ -122,7 +122,7 @@ Headshot damage is not reduced by armor either.
 ### ![](./items/radar.png)&ensp;Radar
 The Radar acts similar to the MW2 UAV:
 The position of all players is periodically shown on the minimap.
-It does not discern between player roles.
+It does not discern between player's roles.
 Contrary to the base game, the Radar cannot be destroyed and will stay active indefinitely.
 
 <details>
@@ -241,7 +241,7 @@ Additionally, it has a configurable delay until it is armed, to allow for placem
 The Flashbang is equivalent to the one in the base game:
 It temporarily blinds and deafens targets, looking into or standing inside of the explosion.
 
-The Flashbang can be used to clear rooms, or to disorient groups of players.
+The Flashbang can be used to clear rooms, or to disorient a group of players.
 
 <details>
 	<summary>🎥 <b>Demo Video</b></summary>
@@ -385,6 +385,8 @@ To install, place the folder *inside* of the zip archive into: `<IW4X>/mods`
 The script files can either be placed in the extracted folder to be loaded with the mod
 (`<IW4X>/mods/ttt-<version>`), or inside of `<IW4X>/userraw` to always load them on startup.
 
+⚠️ [Note that some base game dvars should be changed for a good experience.](#recommendations)
+
 ## Configurable Settings
 | Dvar                            | Description                                                                                                                     | Default Value |
 |-------------------------------- |---------------------------------------------------------------------------------------------------------------------------------|--------------:|
@@ -416,7 +418,8 @@ The script files can either be placed in the extracted folder to be loaded with 
 | ttt_detective_start_credits     | Amount of shop credits every detective starts the round with.                                                                   |             1 |
 | ttt_detective_kill_credits      | Amount of shop credits awarded to a detective for killing a traitor.                                                            |             1 |
 
-⚠️ Furthermore there are some settings from the base game, that should be changed for a better experience:
+### Recommendations
+⚠️ Furthermore there are some settings from the base game that should be changed for a better experience:
 | Dvar                       | Description                                                                           | Recommended Value |
 |----------------------------|---------------------------------------------------------------------------------------|------------------:|
 | g_gametype                 | Needs to be set to run the gamemode.                                                  |               ttt |
