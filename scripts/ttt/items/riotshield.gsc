@@ -15,6 +15,8 @@ init()
 	riotshield.weaponName = "riotshield_mp";
 
 	scripts\ttt\items::registerItem(riotshield, "detective");
+
+	setDvar("scr_riotShieldXPBullets", 999999);
 }
 
 OnBuy(item)
