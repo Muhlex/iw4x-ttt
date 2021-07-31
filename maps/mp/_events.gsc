@@ -532,6 +532,8 @@ multiKill( killId, killCount )
 {
 	assert( killCount > 1 );
 
+	if (level.ttt.enabled) return;
+
 	if ( killCount == 2 )
 	{
 		self thread maps\mp\gametypes\_hud_message::SplashNotifyDelayed( "doublekill", maps\mp\gametypes\_rank::getScoreInfoValue( "double" ) );
