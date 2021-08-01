@@ -9,6 +9,7 @@ init()
 	level.ttt.effects.bombOuterExplosion = loadFX("explosions/aerial_explosion_large");
 	level.ttt.effects.cameraIdle = loadFX("misc/aircraft_light_wingtip_green");
 	level.ttt.effects.cameraActive = loadFX("misc/aircraft_light_red_blink");
+	level.ttt.effects.smokeGrenade = loadFX("props/american_smoke_grenade_mp");
 
 	precacheModel("prop_suitcase_bomb");
 	precacheModel("sentry_minigun");
@@ -41,7 +42,8 @@ init()
 	scripts\ttt\items\helicopter::init();
 	scripts\ttt\items\bomb::init();
 	scripts\ttt\items\rpg::init();
-	scripts\ttt\items\ranger::init();
+	// scripts\ttt\items\ranger::init();
+	scripts\ttt\items\smoke::init();
 	scripts\ttt\items\throwingknife::init();
 	scripts\ttt\items\claymore::init();
 	scripts\ttt\items\flash::init();
