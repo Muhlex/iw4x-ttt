@@ -59,11 +59,10 @@ OnSmokeExplode(throwAngles)
 		// don't spawn if smoke would be inside/behind the origin (not enough space)
 		if (distance(horizTraceStartOrigin, effectOrigin) < 128) continue;
 		effectOrigin -= forwardVector * 128;
-		// move back down
-		effectOrigin = physicsTrace(effectOrigin, effectOrigin - (0, 0, horizTraceStartMovedUp));
+		// move back down (further, to simulate gravity a bit)
+		effectOrigin = physicsTrace(effectOrigin, effectOrigin - (0, 0, horizTraceStartMovedUp + 96));
 
 		playFX(level.ttt.effects.smokeGrenade, effectOrigin);
 		playSoundAtPos(effectOrigin, "smokegrenade_explode_default");
-
 	}
 }
