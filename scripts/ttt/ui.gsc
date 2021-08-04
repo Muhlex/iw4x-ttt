@@ -30,9 +30,11 @@ init()
 	level.ttt.colorsBuyMenu["traitor"] = (0.2, 0.0, 0.0);
 	level.ttt.colorsBuyMenu["detective"] = (0.0, 0.05, 0.2);
 
-	level.ttt.buyMenu["columns"] = 3;
+	level.ttt.buyMenu["max_columns"] = 3;
+	level.ttt.buyMenu["max_entries"] = 9;
 	level.ttt.buyMenu["padding"] = 4;
-	level.ttt.buyMenu["desc_width"] = 140;
+	level.ttt.buyMenu["square_length"] = 48;
+	level.ttt.buyMenu["desc_width"] = 152;
 }
 
 initPlayer()
@@ -333,7 +335,7 @@ displayRoundEnd(winner, reason)
 
 	level.ttt.ui["hud"]["outcome"]["title"] = createServerFontString("objective", 2.0);
 	level.ttt.ui["hud"]["outcome"]["title"] setParent(level.ttt.ui["hud"]["outcome"]["bg"]);
-	level.ttt.ui["hud"]["outcome"]["title"] setPoint("TOP CENTER", "TOP CENTER", 0, 28);
+	level.ttt.ui["hud"]["outcome"]["title"] setPoint("TOP CENTER", "TOP CENTER", 0, 16);
 	level.ttt.ui["hud"]["outcome"]["title"].archived = false;
 	level.ttt.ui["hud"]["outcome"]["title"].hidewheninmenu = true;
 	level.ttt.ui["hud"]["outcome"]["title"].glowColor = level.ttt.colors[winner];
@@ -501,7 +503,7 @@ displayGameEnd(data)
 			bgHeight += 32;
 		bgHeight -= 32;
 		bgHeight += level.ttt.ui["hud"]["end"]["rounds"][0]["center"].height / 2;
-		level.ttt.ui["hud"]["end"]["bg"] setDimensions(undefined, int(bgHeight));
+		level.ttt.ui["hud"]["end"]["bg"] setRectDimensions(undefined, int(bgHeight));
 
 		foreach (i, round in rounds)
 		{
@@ -685,7 +687,7 @@ displayScoreboard()
 	foreach (heading in self.ttt.ui["sb"]["headings"]) sbHeight += heading.height;
 	foreach (name in self.ttt.ui["sb"]["names"]) sbHeight += name.height;
 	sbHeight += totalVertPadding;
-	self.ttt.ui["sb"]["bg"] setDimensions(undefined, int(sbHeight));
+	self.ttt.ui["sb"]["bg"] setRectDimensions(undefined, int(sbHeight));
 }
 
 destroyScoreboard()
@@ -695,13 +697,15 @@ destroyScoreboard()
 
 displayBuyMenu(role)
 {
-	COLUMNS = level.ttt.buyMenu["columns"];
+	MAX_COLUMNS = level.ttt.buyMenu["max_columns"];
+	MAX_ENTRIES = level.ttt.buyMenu["max_entries"];
 	PADDING = level.ttt.buyMenu["padding"];
+	SQUARE_LENGTH = level.ttt.buyMenu["square_length"];
 	DESC_WIDTH = level.ttt.buyMenu["desc_width"];
 
-	rowCount = intUp(level.ttt.items[role].size / COLUMNS);
-	columnCount = level.ttt.items[role].size;
-	if (level.ttt.items[role].size > COLUMNS) columnCount = COLUMNS;
+	rowCount = int(min(ceil(level.ttt.items[role].size / MAX_COLUMNS), ceil(MAX_ENTRIES / MAX_COLUMNS)));
+	columnCount = int(min(level.ttt.items[role].size, MAX_COLUMNS));
+	entryCount = int(min(level.ttt.items[role].size, MAX_ENTRIES));
 
 	self.ttt.ui["bm"] = [];
 
@@ -720,41 +724,21 @@ displayBuyMenu(role)
 	self.ttt.ui["bm"]["title"].label = &"CREDIT SHOP";
 
 	self.ttt.ui["bm"]["items_bg"] = [];
-	foreach(i, item in level.ttt.items[role])
+	for (i = 0; i < entryCount; i++)
 	{
-		parent = undefined;
-		pointParent = undefined;
-
-		squareLength = 48;
-		self.ttt.ui["bm"]["items_bg"][i] = self createRectangle(squareLength, squareLength, level.ttt.colorsBuyMenu["item_bg"]);
+		self.ttt.ui["bm"]["items_bg"][i] = self createRectangle(SQUARE_LENGTH, SQUARE_LENGTH, level.ttt.colorsBuyMenu["item_bg"]);
 		self.ttt.ui["bm"]["items_bg"][i].alpha = 0.8;
 		self.ttt.ui["bm"]["items_bg"][i].foreground = true;
 		self.ttt.ui["bm"]["items_bg"][i].hidewheninmenu = true;
 
-		iconWidth = 32;
-		iconHeight = 32;
-		if (isDefined(item.iconWidth)) iconWidth = item.iconWidth;
-		if (isDefined(item.iconHeight)) iconHeight = item.iconHeight;
-		self.ttt.ui["bm"]["items_icon"][i] = self createIcon(level.ttt.items[role][i].icon, iconWidth, iconHeight);
-		self.ttt.ui["bm"]["items_icon"][i].foreground = true;
-		self.ttt.ui["bm"]["items_icon"][i].hidewheninmenu = true;
-		self.ttt.ui["bm"]["items_icon"][i].sort = 5;
-		self.ttt.ui["bm"]["items_icon"][i] setParent(self.ttt.ui["bm"]["items_bg"][i]);
-		// do manual positioning because rects are still weird
-		iconOffsetX = int(squareLength / 2 - iconWidth / 2);
-		iconOffsetY = int(squareLength / 2 - iconHeight / 2) + 8;
-		if (isDefined(item.iconOffsetX)) iconOffsetX += item.iconOffsetX;
-		if (isDefined(item.iconOffsetY)) iconOffsetY += item.iconOffsetY;
-		self.ttt.ui["bm"]["items_icon"][i] setPoint("TOP LEFT", "TOP LEFT", iconOffsetX, iconOffsetY);
-
 		if (i == 0) // first element
 		{
 			self.ttt.ui["bm"]["items_bg"][i] setParent(self.ttt.ui["bm"]["bg"]);
-			self.ttt.ui["bm"]["items_bg"][i] setPoint("TOP LEFT", "TOP LEFT", PADDING, self.ttt.ui["bm"]["title"].height + PADDING * 3);
+			self.ttt.ui["bm"]["items_bg"][i] setPoint("TOP LEFT", "TOP LEFT", PADDING, self.ttt.ui["bm"]["title"].height + PADDING * 4);
 		}
-		else if (i % COLUMNS == 0) // new row
+		else if (i % MAX_COLUMNS == 0) // new row
 		{
-			self.ttt.ui["bm"]["items_bg"][i] setParent(self.ttt.ui["bm"]["items_bg"][i - COLUMNS]);
+			self.ttt.ui["bm"]["items_bg"][i] setParent(self.ttt.ui["bm"]["items_bg"][i - MAX_COLUMNS]);
 			self.ttt.ui["bm"]["items_bg"][i] setPoint("TOP LEFT", "BOTTOM LEFT", 0, PADDING);
 		}
 		else // continue row
@@ -764,9 +748,25 @@ displayBuyMenu(role)
 		}
 	}
 
+	gridWidth = (self.ttt.ui["bm"]["items_bg"][0].width + PADDING) * columnCount - PADDING;
+	gridHeight = (self.ttt.ui["bm"]["items_bg"][0].height + PADDING) * rowCount - PADDING;
+
+	self.ttt.ui["bm"]["scroll_bg"] = self createRectangle(PADDING, gridHeight, (1, 1, 1));
+	self.ttt.ui["bm"]["scroll_bg"] setParent(self.ttt.ui["bm"]["items_bg"][columnCount - 1]);
+	self.ttt.ui["bm"]["scroll_bg"] setPoint("TOP LEFT", "TOP RIGHT", PADDING, 0);
+	self.ttt.ui["bm"]["scroll_bg"].alpha = 0.45;
+	self.ttt.ui["bm"]["scroll_bg"].hidewheninmenu = true;
+	self.ttt.ui["bm"]["scroll_bg"].foreground = true;
+
+	self.ttt.ui["bm"]["scroll_thumb"] = self createRectangle(PADDING, gridHeight, (1, 1, 1));
+	self.ttt.ui["bm"]["scroll_thumb"] setParent(self.ttt.ui["bm"]["scroll_bg"]);
+	self.ttt.ui["bm"]["scroll_thumb"] setPoint("TOP LEFT", "TOP LEFT", 0, 0);
+	self.ttt.ui["bm"]["scroll_thumb"].hidewheninmenu = true;
+	self.ttt.ui["bm"]["scroll_thumb"].foreground = true;
+
 	self.ttt.ui["bm"]["name"] = self createFontString("objective", 1.0);
 	self.ttt.ui["bm"]["name"] setParent(self.ttt.ui["bm"]["items_bg"][columnCount - 1]);
-	self.ttt.ui["bm"]["name"] setPoint("TOP LEFT", "TOP RIGHT", PADDING * 2, 6); // shouldn't need vert offset if rects weren't weird
+	self.ttt.ui["bm"]["name"] setPoint("TOP LEFT", "TOP RIGHT", PADDING * 4, 0);
 	self.ttt.ui["bm"]["name"].hidewheninmenu = true;
 	self.ttt.ui["bm"]["name"].foreground = true;
 
@@ -789,13 +789,10 @@ displayBuyMenu(role)
 	self.ttt.ui["bm"]["credits"].foreground = true;
 	self.ttt.ui["bm"]["credits"].label = &"Available Credits: ^3";
 
-	gridWidth = (self.ttt.ui["bm"]["items_bg"][0].width + PADDING) * columnCount;
-	gridHeight = (self.ttt.ui["bm"]["items_bg"][0].height + PADDING) * rowCount;
-
 	bgWidth = PADDING + gridWidth + PADDING * 2 + DESC_WIDTH + PADDING;
-	bgHeight = (self.ttt.ui["bm"]["title"].height + PADDING * 3) + gridHeight + self.ttt.ui["bm"]["credits"].height + PADDING * 3;
+	bgHeight = (self.ttt.ui["bm"]["title"].height + PADDING * 3) + gridHeight + self.ttt.ui["bm"]["credits"].height + PADDING * 4;
 
-	self.ttt.ui["bm"]["bg"] setDimensions(int(bgWidth), int(bgHeight));
+	self.ttt.ui["bm"]["bg"] setRectDimensions(int(bgWidth), int(bgHeight));
 
 	self updateBuyMenu(role);
 }
@@ -807,19 +804,23 @@ updateBuyMenu(role, moveDown, moveRight, buySelected)
 	if (!isDefined(moveRight)) moveRight = 0;
 	if (!isDefined(buySelected)) buySelected = false;
 
-	COLUMNS = level.ttt.buyMenu["columns"];
+	MAX_COLUMNS = level.ttt.buyMenu["max_columns"];
+	MAX_ENTRIES = level.ttt.buyMenu["max_entries"];
 	PADDING = level.ttt.buyMenu["padding"];
+	SQUARE_LENGTH = level.ttt.buyMenu["square_length"];
 
-	rowCount = intUp(level.ttt.items[role].size / COLUMNS);
-	columnCount = level.ttt.items[role].size;
-	if (level.ttt.items[role].size > COLUMNS) columnCount = COLUMNS;
+	totalRowCount = int(ceil(level.ttt.items[role].size / MAX_COLUMNS));
+	rowCount = int(min(totalRowCount, ceil(MAX_ENTRIES / MAX_COLUMNS)));
+	columnCount = int(min(level.ttt.items[role].size, MAX_COLUMNS));
+	entryCount = int(min(level.ttt.items[role].size, MAX_ENTRIES));
+	itemsScrolled = self.ttt.items.rowsScrolled * columnCount;
 
+	// Update selected item
 	prevSelectedIndex = self.ttt.items.selectedIndex;
-
 	selectedIndexHoriz = self.ttt.items.selectedIndex % columnCount;
 	selectedIndexVert = int(self.ttt.items.selectedIndex / columnCount);
 
-	if (selectedIndexVert + moveDown >= 0 && selectedIndexVert + moveDown < rowCount)
+	if (selectedIndexVert + moveDown >= 0 && selectedIndexVert + moveDown < totalRowCount)
 		selectedIndexVert += moveDown;
 	if (selectedIndexHoriz + moveRight >= 0 && selectedIndexHoriz + moveRight < columnCount)
 		selectedIndexHoriz += moveRight;
@@ -829,10 +830,18 @@ updateBuyMenu(role, moveDown, moveRight, buySelected)
 	if (self.ttt.items.selectedIndex >= level.ttt.items[role].size)
 		self.ttt.items.selectedIndex = level.ttt.items[role].size - 1;
 
-	// Update item texts
+	// Update scrolling
+	if (self.ttt.items.selectedIndex < itemsScrolled)
+		self.ttt.items.rowsScrolled = int(self.ttt.items.selectedIndex / columnCount);
+	else if (self.ttt.items.selectedIndex >= itemsScrolled + entryCount)
+		self.ttt.items.rowsScrolled = int(self.ttt.items.selectedIndex / columnCount) - rowCount + 1;
+
+	itemsScrolled = self.ttt.items.rowsScrolled * columnCount;
 	selectedItem = level.ttt.items[role][self.ttt.items.selectedIndex];
+	selectedGridIndex = self.ttt.items.selectedIndex - itemsScrolled;
 	selectedIsAvailable = [[selectedItem.getIsAvailable]](selectedItem);
 
+	// Update item texts
 	self.ttt.ui["bm"]["name"] setText(selectedItem.name);
 	self.ttt.ui["bm"]["name"].alpha = 1 - (!(selectedIsAvailable && self.ttt.items.credits) * 0.5);
 	self.ttt.ui["bm"]["desc"] setText(selectedItem.description);
@@ -861,26 +870,56 @@ updateBuyMenu(role, moveDown, moveRight, buySelected)
 			self.ttt.ui["bm"]["desc"] setParent(self.ttt.ui["bm"]["unavailable_hint"]);
 	}
 
-	// self.ttt.ui["bm"]["desc"] setPoint("TOP LEFT", "BOTTOM LEFT", 0, PADDING);
-	// self.ttt.ui["bm"]["desc"] setPoint("TOP LEFT", "BOTTOM LEFT", 0, PADDING * + 12);
-
 	// Update rectangle colors
-	foreach (itemBg in self.ttt.ui["bm"]["items_bg"]) itemBg.color = level.ttt.colorsBuyMenu["item_bg"];
-	self.ttt.ui["bm"]["items_bg"][self.ttt.items.selectedIndex].color = level.ttt.colorsBuyMenu["item_selected"];
-
-	// Update available item icons
-	foreach (i, itemIcon in self.ttt.ui["bm"]["items_icon"])
+	foreach (i, itemBg in self.ttt.ui["bm"]["items_bg"])
 	{
-		itemIcon.alpha = 1.0;
-		itemIcon.color = (1.0, 1.0, 1.0);
-		item = level.ttt.items[role][i];
+		itemBg.color = level.ttt.colorsBuyMenu["item_bg"];
+		itemBg.alpha = i + itemsScrolled < level.ttt.items[role].size;
+	}
+	self.ttt.ui["bm"]["items_bg"][selectedGridIndex].color = level.ttt.colorsBuyMenu["item_selected"];
+
+	// Update icons
+	recursivelyDestroyElements(self.ttt.ui["bm"]["items_icon"]);
+	visibleItems = arraySlice(level.ttt.items[role], itemsScrolled, itemsScrolled + entryCount);
+
+	foreach (i, item in visibleItems)
+	{
+		iconWidth = 32;
+		iconHeight = 32;
+		if (isDefined(item.iconWidth)) iconWidth = item.iconWidth;
+		if (isDefined(item.iconHeight)) iconHeight = item.iconHeight;
+		icon = self createIcon(item.icon, iconWidth, iconHeight);
+		self.ttt.ui["bm"]["items_icon"][i] = icon;
+		icon.foreground = true;
+		icon.hidewheninmenu = true;
+		icon.sort = 5;
+		icon.alpha = 1.0;
+		icon.color = (1.0, 1.0, 1.0);
+
 		isAvailable = [[item.getIsAvailable]](item);
 		if (!isAvailable || self.ttt.items.credits <= 0)
 		{
-			itemIcon.alpha = 0.25;
-			if (!isAvailable) itemIcon.color = (1.0, 0.4, 0.4);
+			icon.alpha = 0.25;
+			if (!isAvailable) icon.color = (1.0, 0.4, 0.4);
 		}
+
+		icon setParent(self.ttt.ui["bm"]["items_bg"][i]);
+		iconOffsetX = int(SQUARE_LENGTH / 2 - iconWidth / 2);
+		iconOffsetY = int(SQUARE_LENGTH / 2 - iconHeight / 2);
+		if (isDefined(item.iconOffsetX)) iconOffsetX += item.iconOffsetX;
+		if (isDefined(item.iconOffsetY)) iconOffsetY += item.iconOffsetY;
+		icon setPoint("TOP LEFT", "TOP LEFT", iconOffsetX, iconOffsetY);
 	}
+
+	// Update scrollbar
+	visiblePercentage = rowCount / totalRowCount;
+	trackHeight = self.ttt.ui["bm"]["scroll_bg"].height;
+	self.ttt.ui["bm"]["scroll_thumb"] setRectDimensions(undefined, trackHeight * visiblePercentage);
+	clippedRowCount = totalRowCount - rowCount;
+	yOffsetPctPerRow = (1 - visiblePercentage) / clippedRowCount;
+	yOffset = yOffsetPctPerRow * self.ttt.items.rowsScrolled * trackHeight;
+	self.ttt.ui["bm"]["scroll_thumb"] setPoint("TOP LEFT", "TOP LEFT", 0, yOffset);
+	self.ttt.ui["bm"]["scroll_thumb"].alpha = level.ttt.items[role].size > MAX_ENTRIES;
 
 	// Update credit count
 	self.ttt.ui["bm"]["credits"] setValue(self.ttt.items.credits);

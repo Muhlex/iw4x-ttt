@@ -42,11 +42,11 @@ init()
 	scripts\ttt\items\helicopter::init();
 	scripts\ttt\items\bomb::init();
 	scripts\ttt\items\rpg::init();
-	// scripts\ttt\items\ranger::init();
-	scripts\ttt\items\smoke::init();
+	scripts\ttt\items\ranger::init();
 	scripts\ttt\items\throwingknife::init();
 	scripts\ttt\items\claymore::init();
 	scripts\ttt\items\flash::init();
+	scripts\ttt\items\smoke::init();
 
 	scripts\ttt\items\speed::init();
 	scripts\ttt\items\lethaldrop::init();
@@ -89,6 +89,7 @@ initPlayer()
 	self.ttt.items = spawnStruct();
 	self.ttt.items.inBuyMenu = false;
 	self.ttt.items.selectedIndex = 0;
+	self.ttt.items.rowsScrolled = 0;
 	self.ttt.items.credits = 0;
 	self.ttt.items.boughtItems = [];
 	self resetRoleInventory();

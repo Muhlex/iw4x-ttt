@@ -84,18 +84,16 @@ createRectangle(w, h, color, showToAll)
 	rect.children = [];
 	rect setParent(level.uiParent);
 	rect.hidden = false;
-
-	rect setShader("progress_bar_fill", w, int(h * 4 / 3));
-	rect.shader = "progress_bar_fill";
+	rect setShader("white", int(w), int(h));
 
 	return rect;
 }
 
-setDimensions(w, h)
+setRectDimensions(w, h)
 {
 	if (isDefined(w)) self.width = w;
 	if (isDefined(h)) self.height = h;
-	self setShader("progress_bar_fill", self.width, int(self.height * 4 / 3));
+	self setShader("white", int(self.width), int(self.height));
 	self maps\mp\gametypes\_hud_util::updateChildren();
 }
 
@@ -226,13 +224,6 @@ fisherYatesShuffle(array)
 		array[j] = temp;
 	}
 	return array;
-}
-
-intUp(value)
-{
-	result = int(value);
-	if (result == value) return result;
-	else return result + 1;
 }
 
 drawDebugLine(pos1, pos2, color, ticks)
