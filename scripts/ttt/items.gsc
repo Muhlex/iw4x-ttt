@@ -506,6 +506,9 @@ giveItem(item, data)
 	self.ttt.items.boughtItems[self.ttt.items.boughtItems.size] = item;
 	self thread [[item.onBuy]](item, data);
 	self iPrintLn("^3" + item.name + "^7 received");
+
+	if (isDefined(item.passiveDisplay) && item.passiveDisplay && !self.ttt.items.inBuyMenu)
+		self scripts\ttt\ui::updatePlayerPassivesDisplay();
 }
 
 tryBuyItem(item)

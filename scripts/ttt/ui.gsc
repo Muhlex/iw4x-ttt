@@ -60,16 +60,11 @@ displaySelfHud()
 	self.ttt.ui["hud"]["self"]["health"].glowAlpha = 1;
 	self.ttt.ui["hud"]["self"]["health"].label = &"";
 
-	self.ttt.ui["hud"]["self"]["armor"] = self createIcon("cardicon_vest_1", 16, 16);
-	self.ttt.ui["hud"]["self"]["armor"] setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -126, -15);
-	self.ttt.ui["hud"]["self"]["armor"].hidewheninmenu = true;
-	self.ttt.ui["hud"]["self"]["armor"].alpha = isInArray(self.ttt.items.boughtItems, level.ttt.items["internal"]["armor"]);
-
 	self displayBombHud();
 
 	self updatePlayerRoleDisplay();
 	self updatePlayerHealthDisplay();
-	self updatePlayerArmorDisplay();
+	self updatePlayerPassivesDisplay();
 }
 
 destroySelfHud()
@@ -103,11 +98,30 @@ updatePlayerHealthDisplay()
 	self.ttt.ui["hud"]["self"]["health"] setValue(self.health);
 }
 
-updatePlayerArmorDisplay()
+updatePlayerPassivesDisplay()
 {
-	if (!isDefined(self.ttt.ui["hud"]["self"]["armor"])) return;
+	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["passives"]);
 
-	self.ttt.ui["hud"]["self"]["armor"].alpha = isInArray(self.ttt.items.boughtItems, level.ttt.items["internal"]["armor"]);
+	i = 0;
+	foreach (item in level.ttt.items[self.ttt.role])
+	{
+		if (!isDefined(item.passiveDisplay) || !item.passiveDisplay) continue;
+		if (!isInArray(self.ttt.items.boughtItems, item)) continue;
+
+		icon = self createIcon(item.icon, 16, 16);
+		icon.hidewheninmenu = true;
+		icon.foreground = true;
+		if (i == 0)
+			icon setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -128, -15);
+		else
+		{
+			icon setParent(self.ttt.ui["hud"]["self"]["passives"][i - 1]);
+			icon setPoint("TOP RIGHT", "TOP LEFT", -4, 0);
+		}
+
+		self.ttt.ui["hud"]["self"]["passives"][i] = icon;
+		i++;
+	}
 }
 
 updatePlayerRoleDisplay()
@@ -697,6 +711,8 @@ destroyScoreboard()
 
 displayBuyMenu(role)
 {
+	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["passives"]);
+
 	MAX_COLUMNS = level.ttt.buyMenu["max_columns"];
 	MAX_ENTRIES = level.ttt.buyMenu["max_entries"];
 	PADDING = level.ttt.buyMenu["padding"];
@@ -932,6 +948,7 @@ updateBuyMenu(role, moveDown, moveRight, buySelected)
 destroyBuyMenu()
 {
 	recursivelyDestroyElements(self.ttt.ui["bm"]);
+	self updatePlayerPassivesDisplay();
 }
 
 updateBombHuds()

@@ -7,6 +7,7 @@ init()
 	lehtaldrop.onBuy = ::OnBuy;
 	lehtaldrop.getIsAvailable = scripts\ttt\items::getIsAvailablePassive;
 	lehtaldrop.unavailableHint = &"^1You can't get more muscular than this";
+	lehtaldrop.passiveDisplay = true;
 
 	scripts\ttt\items::registerItem(lehtaldrop, "detective");
 }

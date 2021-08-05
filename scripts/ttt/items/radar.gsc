@@ -7,6 +7,7 @@ init()
 	radar.onBuy = ::OnBuy;
 	radar.getIsAvailable = scripts\ttt\items::getIsAvailablePassive;
 	radar.unavailableHint = &"^1Radar already active";
+	radar.passiveDisplay = true;
 
 	scripts\ttt\items::registerItem(radar, "traitor");
 

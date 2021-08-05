@@ -13,6 +13,7 @@ init()
 	smell.onBuy = ::OnBuy;
 	smell.getIsAvailable = scripts\ttt\items::getIsAvailablePassive;
 	smell.unavailableHint = &"^1You can already smell player's traces";
+	smell.passiveDisplay = true;
 	smell.trailEnts = [];
 
 	scripts\ttt\items::registerItem(smell, "detective");

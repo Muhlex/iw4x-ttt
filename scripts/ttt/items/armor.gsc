@@ -7,14 +7,14 @@ init()
 	armor.onBuy = ::OnBuy;
 	armor.getIsAvailable = scripts\ttt\items::getIsAvailablePassive;
 	armor.unavailableHint = &"^1Already wearing armor";
+	armor.passiveDisplay = true;
 
 	scripts\ttt\items::registerItem(armor, "traitor");
 	scripts\ttt\items::registerItem(armor, "detective");
-	scripts\ttt\items::registerItem(armor, undefined, "armor"); // used to be set as a starting item
+	scripts\ttt\items::registerItem(armor, undefined, "armor"); // used to set it as a starting item
 }
 
 OnBuy()
 {
 	self.ttt.incomingDamageMultiplier = level.ttt.armorDamageMultiplier;
-	self scripts\ttt\ui::updatePlayerArmorDisplay();
 }

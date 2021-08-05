@@ -7,6 +7,7 @@ init()
 	speed.onBuy = ::OnBuy;
 	speed.getIsAvailable = scripts\ttt\items::getIsAvailablePassive;
 	speed.unavailableHint = &"^1Already running at hyperspeed";
+	speed.passiveDisplay = true;
 
 	scripts\ttt\items::registerItem(speed, "detective");
 }
