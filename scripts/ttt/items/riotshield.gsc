@@ -2,7 +2,7 @@ init()
 {
 	riotshield = spawnStruct();
 	riotshield.name = "RIOT SHIELD";
-	riotshield.description = "^3Exclusive weapon\n^2Blocks bullets^7, even when it is\non your back.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	riotshield.description = "^3Active Item\n^2Blocks bullets^7, even when it is\non your back.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
 	riotshield.icon = "weapon_riotshield";
 	riotshield.iconWidth = 64;
 	riotshield.iconHeight = 32;
@@ -15,8 +15,6 @@ init()
 	riotshield.weaponName = "riotshield_mp";
 
 	scripts\ttt\items::registerItem(riotshield, "detective");
-
-	setDvar("scr_riotShieldXPBullets", 999999);
 }
 
 OnBuy(item)

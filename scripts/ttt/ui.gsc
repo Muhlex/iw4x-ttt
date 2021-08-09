@@ -5,14 +5,8 @@
 
 init()
 {
-	precacheShader("cardicon_vest_1");
-	precacheShader("hud_suitcase_bomb");
-
 	precacheShader("cardicon_comic_shepherd");
 	precacheShader("cardtitle_silencer");
-
-	precacheShader("nightvision_overlay_goggles");
-	precacheShader("compassping_enemy");
 
 	level.ttt.ui = [];
 	level.ttt.ui["hud"] = [];
@@ -60,15 +54,18 @@ displaySelfHud()
 	self.ttt.ui["hud"]["self"]["health"].glowAlpha = 1;
 	self.ttt.ui["hud"]["self"]["health"].label = &"";
 
-	self displayBombHud();
+	self scripts\ttt\items\bomb::displayBombHud();
 
 	self updatePlayerRoleDisplay();
 	self updatePlayerHealthDisplay();
+	self updatePlayerCustomOffhandDisplay();
 	self updatePlayerPassivesDisplay();
 }
 
 destroySelfHud()
 {
+	self destroyPlayerCustomOffhandDisplay();
+	self destroyPlayerPassivesDisplay();
 	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]);
 }
 
@@ -98,9 +95,40 @@ updatePlayerHealthDisplay()
 	self.ttt.ui["hud"]["self"]["health"] setValue(self.health);
 }
 
+updatePlayerCustomOffhandDisplay()
+{
+	self destroyPlayerCustomOffhandDisplay();
+
+	item = self.ttt.items.customOffhand.item;
+	if (!isDefined(item)) return;
+	if (!isDefined(item.offhandDisplay) || !item.offhandDisplay) return;
+
+	icon = self createIcon(item.icon, 16, 16);
+	icon.hidewheninmenu = true;
+	icon.foreground = true;
+	icon setPoint("TOP LEFT", "BOTTOM RIGHT", -124, -31);
+
+	self.ttt.ui["hud"]["self"]["offhand"]["icon"] = icon;
+
+	self notify("ttt_ui_custom_offhand_display_created");
+}
+
+destroyPlayerCustomOffhandDisplay()
+{
+	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["offhand"]);
+}
+
 updatePlayerPassivesDisplay()
 {
-	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["passives"]);
+	self destroyPlayerPassivesDisplay();
+
+	line = self createRectangle(1, 21, (0.8, 0.8, 0.8));
+	line.hidewheninmenu = true;
+	line.foreground = true;
+	line.alpha = 0.65;
+	line setPoint("TOP RIGHT", "BOTTOM RIGHT", -128, -34);
+
+	self.ttt.ui["hud"]["self"]["passives"]["line"] = line;
 
 	i = 0;
 	foreach (item in level.ttt.items[self.ttt.role])
@@ -112,16 +140,26 @@ updatePlayerPassivesDisplay()
 		icon.hidewheninmenu = true;
 		icon.foreground = true;
 		if (i == 0)
-			icon setPoint("BOTTOM RIGHT", "BOTTOM RIGHT", -128, -15);
+		{
+			icon setParent(line);
+			icon setPoint("TOP RIGHT", "TOP LEFT", -2, 3);
+		}
 		else
 		{
-			icon setParent(self.ttt.ui["hud"]["self"]["passives"][i - 1]);
+			icon setParent(self.ttt.ui["hud"]["self"]["passives"]["icons"][i - 1]);
 			icon setPoint("TOP RIGHT", "TOP LEFT", -4, 0);
 		}
 
-		self.ttt.ui["hud"]["self"]["passives"][i] = icon;
+		self.ttt.ui["hud"]["self"]["passives"]["icons"][i] = icon;
 		i++;
 	}
+
+	self notify("ttt_ui_passive_display_created");
+}
+
+destroyPlayerPassivesDisplay()
+{
+	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["passives"]);
 }
 
 updatePlayerRoleDisplay()
@@ -218,6 +256,8 @@ destroyActivateHint()
 
 setupHeadIconAnchor()
 {
+	if (isDefined(self.headiconAnchor)) self.headiconAnchor delete();
+
 	TAG = "j_head";
 
 	headPos = self getTagOrigin(TAG);
@@ -229,17 +269,17 @@ setupHeadIconAnchor()
 	iconAnchor = spawn("script_model", iconPos);
 	iconAnchor linkTo(self, TAG);
 	self.headiconAnchor = iconAnchor;
-	self thread OnHeadIconAnchorDestroy();
+	self thread OnHeadIconAnchorOwnerDeath();
 }
 
-OnHeadIconAnchorDestroy()
+OnHeadIconAnchorOwnerDeath()
 {
-	self waittill_any("disconnect", "death");
+	self waittill_any("disconnect", "death", "ttt_fake_death");
 
 	self.headiconAnchor delete();
 }
 
-displayHeadIcons()
+displayPlayerHeadIcons()
 {
 	self.ttt.ui["hud"]["headicons"] = [];
 
@@ -289,10 +329,19 @@ headIconLookAtThink(headIcon, target)
 	}
 }
 
-destroyHeadIcons()
+destroyPlayerHeadIcons()
 {
 	recursivelyDestroyElements(self.ttt.ui["hud"]["headicons"]);
 	self notify("ttt_ui_headicons_destroyed");
+}
+
+updateAllHeadIcons()
+{
+	foreach (player in getLivingPlayers())
+	{
+		player destroyPlayerHeadIcons();
+		player displayPlayerHeadIcons();
+	}
 }
 
 displayHeadIconOnPlayer(target, image, visible)
@@ -306,17 +355,17 @@ displayHeadIconOnPlayer(target, image, visible)
 	self.ttt.ui["hud"]["headicons"][i].visible = visible;
 	self.ttt.ui["hud"]["headicons"][i] setWaypoint(false, false);
 	self.ttt.ui["hud"]["headicons"][i] setTargetEnt(target.headiconAnchor);
-	self.ttt.ui["hud"]["headicons"][i] thread OnHeadIconDestroy(self, target);
+	self.ttt.ui["hud"]["headicons"][i] thread OnHeadIconTargetDeath(self, target);
 
 	return self.ttt.ui["hud"]["headicons"][i];
 }
 
-OnHeadIconDestroy(showToPlayer, target)
+OnHeadIconTargetDeath(showToPlayer, target)
 {
 	//self endon("death"); // apparently this always fires instantly
 	showToPlayer endon("disconnect");
 
-	target waittill_any("death", "disconnect");
+	target waittill_any("disconnect", "death", "ttt_fake_death");
 	self destroy();
 }
 
@@ -571,7 +620,7 @@ displayScoreboard()
 	{
 		if (!level.ttt.preparing && !isDefined(player.ttt.role)) continue; // exclude players who joined late
 
-		if (!isAlive(player) && player.ttt.bodyFound)
+		if (player.ttt.bodyFound && (!isAlive(player) || self.ttt.role != "traitor"))
 			players["confirmed"][players["confirmed"].size] = player;
 		else if (!isAlive(player) && (self.ttt.role == "traitor" || level.gameEnded || !isAlive(self)))
 			players["missing"][players["missing"].size] = player;
@@ -711,7 +760,8 @@ destroyScoreboard()
 
 displayBuyMenu(role)
 {
-	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["passives"]);
+	self destroyPlayerCustomOffhandDisplay();
+	self destroyPlayerPassivesDisplay();
 
 	MAX_COLUMNS = level.ttt.buyMenu["max_columns"];
 	MAX_ENTRIES = level.ttt.buyMenu["max_entries"];
@@ -876,15 +926,14 @@ updateBuyMenu(role, moveDown, moveRight, buySelected)
 	 * somehow creates an infinite loop with the updating of the element's children.
 	 * Even though it shouldn't have any, neither is this called when closing the menu. ?????
 	 * But it does work when first checking if the element is defined. I don't know why.
+	 *
+	 * EDIT: Probably fixed, was trying to update the buy menu AFTER it was closed.
 	 */
 
-	if (isDefined(self.ttt.ui["bm"]["desc"]))
-	{
-		if (selectedIsAvailable && self.ttt.items.credits)
-			self.ttt.ui["bm"]["desc"] setParent(self.ttt.ui["bm"]["name"]);
-		else // move down the description by the space the unavailability hint takes up
-			self.ttt.ui["bm"]["desc"] setParent(self.ttt.ui["bm"]["unavailable_hint"]);
-	}
+	if (selectedIsAvailable && self.ttt.items.credits)
+		self.ttt.ui["bm"]["desc"] setParent(self.ttt.ui["bm"]["name"]);
+	else // move down the description by the space the unavailability hint takes up
+		self.ttt.ui["bm"]["desc"] setParent(self.ttt.ui["bm"]["unavailable_hint"]);
 
 	// Update rectangle colors
 	foreach (i, itemBg in self.ttt.ui["bm"]["items_bg"])
@@ -948,194 +997,4 @@ updateBuyMenu(role, moveDown, moveRight, buySelected)
 destroyBuyMenu()
 {
 	recursivelyDestroyElements(self.ttt.ui["bm"]);
-	self updatePlayerPassivesDisplay();
-}
-
-updateBombHuds()
-{
-	foreach (player in level.players)
-	{
-		player destroyBombHud();
-		player displayBombHud();
-	}
-}
-
-displayBombHud()
-{
-	if ((isAlive(self) && (!isDefined(self.ttt.role) || self.ttt.role != "traitor")) || self.ttt.items.inBuyMenu) return;
-
-	self.ttt.ui["hud"]["self"]["bombs"] = [];
-
-	foreach(i, bombEnt in level.ttt.bombs)
-	{
-		self.ttt.ui["hud"]["self"]["bombs"][i] = [];
-
-		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"] = newClientHudElem(self);
-		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"] setShader("hud_suitcase_bomb");
-		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"].color = (1, 0.3, 0.3);
-		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"].alpha = 0.5;
-		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"] setWaypoint(true, true);
-		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"] setTargetEnt(bombEnt);
-
-		self.ttt.ui["hud"]["self"]["bombs"][i]["icon"] = self createIcon("hud_suitcase_bomb", 24, 24);
-		self.ttt.ui["hud"]["self"]["bombs"][i]["icon"].color = (1, 0.3, 0.3);
-		self.ttt.ui["hud"]["self"]["bombs"][i]["icon"].hidewheninmenu = true;
-		self.ttt.ui["hud"]["self"]["bombs"][i]["icon"] setPoint("TOP RIGHT", "TOP RIGHT", -20, 60);
-		if (i > 0)
-		{
-			self.ttt.ui["hud"]["self"]["bombs"][i]["icon"] setParent(self.ttt.ui["hud"]["self"]["bombs"][i - 1]["icon"]);
-			self.ttt.ui["hud"]["self"]["bombs"][i]["icon"] setPoint("TOP LEFT", "TOP LEFT", 0, 24 + 12);
-		}
-
-		self.ttt.ui["hud"]["self"]["bombs"][i]["text"] = self createFontString("default", 1.5);
-		self.ttt.ui["hud"]["self"]["bombs"][i]["text"] setParent(self.ttt.ui["hud"]["self"]["bombs"][i]["icon"]);
-		self.ttt.ui["hud"]["self"]["bombs"][i]["text"] setPoint("BOTTOM RIGHT ", "BOTTOM RIGHT", 2, 2);
-		self.ttt.ui["hud"]["self"]["bombs"][i]["text"].color = (1, 1, 1);
-		self.ttt.ui["hud"]["self"]["bombs"][i]["text"].hidewheninmenu = true;
-		self.ttt.ui["hud"]["self"]["bombs"][i]["text"].foreground = true;
-		self.ttt.ui["hud"]["self"]["bombs"][i]["text"] setValue(scripts\ttt\items\bomb::getBombSecondsRemaining(bombEnt));
-	}
-}
-
-destroyBombHud()
-{
-	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["bombs"]);
-}
-
-displayCameraHud(cameraEnt)
-{
-	destroyed = !isDefined(cameraEnt) || cameraEnt.destroyed;
-
-	self.ttt.ui["hud"]["self"]["camera"] = [];
-
-	self.ttt.ui["hud"]["self"]["camera"]["static"] = newClientHudElem(self);
-	self.ttt.ui["hud"]["self"]["camera"]["static"].horzAlign = "fullscreen";
-	self.ttt.ui["hud"]["self"]["camera"]["static"].vertAlign = "fullscreen";
-	self.ttt.ui["hud"]["self"]["camera"]["static"] setShader("ac130_overlay_grain", 640, 480);
-	self.ttt.ui["hud"]["self"]["camera"]["static"].sort = 1;
-	self.ttt.ui["hud"]["self"]["camera"]["static"].alpha = 0.4;
-
-	if (destroyed)
-	{
-		self.ttt.ui["hud"]["self"]["camera"]["static"].alpha = 1.0;
-
-		self.ttt.ui["hud"]["self"]["camera"]["white"] = newClientHudElem(self);
-		self.ttt.ui["hud"]["self"]["camera"]["white"].horzAlign = "fullscreen";
-		self.ttt.ui["hud"]["self"]["camera"]["white"].vertAlign = "fullscreen";
-		self.ttt.ui["hud"]["self"]["camera"]["white"] setShader("black", 640, 480);
-		self.ttt.ui["hud"]["self"]["camera"]["white"].alpha = 0.5;
-
-		self.ttt.ui["hud"]["self"]["camera"]["nosignal_text"] = self createFontString("objective", 3);
-		self.ttt.ui["hud"]["self"]["camera"]["nosignal_text"] setPoint("CENTER", "CENTER", 0, 0);
-		self.ttt.ui["hud"]["self"]["camera"]["nosignal_text"].label = &"NO SIGNAL ...";
-		self.ttt.ui["hud"]["self"]["camera"]["nosignal_text"].glowColor = (0.4, 0.45, 0.8);
-		self.ttt.ui["hud"]["self"]["camera"]["nosignal_text"].glowAlpha = 1;
-		self.ttt.ui["hud"]["self"]["camera"]["nosignal_text"].sort = 5;
-		self.ttt.ui["hud"]["self"]["camera"]["nosignal_text"].hidewheninmenu = true;
-	}
-	else
-	{
-		self.ttt.ui["hud"]["self"]["camera"]["overlay"] = newClientHudElem(self);
-		self.ttt.ui["hud"]["self"]["camera"]["overlay"].horzAlign = "fullscreen";
-		self.ttt.ui["hud"]["self"]["camera"]["overlay"].vertAlign = "fullscreen";
-		self.ttt.ui["hud"]["self"]["camera"]["overlay"] setShader("nightvision_overlay_goggles", 640, 480);
-		self.ttt.ui["hud"]["self"]["camera"]["overlay"].alpha = 1.0;
-
-		self.ttt.ui["hud"]["self"]["camera"]["live_dot"] = self createIcon("compassping_enemy", 40, 40);
-		self.ttt.ui["hud"]["self"]["camera"]["live_dot"].color = (1.0, 0.5, 0.5);
-		self.ttt.ui["hud"]["self"]["camera"]["live_dot"] setPoint("TOP LEFT", "TOP LEFT", 16, 16);
-		self.ttt.ui["hud"]["self"]["camera"]["live_dot"].sort = 5;
-		self.ttt.ui["hud"]["self"]["camera"]["live_dot"].hidewheninmenu = true;
-
-		self.ttt.ui["hud"]["self"]["camera"]["live_text"] = self createFontString("objective", 1.5);
-		self.ttt.ui["hud"]["self"]["camera"]["live_text"] setParent(self.ttt.ui["hud"]["self"]["camera"]["live_dot"]);
-		self.ttt.ui["hud"]["self"]["camera"]["live_text"] setPoint("CENTER LEFT", "CENTER RIGHT", -2, -1.5);
-		self.ttt.ui["hud"]["self"]["camera"]["live_text"].label = &"LIVE";
-		self.ttt.ui["hud"]["self"]["camera"]["live_text"].glowColor = (0.7, 0.7, 0.7);
-		self.ttt.ui["hud"]["self"]["camera"]["live_text"].glowAlpha = 1;
-		self.ttt.ui["hud"]["self"]["camera"]["live_text"].sort = 5;
-		self.ttt.ui["hud"]["self"]["camera"]["live_text"].hidewheninmenu = true;
-
-		self.ttt.ui["hud"]["self"]["camera"]["time"] = [];
-
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["h"] = self createFontString("objective", 1.5);
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["h"] setPoint("BOTTOM CENTER", "BOTTOM LEFT", 28, -24);
-
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_1"] = self createFontString("objective", 1.5);
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_1"] setParent(self.ttt.ui["hud"]["self"]["camera"]["time"]["h"]);
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_1"] setPoint("CENTER", "CENTER", 14, 0);
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_1"].label = &":";
-
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["m"] = self createFontString("objective", 1.5);
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["m"] setPoint("CENTER", "CENTER", 14, 0);
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["m"] setParent(self.ttt.ui["hud"]["self"]["camera"]["time"]["col_1"]);
-
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_2"] = self createFontString("objective", 1.5);
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_2"] setParent(self.ttt.ui["hud"]["self"]["camera"]["time"]["m"]);
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_2"] setPoint("CENTER", "CENTER", 14, 0);
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["col_2"].label = &":";
-
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["s"] = self createFontString("objective", 1.5);
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["s"] setParent(self.ttt.ui["hud"]["self"]["camera"]["time"]["col_2"]);
-		self.ttt.ui["hud"]["self"]["camera"]["time"]["s"] setPoint("CENTER", "CENTER", 14, 0);
-
-		foreach (timeEl in self.ttt.ui["hud"]["self"]["camera"]["time"])
-		{
-			timeEl.glowColor = (0.7, 0.7, 0.7);
-			timeEl.glowAlpha = 1;
-			timeEl.sort = 5;
-			timeEl.hidewheninmenu = true;
-		}
-
-		self thread cameraHudThink(cameraEnt);
-		self thread OnPlayerCameraDestroyed(cameraEnt);
-	}
-}
-
-cameraHudThink(cameraEnt)
-{
-	self endon("disconnect");
-	self endon("death");
-	self endon("ttt_ui_camera_hud_destroyed");
-
-	for (;;)
-	{
-		hms = secsToHMS((getTime() - cameraEnt.birthtime) / 1000);
-
-		foreach (key, value in hms)
-		{
-			self.ttt.ui["hud"]["self"]["camera"]["time"][key] setValue(value);
-			if (value < 10)
-				self.ttt.ui["hud"]["self"]["camera"]["time"][key].label = &"0";
-			else
-				self.ttt.ui["hud"]["self"]["camera"]["time"][key].label = &"";
-		}
-
-		wait(0.5);
-		self.ttt.ui["hud"]["self"]["camera"]["live_dot"].alpha = 0.0;
-
-		wait(0.5);
-		self.ttt.ui["hud"]["self"]["camera"]["live_dot"].alpha = 1.0;
-	}
-}
-
-OnPlayerCameraDestroyed(cameraEnt)
-{
-	self endon("ttt_ui_camera_hud_destroyed");
-
-	cameraEnt waittill("destroyed");
-
-	self thread restartCameraHud(cameraEnt);
-}
-
-restartCameraHud(cameraEnt)
-{
-	self destroyCameraHud();
-	self displayCameraHud(cameraEnt);
-}
-
-destroyCameraHud(cameraEnt)
-{
-	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["camera"]);
-	self notify("ttt_ui_camera_hud_destroyed");
 }

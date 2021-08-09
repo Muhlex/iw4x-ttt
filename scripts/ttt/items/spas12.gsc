@@ -2,7 +2,7 @@ init()
 {
 	spas12 = spawnStruct();
 	spas12.name = "SPAS-12 SHOTGUN";
-	spas12.description = "^3Exclusive weapon\n^7Versatile shotgun with good\nperformance ^2up to medium range^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	spas12.description = "^3Active Item\n^7Versatile shotgun with good\nperformance ^2up to medium range^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
 	spas12.icon = "weapon_spas12";
 	spas12.iconWidth = 48;
 	spas12.iconHeight = 24;

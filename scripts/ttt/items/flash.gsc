@@ -2,7 +2,7 @@ init()
 {
 	flash = spawnStruct();
 	flash.name = "FLASHBANG";
-	flash.description = "^3Exclusive special grenade\n^2Blinds ^7anyone who is caught in\nor looking at the explosion.\n\nPress [ ^3[{+smoke}]^7 ] to throw.";
+	flash.description = "^3Offhand Grenade\n^2Blinds ^7anyone who is caught in\nor looking at the explosion.\n\nPress [ ^3[{+smoke}]^7 ] to throw.";
 	flash.icon = "weapon_flashbang";
 	flash.onBuy = ::OnBuy;
 	flash.getIsAvailable = scripts\ttt\items::getIsAvailableOffhand;

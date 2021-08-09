@@ -10,6 +10,7 @@ init()
 	level.ttt.effects.cameraIdle = loadFX("misc/aircraft_light_wingtip_green");
 	level.ttt.effects.cameraActive = loadFX("misc/aircraft_light_red_blink");
 	level.ttt.effects.smokeGrenade = loadFX("props/american_smoke_grenade_mp");
+	level.ttt.effects.playerAppear = loadFX("muzzleflashes/cobra_rocket_flash_wv");
 
 	precacheModel("prop_suitcase_bomb");
 	precacheModel("sentry_minigun");
@@ -47,6 +48,7 @@ init()
 	scripts\ttt\items\claymore::init();
 	scripts\ttt\items\flash::init();
 	scripts\ttt\items\smoke::init();
+	scripts\ttt\items\feigndeath::init();
 
 	scripts\ttt\items\speed::init();
 	scripts\ttt\items\lethaldrop::init();
@@ -80,7 +82,7 @@ getUnavailableHint(type)
 	{
 		case "roleitem": return &"^1Item inventory ^7[ [{+actionslot 3}] ]^1 is occupied";
 		case "equipment": return &"^1Already carrying equipment ^7[ [{+frag}] ]^1";
-		case "offhand": return &"^1Already carrying special grenade ^7[ [{+smoke}] ]^1";
+		case "offhand": return &"^1Already carrying offhand item ^7[ [{+smoke}] ]^1";
 	}
 }
 
@@ -93,6 +95,7 @@ initPlayer()
 	self.ttt.items.credits = 0;
 	self.ttt.items.boughtItems = [];
 	self resetRoleInventory();
+	self resetCustomOffhand();
 }
 
 OnPlayerBuyMenu()
@@ -146,30 +149,13 @@ setPlayerBuyMenu()
 
 	self setBlurForPlayer(6, 1.5);
 	self freezePlayer();
-	self scripts\ttt\ui::destroyHeadIcons();
-	self scripts\ttt\ui::destroyBombHud();
+	self scripts\ttt\ui::destroyPlayerHeadIcons();
+	self scripts\ttt\items\bomb::destroyBombHud();
 	self scripts\ttt\ui::destroyBuyMenu();
 	self scripts\ttt\ui::displayBuyMenu(self.ttt.role);
-	self thread buyMenuThink();
 	self thread buyMenuThinkLaptop(LAPTOP_WEAPON);
+	self thread OnPlayerBuyMenuOperate();
 	self thread OnPlayerBuyMenuEsc();
-}
-
-OnPlayerBuyMenuEsc()
-{
-	self endon("disconnect");
-	self endon("death");
-	self endon("ttt_buymenu_toggle");
-	self endon("ttt_buymenu_close");
-
-	for (;;)
-	{
-		self waittill("menuresponse", menu, response);
-
-		if (response != "ttt_esc_menu_blocked") continue;
-
-		if (self.ttt.items.inBuyMenu) self thread unsetPlayerBuyMenu(true);
-	}
 }
 
 unsetPlayerBuyMenu(switchToLastWeapon)
@@ -187,11 +173,13 @@ unsetPlayerBuyMenu(switchToLastWeapon)
 	}
 	self setBlurForPlayer(0, 0.75);
 	self scripts\ttt\ui::destroyBuyMenu();
+	self scripts\ttt\ui::updatePlayerCustomOffhandDisplay();
+	self scripts\ttt\ui::updatePlayerPassivesDisplay();
 
 	if (isAlive(self))
 	{
-		self scripts\ttt\ui::displayHeadIcons();
-		self scripts\ttt\ui::displayBombHud();
+		self scripts\ttt\ui::displayPlayerHeadIcons();
+		self scripts\ttt\items\bomb::displayBombHud();
 	}
 }
 
@@ -219,7 +207,7 @@ buyMenuThinkLaptop(weaponName)
 	}
 }
 
-buyMenuThink()
+OnPlayerBuyMenuOperate()
 {
 	self endon("disconnect");
 	self endon("death");
@@ -249,6 +237,23 @@ buyMenuThink()
 
 		if (eventName == "ttt_menu_activate")
 			self scripts\ttt\items::tryBuyItem(level.ttt.items[self.ttt.role][self.ttt.items.selectedIndex]);
+	}
+}
+
+OnPlayerBuyMenuEsc()
+{
+	self endon("disconnect");
+	self endon("death");
+	self endon("ttt_buymenu_toggle");
+	self endon("ttt_buymenu_close");
+
+	for (;;)
+	{
+		self waittill("menuresponse", menu, response);
+
+		if (response != "ttt_esc_menu_blocked") continue;
+
+		if (self.ttt.items.inBuyMenu) self notify("ttt_buymenu_close");
 	}
 }
 
@@ -457,6 +462,44 @@ OnPlayerRoleWeaponActivate()
 	}
 }
 
+hasCustomOffhand()
+{
+	return isDefined(self.ttt.items.customOffhand.item);
+}
+
+resetCustomOffhand()
+{
+	self.ttt.items.customOffhand = spawnStruct();
+	self scripts\ttt\ui::updatePlayerCustomOffhandDisplay();
+}
+
+giveCustomOffhand(item, data)
+{
+	if (!getIsAvailableOffhand()) return;
+
+	self.ttt.items.customOffhand.item = item;
+	self.ttt.items.customOffhand.data = data;
+}
+
+OnPlayerCustomOffhandUse()
+{
+	level endon("game_ended");
+	self endon("disconnect");
+	self endon("death");
+
+	self notifyOnPlayerCommand("ttt_custom_offhand_use", "+smoke");
+
+	for (;;)
+	{
+		self waittill("ttt_custom_offhand_use");
+		if (!self hasCustomOffhand()) continue;
+
+		offhand = self.ttt.items.customOffhand;
+		if (!isDefined(offhand.item.onCustomOffhandUse)) continue;
+		self thread [[offhand.item.onCustomOffhandUse]](offhand.item, offhand.data);
+	}
+}
+
 setStartingCredits()
 {
 	if (!isDefined(self.ttt.role)) return;
@@ -507,8 +550,14 @@ giveItem(item, data)
 	self thread [[item.onBuy]](item, data);
 	self iPrintLn("^3" + item.name + "^7 received");
 
-	if (isDefined(item.passiveDisplay) && item.passiveDisplay && !self.ttt.items.inBuyMenu)
-		self scripts\ttt\ui::updatePlayerPassivesDisplay();
+	if (!self.ttt.items.inBuyMenu)
+	{
+		if (isDefined(item.passiveDisplay) && item.passiveDisplay)
+			self scripts\ttt\ui::updatePlayerPassivesDisplay();
+
+		if (isDefined(item.offhandDisplay) && item.offhandDisplay)
+			self scripts\ttt\ui::updatePlayerCustomOffhandDisplay();
+	}
 }
 
 tryBuyItem(item)
@@ -563,6 +612,8 @@ getIsAvailableEquipment()
 
 getIsAvailableOffhand()
 {
+	if (isDefined(self.ttt.items.customOffhand.item)) return false;
+
 	OFFHAND_ITEMS = [];
 	OFFHAND_ITEMS[0] = "smoke_grenade_mp";
 	OFFHAND_ITEMS[1] = "flash_grenade_mp";

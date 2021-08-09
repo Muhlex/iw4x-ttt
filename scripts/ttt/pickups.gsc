@@ -425,10 +425,11 @@ OnPlayerDropWeapon()
 	}
 }
 
-dropWeapon(weaponName, velocity)
+dropWeapon(weaponName, velocity, takeWeapon)
 {
 	if (!isDefined(weaponName)) return;
 	if (!self hasWeapon(weaponName) && !scripts\ttt\items::hasRoleWeapon(weaponName)) return;
+	if (!isDefined(takeWeapon)) takeWeapon = true;
 
 	weaponWasActive = (weaponName == self getCurrentWeapon());
 	isRoleWeapon = scripts\ttt\items::isRoleWeapon(weaponName);
@@ -477,12 +478,42 @@ dropWeapon(weaponName, velocity)
 
 	if (!isAlive(self)) return;
 
-	self takeWeapon(weaponName);
+	if (takeWeapon)
+	{
+		self takeWeapon(weaponName);
 
-	if (self getPrimaryWeaponCount() <= 1 && !self hasWeapon(level.ttt.knifeWeapon))
-		self giveKnifeWeapon();
+		if (self getPrimaryWeaponCount() <= 1 && !self hasWeapon(level.ttt.knifeWeapon))
+			self giveKnifeWeapon();
 
-	if (weaponWasActive) self switchToLastWeapon();
+		if (weaponWasActive) self switchToLastWeapon();
+	}
+}
+
+deathDropWeapons(fakeDeath)
+{
+	if (!isDefined(fakeDeath)) fakeDeath = false;
+
+	weaponsList = self getWeaponsListPrimaries();
+	hasRoleWeapon = self scripts\ttt\items::hasRoleWeapon();
+	isRoleWeaponOnPlayer = self scripts\ttt\items::isRoleWeaponOnPlayer();
+	roleWeaponName = self.ttt.items.roleInventory.item.weaponName;
+	isRoleWeaponPrimary = isDefined(roleWeaponName) && weaponInventoryType(roleWeaponName) == "primary";
+
+	if (hasRoleWeapon && (!isRoleWeaponOnPlayer || !isRoleWeaponPrimary))
+		weaponsList[weaponsList.size] = roleWeaponName;
+
+	foreach (weaponName in weaponsList)
+	{
+		if (weaponName == level.ttt.knifeWeapon) continue;
+		if (!isWeaponDroppable(weaponName)) continue;
+		if (fakeDeath && scripts\ttt\items::isRoleWeapon(weaponName)) continue;
+
+		self dropWeapon(
+			weaponName,
+			anglesToForward((0, randomInt(360), 0)) * 64 + (0, 0, 96),
+			false
+		);
+	}
 }
 
 setTrailEffect()

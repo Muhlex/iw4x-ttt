@@ -4,7 +4,7 @@ init()
 {
 	healthstation = spawnStruct();
 	healthstation.name = "HEALTH STATION";
-	healthstation.description = "^3Deployable item\n^7Slowly ^2regenerates health ^7on use.\nCan be placed anywhere.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	healthstation.description = "^3Deployable Active Item\n^7Slowly ^2regenerates health ^7on use.\nCan be placed anywhere.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
 	healthstation.activateHint = &"Press [ ^3[{+attack}]^7 ] to ^3place ^7the health station";
 	healthstation.icon = "hint_health";
 	healthstation.onBuy = ::OnBuy;

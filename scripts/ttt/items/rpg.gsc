@@ -2,7 +2,7 @@ init()
 {
 	rpg = spawnStruct();
 	rpg.name = "ROCKET LAUNCHER";
-	rpg.description = "^3Exclusive weapon\n^7RPG-7 explosive launcher.\nHolds ^31 ^7rocket. ^1Can't pick up ammo^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	rpg.description = "^3Active Item\n^7RPG-7 explosive launcher.\nHolds ^31 ^7rocket. ^1Can't pick up ammo^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
 	rpg.icon = "weapon_rpg7";
 	rpg.iconWidth = 44;
 	rpg.iconHeight = 22;

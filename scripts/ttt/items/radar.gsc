@@ -2,7 +2,7 @@ init()
 {
 	radar = spawnStruct();
 	radar.name = "RADAR";
-	radar.description = "^3Passive item\n^7Periodically shows the ^2location\nof all players ^7on the minimap.";
+	radar.description = "^3Passive Item\n^7Periodically shows the ^2location\nof all players ^7on the minimap.";
 	radar.icon = "specialty_uav";
 	radar.onBuy = ::OnBuy;
 	radar.getIsAvailable = scripts\ttt\items::getIsAvailablePassive;

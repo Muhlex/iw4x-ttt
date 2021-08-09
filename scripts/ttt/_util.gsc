@@ -181,7 +181,7 @@ secsToHMS(seconds)
 
 recursivelyDestroyElements(array)
 {
-	foreach(element in array)
+	foreach (element in array)
 	{
 		if (isArray(element)) recursivelyDestroyElements(element);
 		else
@@ -224,6 +224,43 @@ fisherYatesShuffle(array)
 		array[j] = temp;
 	}
 	return array;
+}
+
+addDamageMultiplier(id, multiplier, mods, type)
+{
+	if (!isDefined(id)) return;
+	if (!isDefined(multiplier)) return;
+	if (!isDefined(mods)) mods = [];
+	if (!isDefined(type) || type != "out" && type != "in") type = "out";
+
+	config = spawnStruct();
+	config.id = id;
+	config.multiplier = multiplier;
+	if (isArray(mods)) config.mods = mods;
+	else
+	{
+		config.mods = [];
+		config.mods[0] = mods;
+	}
+	config.type = type;
+
+	self.ttt.damageMultipliers[self.ttt.damageMultipliers.size] = config;
+}
+
+removeDamageMultiplier(id)
+{
+	removeConfig = undefined;
+
+	foreach (config in self.ttt.damageMultipliers)
+	{
+		if (config.id == id)
+		{
+			removeConfig = config;
+			break;
+		}
+	}
+
+	self.ttt.damageMultipliers = array_remove(self.ttt.damageMultipliers, removeConfig);
 }
 
 drawDebugLine(pos1, pos2, color, ticks)

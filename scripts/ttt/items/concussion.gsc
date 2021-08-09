@@ -2,7 +2,7 @@ init()
 {
 	concussion = spawnStruct();
 	concussion.name = "STUN GRENADE";
-	concussion.description = "^3Exclusive special grenade\n^2Disorients ^7and ^2slows ^7targets\ncaught in the explosion.\n\nPress [ ^3[{+smoke}]^7 ] to throw.";
+	concussion.description = "^3Offhand Grenade\n^2Disorients ^7and ^2slows ^7targets\ncaught in the explosion.\n\nPress [ ^3[{+smoke}]^7 ] to throw.";
 	concussion.icon = "weapon_concgrenade";
 	concussion.onBuy = ::OnBuy;
 	concussion.getIsAvailable = scripts\ttt\items::getIsAvailableOffhand;

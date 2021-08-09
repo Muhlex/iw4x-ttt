@@ -21,6 +21,7 @@ init()
 	level.ttt.rpgMultiplier = getDvarFloat("ttt_rpg_multiplier");
 	level.ttt.claymoreMultiplier = getDvarFloat("ttt_claymore_multiplier");
 	level.ttt.claymoreDelay = getDvarFloat("ttt_claymore_delay");
+	level.ttt.feignDeathInvisTime = getDvarFloat("ttt_feign_death_invis_time");
 	level.ttt.preptime = max(getDvarInt("ttt_preptime"), 1);
 
 	level.ttt.knifeWeapon = "beretta_tactical_mp";
@@ -79,7 +80,8 @@ initPlayer()
 	self.ttt = spawnStruct();
 	self.ttt.role = undefined;
 	self.ttt.bodyFound = false;
-	self.ttt.incomingDamageMultiplier = 1.0;
+	self.ttt.damageMultipliers = [];
+	self.ttt.attackerHitFeedback = true;
 
 	self scripts\ttt\use::initPlayer();
 	self scripts\ttt\pickups::initPlayer();
@@ -147,7 +149,7 @@ OnPreptimeEnd()
 		player scripts\ttt\items::setStartingItems();
 	}
 
-	foreach (player in level.players) player scripts\ttt\ui::displayHeadIcons();
+	foreach (player in getLivingPlayers()) player scripts\ttt\ui::displayPlayerHeadIcons();
 	level.disableSpawning = true;
 	//visionSetNaked(getDvar("mapname"), 2.0);
 
@@ -219,6 +221,7 @@ OnPlayerConnect()
 		player thread OnPlayerEnemyKilled();
 		player thread OnPlayerRagdoll();
 		player thread OnPlayerWeaponSwitchStart();
+		player thread OnPlayerGrenadeFire();
 		player thread OnPlayerScoreboardOpen();
 		player thread OnPlayerScoreboardClose();
 	}
@@ -245,6 +248,9 @@ OnPlayerSpawn()
 		self _SetActionSlot(1, ""); // disable nightvision
 		self scripts\ttt\items::resetPlayerEquipment();
 
+		self detach(self.headModel, "");
+		self [[game[self.team + "_model"]["SMG"]]]();
+
 		self scripts\ttt\pickups::giveKnifeWeapon();
 		self setSpawnWeapon(level.ttt.knifeWeapon);
 		self scripts\ttt\ui::setupHeadIconAnchor();
@@ -256,6 +262,7 @@ OnPlayerSpawn()
 		self thread scripts\ttt\items::OnPlayerRoleWeaponToggle();
 		self thread scripts\ttt\items::OnPlayerRoleWeaponEquip();
 		self thread scripts\ttt\items::OnPlayerRoleWeaponActivate();
+		self thread scripts\ttt\items::OnPlayerCustomOffhandUse();
 		self thread scripts\ttt\items::OnPlayerBuyMenu();
 		self thread OnPlayerHealthUpdate();
 		self thread OnPlayerAttack();
@@ -272,7 +279,7 @@ OnPlayerDeath()
 
 		self scripts\ttt\use::unsetPlayerAvailableUseEnt();
 		self scripts\ttt\ui::destroySelfHud();
-		self scripts\ttt\ui::displayBombHud();
+		self scripts\ttt\items\bomb::displayBombHud();
 		self scripts\ttt\items::unsetPlayerBuyMenu();
 		checkRoundWinConditions();
 	}
@@ -391,6 +398,25 @@ OnPlayerWeaponSwitchCancel(weaponName)
 	}
 }
 
+OnPlayerGrenadeFire()
+{
+	self endon("disconnect");
+
+	for (;;)
+	{
+		self waittill("grenade_fire", entity, weaponName);
+
+		// Remove offhand grenades after throwing, to prevent "none remaining" popup.
+		OFFHAND_ITEMS = [];
+		OFFHAND_ITEMS[0] = "smoke_grenade_mp";
+		OFFHAND_ITEMS[1] = "flash_grenade_mp";
+		OFFHAND_ITEMS[2] = "concussion_grenade_mp";
+
+		if (isInArray(OFFHAND_ITEMS, weaponName) && self hasWeapon(weaponName))
+			self takeWeapon(weaponName);
+	}
+}
+
 OnPlayerHealthUpdate()
 {
 	self endon("disconnect");
@@ -431,7 +457,7 @@ OnPlayerScoreboardOpen()
 		self setClientDvar("cg_scoreboardWidth", 10000);
 		self setClientDvar("cg_scoreboardHeight", 0);
 
-		//self scripts\ttt\ui::destroyHeadIcons();
+		//self scripts\ttt\ui::destroyPlayerHeadIcons();
 		self thread scoreboardThink();
 	}
 }
@@ -447,7 +473,7 @@ OnPlayerScoreboardClose()
 		self waittill("ttt_scoreboard_close");
 
 		self scripts\ttt\ui::destroyScoreboard();
-		//self scripts\ttt\ui::displayHeadIcons();
+		//self scripts\ttt\ui::displayPlayerHeadIcons();
 
 		// Restore default scoreboard settings
 		self setClientDvar("cg_scoreboardWidth", 500);
@@ -512,11 +538,17 @@ drawPlayerRoles()
 		randomizedPlayers[i].ttt.role = role;
 	}
 
-	foreach (player in level.players)
+	foreach (player in getLivingPlayers())
 	{
 		if (traitorCount == 1) player iPrintLnBold("There is ^1" + traitorCount + "^7 traitor among us");
 		else player iPrintLnBold("There are ^1" + traitorCount + "^7 traitors among us");
 		player scripts\ttt\ui::updatePlayerRoleDisplay();
+
+		if (player.ttt.role == "detective")
+		{
+			player detach(player.headModel, "");
+			player [[game[player.team + "_model"]["RIOT"]]]();
+		}
 	}
 
 	logPrint("TTT_ROUND_START;" + playerCount + ";" + traitorCount + ";" + detectiveCount + "\n");

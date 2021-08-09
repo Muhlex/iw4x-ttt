@@ -1,12 +1,15 @@
 #include common_scripts\utility;
 #include maps\mp\_utility;
+#include maps\mp\gametypes\_hud_util;
 #include scripts\ttt\_util;
 
 init()
 {
+	precacheShader("hud_suitcase_bomb");
+
 	bomb = spawnStruct();
 	bomb.name = "BOMB";
-	bomb.description = "^3Deployable item\n^7Causes a ^2huge explosion ^7after ^3" + getDvarInt("ttt_bomb_timer") + " ^7sec.\nCan be ^1defused^7. Emits a ^1sound^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	bomb.description = "^3Deployable Active Item\n^7Causes a ^2huge explosion ^7after ^3" + getDvarInt("ttt_bomb_timer") + " ^7sec.\nCan be ^1defused^7. Emits a ^1sound^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
 	bomb.activateHint = &"Hold [ ^3[{+attack}]^7 ] to ^3plant ^7the bomb";
 	bomb.icon = "hud_suitcase_bomb";
 	bomb.onBuy = ::OnBuy;
@@ -96,7 +99,7 @@ activateBombThink(item)
 		bombEnt showBomb();
 
 		level.ttt.bombs[level.ttt.bombs.size] = bombEnt;
-		scripts\ttt\ui::updateBombHuds();
+		updateBombHuds();
 
 		self scripts\ttt\items::takeRoleWeapon();
 		self switchToLastWeapon();
@@ -293,7 +296,7 @@ OnBombDeath()
 	self waittill("death");
 
 	level.ttt.bombs = array_remove(level.ttt.bombs, self);
-	scripts\ttt\ui::updateBombHuds();
+	updateBombHuds();
 	if (isDefined(self.interactingPlayer)) self.interactingPlayer stopBombInteraction();
 }
 
@@ -308,7 +311,7 @@ bombThink()
 	{
 		wait(1.0);
 
-		scripts\ttt\ui::updateBombHuds();
+		updateBombHuds();
 
 		secondsRemaining = getBombSecondsRemaining(self);
 		self playSound(TICK_SOUND);
@@ -444,4 +447,55 @@ explodeBomb()
 	self.killCamEnt delete();
 	self.fxEnt delete();
 	self delete();
+}
+
+updateBombHuds()
+{
+	foreach (player in level.players)
+	{
+		player destroyBombHud();
+		player displayBombHud();
+	}
+}
+
+displayBombHud()
+{
+	if ((isAlive(self) && (!isDefined(self.ttt.role) || self.ttt.role != "traitor")) || self.ttt.items.inBuyMenu) return;
+
+	self.ttt.ui["hud"]["self"]["bombs"] = [];
+
+	foreach(i, bombEnt in level.ttt.bombs)
+	{
+		self.ttt.ui["hud"]["self"]["bombs"][i] = [];
+
+		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"] = newClientHudElem(self);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"] setShader("hud_suitcase_bomb");
+		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"].color = (1, 0.3, 0.3);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"].alpha = 0.5;
+		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"] setWaypoint(true, true);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["waypoint"] setTargetEnt(bombEnt);
+
+		self.ttt.ui["hud"]["self"]["bombs"][i]["icon"] = self createIcon("hud_suitcase_bomb", 24, 24);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["icon"].color = (1, 0.3, 0.3);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["icon"].hidewheninmenu = true;
+		self.ttt.ui["hud"]["self"]["bombs"][i]["icon"] setPoint("TOP RIGHT", "TOP RIGHT", -20, 60);
+		if (i > 0)
+		{
+			self.ttt.ui["hud"]["self"]["bombs"][i]["icon"] setParent(self.ttt.ui["hud"]["self"]["bombs"][i - 1]["icon"]);
+			self.ttt.ui["hud"]["self"]["bombs"][i]["icon"] setPoint("TOP LEFT", "TOP LEFT", 0, 24 + 12);
+		}
+
+		self.ttt.ui["hud"]["self"]["bombs"][i]["text"] = self createFontString("default", 1.5);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["text"] setParent(self.ttt.ui["hud"]["self"]["bombs"][i]["icon"]);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["text"] setPoint("BOTTOM RIGHT ", "BOTTOM RIGHT", 2, 2);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["text"].color = (1, 1, 1);
+		self.ttt.ui["hud"]["self"]["bombs"][i]["text"].hidewheninmenu = true;
+		self.ttt.ui["hud"]["self"]["bombs"][i]["text"].foreground = true;
+		self.ttt.ui["hud"]["self"]["bombs"][i]["text"] setValue(scripts\ttt\items\bomb::getBombSecondsRemaining(bombEnt));
+	}
+}
+
+destroyBombHud()
+{
+	recursivelyDestroyElements(self.ttt.ui["hud"]["self"]["bombs"]);
 }

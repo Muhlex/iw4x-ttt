@@ -39,6 +39,8 @@ givePlayerScore( event, player, victim )
 	if ( isDefined( level.nukeIncoming ) )
 		return;
 
+	if (level.ttt.enabled) return;
+
 	score = player.pers["score"];
 	onPlayerScore( event, player, victim );
 
@@ -380,7 +382,7 @@ processAssist( killedplayer )
 	self.assists = self getPersStat( "assists" );
 	self incPlayerStat( "assists", 1 );
 
-	if (!level.ttt.enabled) givePlayerScore( "assist", self, killedplayer );
+	givePlayerScore( "assist", self, killedplayer );
 	self thread giveAdrenaline( "assist" );
 
 	self thread maps\mp\gametypes\_missions::playerAssist();
@@ -406,7 +408,7 @@ processShieldAssist( killedPlayer )
 	self.assists = self getPersStat( "assists" );
 	self incPlayerStat( "assists", 1 );
 
-	if (!level.ttt.enabled) givePlayerScore( "assist", self, killedplayer );
+	givePlayerScore( "assist", self, killedplayer );
 
 	self thread maps\mp\gametypes\_hud_message::SplashNotifyDelayed( "shield_assist" );
 

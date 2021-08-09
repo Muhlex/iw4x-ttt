@@ -2,7 +2,7 @@ init()
 {
 	ranger = spawnStruct();
 	ranger.name = "RANGER SHOTGUN";
-	ranger.description = "^3Exclusive weapon\n^7Strong close-range shotgun\nwhich can fire ^2two shells at once^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
+	ranger.description = "^3Active Item\n^7Strong close-range shotgun\nwhich can fire ^2two shells at once^7.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
 	ranger.icon = "weapon_ranger";
 	ranger.iconWidth = 48;
 	ranger.iconHeight = 24;

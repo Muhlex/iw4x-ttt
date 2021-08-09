@@ -296,7 +296,7 @@ handleNormalDeath( lifeId, attacker, eInflictor, sWeapon, sMeansOfDeath )
 		attacker.kill_streak = attacker.pers["cur_kill_streak"];
 	}
 
-	if (!level.ttt.enabled) maps\mp\gametypes\_gamescore::givePlayerScore( "kill", attacker, self );
+	maps\mp\gametypes\_gamescore::givePlayerScore( "kill", attacker, self );
 	maps\mp\_skill::processKill( attacker, self );
 
 	scoreSub = maps\mp\gametypes\_tweakables::getTweakableValue( "game", "deathpointloss" );
@@ -404,7 +404,6 @@ LaunchShield( damage, meansOfDeath )
 	self.hasRiotShield = false;
 	self.hasRiotShieldEquipped = false;
 }
-
 
 PlayerKilled_internal( eInflictor, attacker, victim, iDamage, sMeansOfDeath, sWeapon, vDir, sHitLoc, psOffsetTime, deathAnimDuration, isFauxDeath )
 {
@@ -578,28 +577,7 @@ PlayerKilled_internal( eInflictor, attacker, victim, iDamage, sMeansOfDeath, sWe
 	if (!level.randomizer.enabled && !level.ttt.enabled)
 		victim maps\mp\gametypes\_weapons::dropWeaponForDeath( attacker );
 
-	if (level.ttt.enabled)
-	{
-		weaponsList = victim getWeaponsListPrimaries();
-		hasRoleWeapon = victim scripts\ttt\items::hasRoleWeapon();
-		isRoleWeaponOnPlayer = victim scripts\ttt\items::isRoleWeaponOnPlayer();
-		roleWeaponName = victim.ttt.items.roleInventory.item.weaponName;
-		isRoleWeaponPrimary = isDefined(roleWeaponName) && weaponInventoryType(roleWeaponName) == "primary";
-
-		if (hasRoleWeapon && (!isRoleWeaponOnPlayer || !isRoleWeaponPrimary))
-			weaponsList[weaponsList.size] = roleWeaponName;
-
-		foreach (victimWeaponName in weaponsList)
-		{
-			if (victimWeaponName == level.ttt.knifeWeapon) continue;
-			if (!scripts\ttt\pickups::isWeaponDroppable(victimWeaponName)) continue;
-
-			victim scripts\ttt\pickups::dropWeapon(
-				victimWeaponName,
-				anglesToForward((0, randomInt(360), 0)) * 64 + (0, 0, 96)
-			);
-		}
-	}
+	if (level.ttt.enabled) victim scripts\ttt\pickups::deathDropWeapons();
 	//prof_end( " PlayerKilled_3_drop" );
 
 	if ( !isFauxDeath )
@@ -1273,7 +1251,7 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 		if (level.ttt.preparing)
 		{
 			if (isDefined(eAttacker) && isPlayer(eAttacker) && victim.guid != eAttacker.guid)
-			iDamage = 0;
+				return;
 		}
 		else
 		{
@@ -1298,9 +1276,6 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 					iDamage = int(iDamage * level.ttt.claymoreMultiplier);
 			}
 
-			if ((sMeansOfDeath == "MOD_PISTOL_BULLET" || sMeansOfDeath == "MOD_RIFLE_BULLET") && victim.ttt.incomingDamageMultiplier != 1.0)
-				iDamage = int(iDamage * victim.ttt.incomingDamageMultiplier);
-
 			if (sMeansOfDeath == "MOD_HEAD_SHOT")
 			{
 				multiplier = level.ttt.headshotMultiplier;
@@ -1319,23 +1294,23 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 				}
 			}
 
-			if (sWeapon == "throwingknife_mp")
+			foreach (config in eAttacker.ttt.damageMultipliers)
 			{
-				iDamage = int(level.ttt.maxhealth);
+				if (config.type != "out") continue;
+				if (config.mods.size > 0 && !scripts\ttt\_util::isInArray(config.mods, sMeansOfDeath)) continue;
 
-				// Get the throwing knife entity for this damage event:
-				knives = getEntArray("grenade", "classname");
-				foreach (knife in knives) if (knife.model != "weapon_parabolic_knife") knives = array_remove(knives, knife);
-				thisKnife = undefined;
-				foreach (knife in knives)
-				{
-					if (knife.origin != vPoint) continue;
-
-					thisKnife = knife;
-					break;
-				}
-				if (isDefined(thisKnife)) thisKnife makeunusable();
+				iDamage = int(iDamage * config.multiplier);
 			}
+
+			foreach (config in victim.ttt.damageMultipliers)
+			{
+				if (config.type != "in") continue;
+				if (config.mods.size > 0 && !scripts\ttt\_util::isInArray(config.mods, sMeansOfDeath)) continue;
+
+				iDamage = int(iDamage * config.multiplier);
+			}
+
+			if (sWeapon == "throwingknife_mp") iDamage = int(level.ttt.maxhealth);
 		}
 	}
 
@@ -1465,7 +1440,7 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 		{
 			prof_begin( "PlayerDamage world" );
 
-			if ( iDamage < 1 && (!level.ttt.enabled || (level.ttt.enabled && !level.ttt.preparing)) )
+			if ( iDamage < 1 )
 				iDamage = 1;
 
 			if ( isDefined( eAttacker ) && isPlayer( eAttacker ) )
@@ -1529,7 +1504,8 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 			else
 				typeHit = "standard";
 
-			damager thread maps\mp\gametypes\_damagefeedback::updateDamageFeedback( typeHit );
+			if (!level.ttt.enabled || victim.ttt.attackerHitFeedback)
+				damager thread maps\mp\gametypes\_damagefeedback::updateDamageFeedback( typeHit );
 		}
 
 		victim.hasDoneCombat = true;
@@ -1538,6 +1514,8 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 	if ( isdefined( eAttacker ) && ( eAttacker != victim ) && !friendly )
 		level.useStartSpawns = false;
 
+	level notify("player_damage", victim, eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, sWeapon, vPoint, vDir, sHitLoc, psOffsetTime);
+	victim notify("player_damage", eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, sWeapon, vPoint, vDir, sHitLoc, psOffsetTime);
 
 	//=================
 	// Damage Logging
