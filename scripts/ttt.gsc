@@ -551,7 +551,7 @@ drawPlayerRoles()
 		}
 	}
 
-	logPrint("TTT_ROUND_START;" + playerCount + ";" + traitorCount + ";" + detectiveCount + "\n");
+	logPrint("TTT_ROUND_START;" + playerCount + ";" + traitorCount + ";" + detectiveCount + ";" + getSystemTime() + "\n");
 }
 
 endRound(winner, reason)
