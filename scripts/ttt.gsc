@@ -4,9 +4,9 @@
 
 init()
 {
+	level.ttt = spawnStruct();
 	scripts\ttt\dvars::init();
 
-	level.ttt = spawnStruct();
 	level.ttt.enabled = getDvar("g_gametype") == "ttt";
 	if (!level.ttt.enabled) return;
 
@@ -90,11 +90,12 @@ initPlayer()
 
 	wait(0.05);
 	self setClientDvars(
-		"cg_deadChatWithDead", 1,
-		"cg_deadChatWithTeam", 0,
-		"cg_deadHearTeamLiving", 1,
-		"cg_deadHearAllLiving", 1,
-		"cg_everyoneHearsEveryone", 0
+		"cg_deadChatWithDead", true,
+		"cg_deadChatWithTeam", false,
+		"cg_deadHearTeamLiving", true,
+		"cg_deadHearAllLiving", true,
+		"cg_everyoneHearsEveryone", false,
+		"cg_teamChatsOnly", false
 	);
 
 	self setClientDvar("ui_ttt_block_esc_menu", false);
@@ -125,6 +126,7 @@ OnRoundStart()
 
 	thread OnPreptimeEnd();
 	thread OnTimelimitReached();
+	thread OnChatMessage();
 }
 
 OnPreptimeEnd()
@@ -138,7 +140,7 @@ OnPreptimeEnd()
 
 	drawPlayerRoles();
 
-	foreach(player in getLivingPlayers())
+	foreach (player in getLivingPlayers())
 	{
 		player.maxhealth = level.ttt.maxhealth;
 		player.health = player.maxhealth;
@@ -147,9 +149,10 @@ OnPreptimeEnd()
 
 		player scripts\ttt\items::setStartingCredits();
 		player scripts\ttt\items::setStartingItems();
+
+		player scripts\ttt\ui::displayPlayerHeadIcons();
 	}
 
-	foreach (player in getLivingPlayers()) player scripts\ttt\ui::displayPlayerHeadIcons();
 	level.disableSpawning = true;
 	//visionSetNaked(getDvar("mapname"), 2.0);
 
@@ -167,6 +170,8 @@ OnPreptimeEnd()
 	}
 
 	checkRoundWinConditions();
+
+	thread chatDisableThink();
 
 	level notify("ttt_preptime_end");
 }
@@ -203,6 +208,48 @@ OnAftertimeEnd()
 	game["state"] = "playing";
 	map_restart(true);
 	level notify("ttt_restarting");
+}
+
+OnChatMessage()
+{
+	level endon("game_ended");
+
+	for (;;)
+	{
+		level waittill("say", text, player);
+		if (player.ttt.role != "traitor") continue;
+
+		PAD_LEFT = "                                                                      ";
+		CHARS_PER_LINE = 48;
+		playerName = removeColorsFromString(player.name);
+		charsFirstLine = CHARS_PER_LINE - playerName.size - 2;
+		lines = [];
+
+		lines[0] = PAD_LEFT + "^1" + playerName + "^7: " + getSubStr(text, 0, charsFirstLine);
+
+		if (text.size > charsFirstLine)
+			for (i = charsFirstLine; i < text.size; i += CHARS_PER_LINE)
+				lines[lines.size] = PAD_LEFT + getSubStr(text, i, i + CHARS_PER_LINE);
+
+		foreach (recipient in getLivingPlayers())
+		{
+			if (isDefined(recipient.ttt.role) && recipient.ttt.role != "traitor")
+				continue;
+
+			foreach (line in lines) recipient iPrintLn(line);
+			recipient thread playChatMessageSound();
+		}
+	}
+}
+
+playChatMessageSound()
+{
+	for(i = 0; i < 3; i++)
+	{
+		wait(0.05 * i);
+		self playLocalSound("ui_text_type");
+		self playLocalSound("ui_text_type");
+	}
 }
 
 OnPlayerConnect()
@@ -498,6 +545,17 @@ scoreboardThink()
 	}
 }
 
+chatDisableThink()
+{
+	level endon("game_ended");
+
+	for (;;)
+	{
+		foreach (player in level.players) player setClientDvar("cg_teamChatsOnly", true);
+		waitframe();
+	}
+}
+
 checkRoundWinConditions()
 {
 	if (level.ttt.preparing) return;
@@ -551,7 +609,19 @@ drawPlayerRoles()
 		}
 	}
 
-	logPrint("TTT_ROUND_START;" + playerCount + ";" + traitorCount + ";" + detectiveCount + ";" + getSystemTime() + "\n");
+	logPrint("TTT_ROUND_START;" + getSystemTime() + "\n");
+
+	playersString = "TTT_PLAYERS";
+	foreach (player in getLivingPlayers())
+		playersString += ";" + player.guid + "<" + player.ttt.role + ">";
+	logPrint(playersString + "\n");
+
+	dvarsString = "TTT_DVARS";
+	foreach (dvar, value in level.ttt.dvars)
+		dvarsString += ";" + dvar + "<" + value + ">";
+	logPrint(dvarsString + "\n");
+
+	logPrint("TTT_MAP;" + getDvar("mapname") + "\n");
 }
 
 endRound(winner, reason)
@@ -573,6 +643,10 @@ endRound(winner, reason)
 		if (isDefined(player.ttt.role) && player.ttt.role == "traitor") playerTeam = "traitor";
 		if (winner == playerTeam) player playLocalSound("mp_bonus_start");
 		else player playLocalSound("mp_bonus_end");
+
+		player setClientDvar("cg_teamChatsOnly", false);
+		player scripts\ttt\ui::destroyPlayerCustomOffhandDisplay();
+		player scripts\ttt\ui::destroyPlayerPassivesDisplay();
 	}
 
 	visionSetNaked("mpOutro", 2.0);
@@ -611,7 +685,7 @@ endGame()
 
 	visionSetNaked("mpOutro", 0.0);
 
-	waitframe(); // give "game_ended" notifies time to process`/sp`
+	waitframe(); // give "game_ended" notifies time to process
 
 	levelFlagClear("block_notifies");
 

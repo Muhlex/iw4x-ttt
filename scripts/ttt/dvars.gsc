@@ -30,5 +30,10 @@ init()
 	d["ttt_detective_start_credits"] = 1;
 	d["ttt_detective_kill_credits"] = 1;
 
-	foreach (key, value in d) setDvarIfUninitialized(key, value);
+	level.ttt.dvars = [];
+	foreach (key, value in d)
+	{
+		setDvarIfUninitialized(key, value);
+		level.ttt.dvars[key] = value;
+	}
 }

@@ -106,6 +106,7 @@ updatePlayerCustomOffhandDisplay()
 	icon = self createIcon(item.icon, 16, 16);
 	icon.hidewheninmenu = true;
 	icon.foreground = true;
+	icon.archived = false;
 	icon setPoint("TOP LEFT", "BOTTOM RIGHT", -124, -31);
 
 	self.ttt.ui["hud"]["self"]["offhand"]["icon"] = icon;
@@ -125,6 +126,7 @@ updatePlayerPassivesDisplay()
 	line = self createRectangle(1, 21, (0.8, 0.8, 0.8));
 	line.hidewheninmenu = true;
 	line.foreground = true;
+	line.archived = false;
 	line.alpha = 0.65;
 	line setPoint("TOP RIGHT", "BOTTOM RIGHT", -128, -34);
 
@@ -139,6 +141,7 @@ updatePlayerPassivesDisplay()
 		icon = self createIcon(item.icon, 16, 16);
 		icon.hidewheninmenu = true;
 		icon.foreground = true;
+		icon.archived = false;
 		if (i == 0)
 		{
 			icon setParent(line);

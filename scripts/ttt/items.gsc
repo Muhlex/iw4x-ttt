@@ -173,11 +173,11 @@ unsetPlayerBuyMenu(switchToLastWeapon)
 	}
 	self setBlurForPlayer(0, 0.75);
 	self scripts\ttt\ui::destroyBuyMenu();
-	self scripts\ttt\ui::updatePlayerCustomOffhandDisplay();
-	self scripts\ttt\ui::updatePlayerPassivesDisplay();
 
 	if (isAlive(self))
 	{
+		self scripts\ttt\ui::updatePlayerCustomOffhandDisplay();
+		self scripts\ttt\ui::updatePlayerPassivesDisplay();
 		self scripts\ttt\ui::displayPlayerHeadIcons();
 		self scripts\ttt\items\bomb::displayBombHud();
 	}
