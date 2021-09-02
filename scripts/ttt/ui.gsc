@@ -7,6 +7,11 @@ init()
 {
 	precacheShader("cardicon_comic_shepherd");
 	precacheShader("cardtitle_silencer");
+	if (level.ttt.modEnabled)
+	{
+		precacheShader("headicon_traitor");
+		precacheShader("headicon_detective");
+	}
 
 	level.ttt.ui = [];
 	level.ttt.ui["hud"] = [];
@@ -197,7 +202,66 @@ updatePlayerRoleDisplay()
 
 pulsePlayerRoleDisplay(duration)
 {
-	self.ttt.ui["hud"]["self"]["role"] thread scripts\ttt\_util::fontPulseCustom(2.0, duration, self);
+	self.ttt.ui["hud"]["self"]["role"] thread fontPulseCustom(2.0, duration, self);
+}
+
+displayCreditAward(amount)
+{
+	FONT_SCALE = 0.6;
+	text = undefined;
+
+	if (isDefined(self.ttt.ui["hud"]["self"]["credit_award"]))
+	{
+		text = self.ttt.ui["hud"]["self"]["credit_award"];
+		text.amount += amount;
+		text setValue(text.amount);
+		text notify("restart");
+	}
+	else
+	{
+		text = self createFontString("hudbig", FONT_SCALE);
+		text.amount = amount;
+		text.hidewheninmenu = true;
+		text.foreground = true;
+		text.archived = false;
+		text setPoint("CENTER", "TOP CENTER", 0, 64);
+		text.alpha = 0.0;
+		text setValue(text.amount);
+
+		self.ttt.ui["hud"]["self"]["credit_award"] = text;
+	}
+
+	if (self.ttt.role == "traitor")
+	{
+		text.label = &"^1+&&1 ^7SHOP CREDITS";
+		if (text.amount == 1) text.label = &"^1+&&1 ^7SHOP CREDIT";
+	}
+	else if (self.ttt.role == "detective")
+	{
+		text.label = &"^5+&&1 ^7SHOP CREDITS";
+		if (text.amount == 1) text.label = &"^5+&&1 ^7SHOP CREDIT";
+	}
+
+	text endon("restart");
+
+	text fadeOverTime(0.25);
+	text.alpha = 1.0;
+	text.fontScale = FONT_SCALE;
+	text thread fontPulseCustom(1.75, 0.4, self);
+	wait(0.4);
+
+	wait(2.0);
+
+	text fadeOverTime(1.0);
+	text.alpha = 0.0;
+	wait(1.0);
+
+	self destroyCreditAward();
+}
+
+destroyCreditAward()
+{
+	self.ttt.ui["hud"]["self"]["credit_award"] destroy();
 }
 
 displayUseAvailableHint(label, text, value)
@@ -284,6 +348,16 @@ OnHeadIconAnchorOwnerDeath()
 
 displayPlayerHeadIcons()
 {
+	HEADICON_TRAITOR = game["entity_headicon_axis"];
+	HEADICON_DETECTIVE = game["entity_headicon_allies"];
+	SIZE = 8;
+	if (level.ttt.modEnabled)
+	{
+		HEADICON_TRAITOR = "headicon_traitor";
+		HEADICON_DETECTIVE = "headicon_detective";
+		SIZE = 24;
+	}
+
 	self.ttt.ui["hud"]["headicons"] = [];
 
 	foreach (target in getLivingPlayers())
@@ -291,10 +365,10 @@ displayPlayerHeadIcons()
 		if (self == target) continue;
 
 		if (self.ttt.role == "traitor" && target.ttt.role == "traitor")
-			self displayHeadIconOnPlayer(target, game["entity_headicon_axis"], true);
+			self displayHeadIconOnPlayer(target, HEADICON_TRAITOR, true, SIZE);
 		if (target.ttt.role == "detective")
 		{
-			headIcon = self displayHeadIconOnPlayer(target, game["entity_headicon_allies"], false);
+			headIcon = self displayHeadIconOnPlayer(target, HEADICON_DETECTIVE, false, SIZE);
 			self thread headIconLookAtThink(headIcon, target);
 		}
 	}
@@ -347,12 +421,12 @@ updateAllHeadIcons()
 	}
 }
 
-displayHeadIconOnPlayer(target, image, visible)
+displayHeadIconOnPlayer(target, image, visible, size)
 {
 	i = self.ttt.ui["hud"]["headicons"].size;
 
 	self.ttt.ui["hud"]["headicons"][i] = newClientHudElem(self);
-	self.ttt.ui["hud"]["headicons"][i] setShader(image, 8, 8);
+	self.ttt.ui["hud"]["headicons"][i] setShader(image, size, size); // 3D icons need to be square!
 	self.ttt.ui["hud"]["headicons"][i].color = level.ttt.colors[target.ttt.role];
 	self.ttt.ui["hud"]["headicons"][i].alpha = visible * 0.75;
 	self.ttt.ui["hud"]["headicons"][i].visible = visible;

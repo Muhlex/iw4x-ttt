@@ -518,9 +518,7 @@ awardCredits(amount)
 	if (amount < 1) return;
 
 	self.ttt.items.credits += amount;
-	feedback = "You received ^1" + amount + "^7 shop credits";
-	if (amount == 1) feedback = "You received ^1" + amount + "^7 shop credit";
-	self iPrintLn(feedback);
+	self thread scripts\ttt\ui::displayCreditAward(amount);
 }
 
 awardKillCredits(victim)
@@ -548,7 +546,9 @@ giveItem(item, data)
 {
 	self.ttt.items.boughtItems[self.ttt.items.boughtItems.size] = item;
 	self thread [[item.onBuy]](item, data);
-	self iPrintLn("^3" + item.name + "^7 received");
+
+	if (self.ttt.role == "traitor")
+		printToTraitorChat("^1" + removeColorsFromString(self.name) + "^7 buys ^3" + item.name, self);
 
 	if (!self.ttt.items.inBuyMenu)
 	{

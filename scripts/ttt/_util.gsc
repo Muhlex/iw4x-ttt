@@ -167,6 +167,65 @@ getRoleStringColor(role)
 	return result;
 }
 
+printToTraitorChat(message, ignorePlayer)
+{
+	PAD_LEFT = "                                                            ";
+	CHARS_PER_LINE = 48;
+	words = strTok(message, " ");
+	lines = [];
+
+	currentLine = 0;
+	lines[0] = PAD_LEFT;
+
+	foreach (i, word in words)
+	{
+		if (lines[currentLine].size - PAD_LEFT.size + word.size > CHARS_PER_LINE)
+		{
+			currentLine++;
+			lines[currentLine] = PAD_LEFT;
+		}
+
+		if (word.size > CHARS_PER_LINE)
+		{
+			for (j = 0; j < word.size; j += CHARS_PER_LINE)
+			{
+				if (j > 0)
+				{
+					currentLine++;
+					lines[currentLine] = PAD_LEFT;
+				}
+				lines[currentLine] += getSubStr(word, j, j + CHARS_PER_LINE);
+			}
+		}
+		else
+			lines[currentLine] += word;
+		if (i < words.size - 1) lines[currentLine] += " ";
+	}
+
+	foreach (recipient in level.players)
+	{
+		if (!isAlive(recipient))
+			continue;
+		if (isDefined(recipient.ttt.role) && recipient.ttt.role != "traitor")
+			continue;
+		if (isDefined(ignorePlayer) && recipient == ignorePlayer)
+			continue;
+
+		foreach (line in lines) recipient iPrintLn(line);
+		recipient thread playTraitorChatMessageSound();
+	}
+}
+
+playTraitorChatMessageSound()
+{
+	for(i = 0; i < 3; i++)
+	{
+		wait(0.05 * i);
+		self playLocalSound("ui_text_type");
+		self playLocalSound("ui_text_type");
+	}
+}
+
 secsToHMS(seconds)
 {
 	seconds = int(seconds);

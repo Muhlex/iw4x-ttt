@@ -126,7 +126,7 @@ OnRoundStart()
 
 	thread OnPreptimeEnd();
 	thread OnTimelimitReached();
-	thread OnChatMessage();
+	thread OnRoundChatMessage();
 }
 
 OnPreptimeEnd()
@@ -210,45 +210,18 @@ OnAftertimeEnd()
 	level notify("ttt_restarting");
 }
 
-OnChatMessage()
+OnRoundChatMessage()
 {
 	level endon("game_ended");
 
 	for (;;)
 	{
 		level waittill("say", text, player);
-		if (player.ttt.role != "traitor") continue;
 
-		PAD_LEFT = "                                                                      ";
-		CHARS_PER_LINE = 48;
-		playerName = removeColorsFromString(player.name);
-		charsFirstLine = CHARS_PER_LINE - playerName.size - 2;
-		lines = [];
+		if (!isDefined(player.ttt.role) || player.ttt.role != "traitor" || !isAlive(player))
+			continue;
 
-		lines[0] = PAD_LEFT + "^1" + playerName + "^7: " + getSubStr(text, 0, charsFirstLine);
-
-		if (text.size > charsFirstLine)
-			for (i = charsFirstLine; i < text.size; i += CHARS_PER_LINE)
-				lines[lines.size] = PAD_LEFT + getSubStr(text, i, i + CHARS_PER_LINE);
-
-		foreach (recipient in getLivingPlayers())
-		{
-			if (isDefined(recipient.ttt.role) && recipient.ttt.role != "traitor")
-				continue;
-
-			foreach (line in lines) recipient iPrintLn(line);
-			recipient thread playChatMessageSound();
-		}
-	}
-}
-
-playChatMessageSound()
-{
-	for(i = 0; i < 3; i++)
-	{
-		wait(0.05 * i);
-		self playLocalSound("ui_text_type");
-		self playLocalSound("ui_text_type");
+		printToTraitorChat("^1" + removeColorsFromString(player.name) + "^7: " + text);
 	}
 }
 
@@ -264,8 +237,6 @@ OnPlayerConnect()
 
 		player thread OnPlayerDisconnect();
 		player thread OnPlayerSpawn();
-		player thread OnPlayerDeath();
-		player thread OnPlayerEnemyKilled();
 		player thread OnPlayerRagdoll();
 		player thread OnPlayerWeaponSwitchStart();
 		player thread OnPlayerGrenadeFire();
@@ -295,7 +266,7 @@ OnPlayerSpawn()
 		self _SetActionSlot(1, ""); // disable nightvision
 		self scripts\ttt\items::resetPlayerEquipment();
 
-		self detach(self.headModel, "");
+		self detachAll();
 		self [[game[self.team + "_model"]["SMG"]]]();
 
 		self scripts\ttt\pickups::giveKnifeWeapon();
@@ -316,32 +287,21 @@ OnPlayerSpawn()
 	}
 }
 
-OnPlayerDeath()
+OnPlayerDeath(eInflictor, eAttacker, iDamage, sMeansOfDeath, sWeapon, vDir, sHitLoc, psOffsetTime, deathAnimDuration, lifeId)
 {
-	self endon("disconnect");
+	// called from gametypes/ttt.gsc
 
-	for (;;)
-	{
-		self waittill("death");
+	if (isDefined(eAttacker) && eAttacker != self)
+		eAttacker scripts\ttt\items::awardKillCredits(self);
 
-		self scripts\ttt\use::unsetPlayerAvailableUseEnt();
-		self scripts\ttt\ui::destroySelfHud();
-		self scripts\ttt\items\bomb::displayBombHud();
-		self scripts\ttt\items::unsetPlayerBuyMenu();
-		checkRoundWinConditions();
-	}
-}
+	waitframe();
 
-OnPlayerEnemyKilled()
-{
-	self endon("disconnect");
-
-	for (;;)
-	{
-		self waittill("killed_enemy", victim);
-
-		self scripts\ttt\items::awardKillCredits(victim);
-	}
+	self scripts\ttt\use::unsetPlayerAvailableUseEnt();
+	self scripts\ttt\ui::destroySelfHud();
+	self scripts\ttt\items\bomb::displayBombHud();
+	self scripts\ttt\items::unsetPlayerBuyMenu();
+	self setClientDvar("cg_teamChatsOnly", false);
+	checkRoundWinConditions();
 }
 
 OnPlayerRagdoll()
@@ -551,8 +511,10 @@ chatDisableThink()
 
 	for (;;)
 	{
-		foreach (player in level.players) player setClientDvar("cg_teamChatsOnly", true);
-		waitframe();
+		foreach (player in level.players)
+			if (isAlive(player))
+				player setClientDvar("cg_teamChatsOnly", true);
+		wait(0.5);
 	}
 }
 
@@ -604,7 +566,7 @@ drawPlayerRoles()
 
 		if (player.ttt.role == "detective")
 		{
-			player detach(player.headModel, "");
+			player detachAll();
 			player [[game[player.team + "_model"]["RIOT"]]]();
 		}
 	}
@@ -636,6 +598,7 @@ endRound(winner, reason)
 	setDvar("g_deadChat", "1");
 	if (reason == "death") setDvar("scr_gameended", 2); // primarily sets "Round Winning Kill" in killcam
 
+	foreach (player in level.players) player scripts\ttt\ui::destroyCreditAward();
 	scripts\ttt\ui::displayRoundEnd(winner, reason);
 	foreach (player in level.players)
 	{

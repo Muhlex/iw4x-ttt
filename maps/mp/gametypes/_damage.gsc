@@ -311,7 +311,7 @@ handleNormalDeath( lifeId, attacker, eInflictor, sWeapon, sMeansOfDeath )
 	if ( isAlive( attacker ) )
 		attacker thread maps\mp\killstreaks\_killstreaks::checkKillstreakReward( attacker.pers["cur_kill_streak"] );
 
-	attacker notify ( "killed_enemy", self );
+	attacker notify ( "killed_enemy" );
 
 	if ( !level.teamBased )
 	{

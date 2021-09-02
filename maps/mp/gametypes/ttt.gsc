@@ -19,8 +19,9 @@ main()
 
 	level.onDeadEvent = ::noop;
 	level.onOneLeftEvent = ::noop;
-	level.onTimeLimit = ::onTimeLimit;
-	level.onStartGameType = ::onStartGameType;
+	level.onPlayerKilled = ::OnPlayerKilled;
+	level.onTimeLimit = ::OnTimeLimit;
+	level.onStartGameType = ::OnStartGameType;
 	level.getSpawnPoint = ::getSpawnPoint;
 
 	game["dialog"]["gametype"] = "ttt";
@@ -40,12 +41,17 @@ noop()
 	return;
 }
 
-onTimeLimit()
+OnPlayerKilled(eInflictor, attacker, iDamage, sMeansOfDeath, sWeapon, vDir, sHitLoc, psOffsetTime, deathAnimDuration, lifeId)
+{
+	self thread scripts\ttt::OnPlayerDeath(eInflictor, attacker, iDamage, sMeansOfDeath, sWeapon, vDir, sHitLoc, psOffsetTime, deathAnimDuration, lifeId);
+}
+
+OnTimeLimit()
 {
 	level notify("ttt_timelimit_reached");
 }
 
-onStartGameType()
+OnStartGameType()
 {
 	setClientNameMode("auto_change");
 
