@@ -51,14 +51,14 @@ getRandomWeapon(type)
 	weapons["secondaries"][9] ="rpg";
 	weapons["secondaries"][10] ="at4";
 	// weapons["secondaries"][11] ="stinger";
-	weapons["secondaries"][12] ="javelin";
-	weapons["secondaries"][13] ="ranger";
-	weapons["secondaries"][14] ="model1887";
-	weapons["secondaries"][15] ="striker";
-	weapons["secondaries"][16] ="aa12";
-	weapons["secondaries"][17] ="m1014";
-	weapons["secondaries"][18] ="spas12";
-	weapons["secondaries"][19] ="deserteaglegold";
+	weapons["secondaries"][11] ="javelin";
+	weapons["secondaries"][12] ="ranger";
+	weapons["secondaries"][13] ="model1887";
+	weapons["secondaries"][14] ="striker";
+	weapons["secondaries"][15] ="aa12";
+	weapons["secondaries"][16] ="m1014";
+	weapons["secondaries"][17] ="spas12";
+	weapons["secondaries"][18] ="deserteaglegold";
 	//weapons["secondaries"][19] ="onemanarmy";
 
 	weapons["special"][0] = "ac130_105mm";
@@ -446,6 +446,7 @@ init()
 	level.randomizer.text.glowAlpha = 1;
 	level.randomizer.text.foreground = false;
 	level.randomizer.text.hidewheninmenu = true;
+	level.randomizer.text.archived = false;
 	level.randomizer.text setText("Randomizer Mode");
 
 	thread OnPrematchOver();
@@ -467,6 +468,7 @@ OnPrematchOver()
 	level.randomizer.timer.color = (1, 1, 1);
 	level.randomizer.timer.foreground = false;
 	level.randomizer.timer.hidewheninmenu = true;
+	level.randomizer.timer.archived = false;
 
 	level.randomizer.timerSoon = createServerFontString("hudbig", 1);
 	level.randomizer.timerSoon setPoint("CENTER", "CENTER", 0, 50);
