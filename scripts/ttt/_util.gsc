@@ -25,16 +25,26 @@ switchToLastWeapon()
 
 freezePlayer()
 {
-	self unfreezePlayer();
+	if (!isDefined(self.ttt.freezeCount)) self.ttt.freezeCount = 0;
 
-	freezeEnt = spawn("script_origin", self.origin);
-	freezeEnt hide();
-	self.freezeEnt = freezeEnt;
-	self playerLinkTo(freezeEnt);
+	if (self.ttt.freezeCount == 0)
+	{
+		freezeEnt = spawn("script_origin", self.origin);
+		freezeEnt hide();
+		self playerLinkTo(freezeEnt);
+		self.ttt.freezeEnt = freezeEnt;
+	}
+	self.ttt.freezeCount++;
 }
 
 unfreezePlayer()
 {
+	if (!isDefined(self.ttt.freezeCount)) self.ttt.freezeCount = 0;
+
+	self.ttt.freezeCount = int(max(0, self.ttt.freezeCount - 1));
+
+	if (self.ttt.freezeCount > 0) return;
+
 	self unlink();
 	self.freezeEnt delete();
 }

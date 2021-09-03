@@ -48,6 +48,7 @@ init()
 	scripts\ttt\items\claymore::init();
 	scripts\ttt\items\flash::init();
 	scripts\ttt\items\smoke::init();
+	scripts\ttt\items\teleport::init();
 	scripts\ttt\items\feigndeath::init();
 
 	scripts\ttt\items\speed::init();

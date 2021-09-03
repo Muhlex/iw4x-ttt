@@ -82,6 +82,7 @@ initPlayer()
 	self.ttt.bodyFound = false;
 	self.ttt.damageMultipliers = [];
 	self.ttt.attackerHitFeedback = true;
+	self.ttt.isTeleporting = false;
 
 	self scripts\ttt\use::initPlayer();
 	self scripts\ttt\pickups::initPlayer();
