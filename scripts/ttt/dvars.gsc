@@ -13,7 +13,7 @@ init()
 	d["ttt_headshot_multiplier"] = 2.0;
 	d["ttt_headshot_multiplier_sniper"] = 2.5;
 	d["ttt_knife_damage"] = 100;
-	d["ttt_knife_weapon_backstab_angle"] = 55;
+	d["ttt_knife_weapon_backstab_angle"] = 50;
 	d["ttt_armor_damage_multiplier"] = 0.8;
 	d["ttt_speed_item_mutiplier"] = 1.3;
 	d["ttt_rpg_multiplier"] = 1.8;

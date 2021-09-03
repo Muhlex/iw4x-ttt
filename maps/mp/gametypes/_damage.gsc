@@ -1289,7 +1289,7 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 
 				if (sWeapon == level.ttt.knifeWeapon)
 				{
-					angleDiff = 180 - ((vectorDot(anglesToForward(victim.angles), anglesToForward(eAttacker.angles)) + 1) * 90);
+					angleDiff = 180 - ((vectorDot(anglesToForward(victim.angles), vectorNormalize(victim.origin - eAttacker.origin)) + 1) * 90);
 					if (angleDiff < level.ttt.knifeWeaponBackstabAngle) iDamage = level.ttt.maxhealth;
 				}
 			}

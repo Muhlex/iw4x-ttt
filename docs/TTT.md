@@ -402,7 +402,7 @@ The script files can either be placed in the extracted folder to be loaded with 
 | ttt_headshot_multiplier         | Damage multiplier on headshot.                                                                                                  |           2.0 |
 | ttt_headshot_multiplier_sniper  | Damage multiplier on headshot with a sniper rifle.                                                                              |           2.5 |
 | ttt_knife_damage                | Base damage dealt by melee attacks (excluding the Riot Shield).                                                                 |           100 |
-| ttt_knife_weapon_backstab_angle | Maximum angle (in degrees) at which the knife weapon (standalone) can one-hit-kill players in the back.                         |            55 |
+| ttt_knife_weapon_backstab_angle | Maximum angle difference (in degrees) at which the knife weapon (standalone) can one-hit-kill players in the back.              |            50 |
 | ttt_armor_damage_multiplier     | Incoming (non-headshot) bullet damage multiplier for wearing armor.                                                             |           0.8 |
 | ttt_speed_item_mutiplier        | Speed multiplier for the hyperspeed detective item.                                                                             |           1.3 |
 | ttt_rpg_multiplier              | Damage multiplier for the RPG-7 traitor item.                                                                                   |           1.8 |
