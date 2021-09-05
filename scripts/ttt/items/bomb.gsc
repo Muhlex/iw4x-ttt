@@ -348,7 +348,7 @@ explodeBomb()
 			damage, // iDamage Integer specifying the amount of damage done
 			level.iDFLAGS_RADIUS, // iDFlags Integer specifying flags that are to be applied to the damage
 			"MOD_EXPLOSIVE", // sMeansOfDeath Integer specifying the method of death
-			"none", // sWeapon The weapon number of the weapon used to inflict the damage
+			"briefcase_bomb_mp", // sWeapon The weapon number of the weapon used to inflict the damage
 			self.origin, // vPoint The point the damage is from?
 			vectorNormalize(player.origin - self.origin), // vDir The direction of the damage
 			"none", // sHitLoc The location of the hit
