@@ -519,7 +519,7 @@ awardCredits(amount)
 	if (amount < 1) return;
 
 	self.ttt.items.credits += amount;
-	self thread scripts\ttt\ui::displayCreditAward(amount);
+	if (!level.gameEnded) self thread scripts\ttt\ui::displayCreditAward(amount);
 }
 
 awardKillCredits(victim)
