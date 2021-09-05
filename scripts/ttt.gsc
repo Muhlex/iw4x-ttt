@@ -513,7 +513,7 @@ chatDisableThink()
 	for (;;)
 	{
 		foreach (player in level.players)
-			if (isAlive(player))
+			if (isAlive(player) && !isDefined(player.pers["isBot"]))
 				player setClientDvar("cg_teamChatsOnly", true);
 		wait(0.5);
 	}
