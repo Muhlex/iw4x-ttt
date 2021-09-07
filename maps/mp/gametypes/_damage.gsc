@@ -1265,7 +1265,7 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 				if (sWeapon == "m1014_mp")
 					iDamage = int(iDamage * 0.7);
 				if (sWeapon == "spas12_mp")
-					iDamage = int(iDamage * 1.2);
+					iDamage = int(iDamage * 1.4);
 				if (sWeapon == "coltanaconda_mp")
 					iDamage = int(iDamage * 1.2);
 				if (sWeapon == "deserteagle_mp")
