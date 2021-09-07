@@ -35,6 +35,6 @@ init()
 	foreach (key, value in d)
 	{
 		setDvarIfUninitialized(key, value);
-		level.ttt.dvars[key] = value;
+		level.ttt.dvars[key] = getDvar(key);
 	}
 }
