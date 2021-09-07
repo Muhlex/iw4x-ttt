@@ -283,6 +283,14 @@ arraySlice(array, start, end)
 	return result;
 }
 
+arrayFindIndex(array, element)
+{
+	foreach (i, el in array)
+		if (el == element) return i;
+
+	return -1;
+}
+
 fisherYatesShuffle(array)
 {
 	for (i = array.size - 1; i > 0; i--)

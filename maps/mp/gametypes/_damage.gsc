@@ -1258,7 +1258,7 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 			if (sMeansOfDeath == "MOD_FALLING")
 				iDamage = int(iDamage / victim.health * level.ttt.maxhealth); // make it linear damage
 
-			if (sMeansOfDeath != "MOD_IMPACT")
+			if (sMeansOfDeath != "MOD_IMPACT" && sMeansOfDeath != "MOD_MELEE")
 			{
 				if (sWeapon == "model1887_mp")
 					iDamage = int(iDamage * 1.25);
@@ -1274,7 +1274,18 @@ Callback_PlayerDamage_internal( eInflictor, eAttacker, victim, iDamage, iDFlags,
 					iDamage = int(iDamage * level.ttt.rpgMultiplier);
 				if (sWeapon == "claymore_mp")
 					iDamage = int(iDamage * level.ttt.claymoreMultiplier);
+				if (sWeapon == "cheytac_mp")
+					iDamage = int(iDamage * 2.5);
+				if (sWeapon == "striker_mp")
+					iDamage = int(iDamage * 1.2);
+				if (sWeapon == "m79_mp")
+					iDamage = int(iDamage * 1.8);
+				if (isSubStr(sWeapon, "deserteaglegold_"))
+					iDamage = level.ttt.maxhealth * 2;
 			}
+
+			if (sMeansOfDeath == "MOD_IMPACT" && sWeapon == "m79_mp")
+				iDamage = level.ttt.maxhealth * 2;
 
 			if (sMeansOfDeath == "MOD_HEAD_SHOT")
 			{

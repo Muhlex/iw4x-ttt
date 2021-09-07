@@ -5,7 +5,7 @@
 init()
 {
 	level.ttt = spawnStruct();
-	scripts\ttt\dvars::init();
+	scripts\ttt\_dvars::init();
 
 	level.ttt.enabled = getDvar("g_gametype") == "ttt";
 	if (!level.ttt.enabled) return;
@@ -22,6 +22,7 @@ init()
 	level.ttt.claymoreMultiplier = getDvarFloat("ttt_claymore_multiplier");
 	level.ttt.claymoreDelay = getDvarFloat("ttt_claymore_delay");
 	level.ttt.feignDeathInvisTime = getDvarFloat("ttt_feign_death_invis_time");
+	level.ttt.upgradestationAmountRequired = getDvarInt("ttt_upgradestation_amount_required");
 	level.ttt.preptime = max(getDvarInt("ttt_preptime"), 1);
 
 	level.ttt.knifeWeapon = "beretta_tactical_mp";
@@ -59,6 +60,7 @@ init()
 
 	setDvar("scr_ttt_timelimit", (getDvarFloat("ttt_timelimit") + level.ttt.preptime / 60));
 
+	scripts\ttt\_weapons::init();
 	scripts\ttt\_weaponnames::init();
 	scripts\ttt\_coords::init();
 	scripts\ttt\use::init();

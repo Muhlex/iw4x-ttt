@@ -11,6 +11,7 @@ init()
 	level.ttt.effects.cameraActive = loadFX("misc/aircraft_light_red_blink");
 	level.ttt.effects.smokeGrenade = loadFX("props/american_smoke_grenade_mp");
 	level.ttt.effects.playerAppear = loadFX("muzzleflashes/cobra_rocket_flash_wv");
+	level.ttt.effects.redFlare = loadFX("misc/flare_ambient");
 
 	precacheModel("prop_suitcase_bomb");
 	precacheModel("sentry_minigun");
@@ -57,6 +58,7 @@ init()
 	scripts\ttt\items\spas12::init();
 	scripts\ttt\items\concussion::init();
 	scripts\ttt\items\healthstation::init();
+	scripts\ttt\items\upgradestation::init();
 	scripts\ttt\items\camera::init();
 	scripts\ttt\items\smell::init();
 
@@ -129,7 +131,7 @@ setPlayerBuyMenu()
 
 	LAPTOP_WEAPON = "killstreak_harrier_airstrike_mp";
 
-	self giveWeapon(LAPTOP_WEAPON);
+	self _giveWeapon(LAPTOP_WEAPON);
 	self switchToWeapon(LAPTOP_WEAPON);
 
 	TIMEOUT = 1.5 * 1000;
@@ -304,7 +306,7 @@ giveRoleWeapon()
 	inv = self.ttt.items.roleInventory;
 	if (!isDefined(inv.item.weaponName)) return;
 
-	self giveWeapon(inv.item.weaponName);
+	self _giveWeapon(inv.item.weaponName);
 	self setWeaponAmmoClip(inv.item.weaponName, inv.ammoClip);
 	self setWeaponAmmoStock(inv.item.weaponName, inv.ammoStock);
 	self switchToWeapon(inv.item.weaponName);

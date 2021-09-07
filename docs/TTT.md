@@ -388,35 +388,37 @@ The script files can either be placed in the extracted folder to be loaded with 
 ⚠️ [Note that some base game dvars should be changed for a good experience.](#recommendations)
 
 ## Configurable Settings
-| Dvar                            | Description                                                                                                                     | Default Value |
-|-------------------------------- |---------------------------------------------------------------------------------------------------------------------------------|--------------:|
-| ttt_roundlimit                  | Rounds per map.                                                                                                                 |             8 |
-| ttt_timelimit                   | Timelimit per round in minutes. (Not including preptime.)                                                                       |           5.0 |
-| ttt_preptime                    | Length of the preparation phase (in seconds), where players can pick up weapons before roles are drawn.                         |            30 |
-| ttt_aftertime                   | Delay between the round ending and the final killcam being shown (in seconds).                                                  |            10 |
-| ttt_summary_timelimit           | Total time period the round summary will be shown for (in seconds).                                                             |            25 |
-| ttt_summary_rounds_per_view     | Amount of rounds to show at once in the summary. Note that the GUI only supports up to 6-7 rounds displayed at once.            |             4 |
-| ttt_summary_time_per_view       | Time (in seconds) until the summary displays the next wave of rounds after the animation finishes.                              |            10 |
-| ttt_traitor_pct                 | Fraction of players that will become traitors. The number of players will be multiplied by this number and then rounded down.   |           0.4 |
-| ttt_detective_pct               | Fraction of players that will become detectives. The number of players will be multiplied by this number and then rounded down. |          0.17 |
-| ttt_headshot_multiplier         | Damage multiplier on headshot.                                                                                                  |           2.0 |
-| ttt_headshot_multiplier_sniper  | Damage multiplier on headshot with a sniper rifle.                                                                              |           2.5 |
-| ttt_knife_damage                | Base damage dealt by melee attacks (excluding the Riot Shield).                                                                 |           100 |
-| ttt_knife_weapon_backstab_angle | Maximum angle difference (in degrees) at which the knife weapon (standalone) can one-hit-kill players in the back.              |            50 |
-| ttt_armor_damage_multiplier     | Incoming (non-headshot) bullet damage multiplier for wearing armor.                                                             |           0.8 |
-| ttt_speed_item_mutiplier        | Speed multiplier for the hyperspeed detective item.                                                                             |           1.3 |
-| ttt_rpg_multiplier              | Damage multiplier for the RPG-7 traitor item.                                                                                   |           1.8 |
-| ttt_claymore_multiplier         | Damage multiplier for claymore traitor item.                                                                                    |           2.2 |
-| ttt_claymore_delay              | Delay (in seconds) until a claymore activates.                                                                                  |           3.0 |
-| ttt_bomb_radius                 | Radius (in world units) in which the bomb damages players. Damage is fatal in the inner 2/3 of the radius.                      |          1536 |
-| ttt_bomb_timer                  | Time (in seconds) until a planted bomb (traitor item) explodes.                                                                 |            45 |
-| ttt_bomb_defuse_failure_pct     | Chance (fraction) that a defusing a bomb will fail, resulting in an instant explosion.                                          |           0.2 |
-| ttt_falldamage_min              | Units of distance after which a fall will damage a player.                                                                      |           210 |
-| ttt_falldamage_max              | Units of distance after which a fall will damage a player for their maximum health.                                             |           400 |
-| ttt_traitor_start_credits       | Amount of shop credits every traitor starts the round with.                                                                     |             1 |
-| ttt_traitor_kill_credits        | Amount of shop credits awarded to a traitor for killing an innocent or detective.                                               |             1 |
-| ttt_detective_start_credits     | Amount of shop credits every detective starts the round with.                                                                   |             1 |
-| ttt_detective_kill_credits      | Amount of shop credits awarded to a detective for killing a traitor.                                                            |             1 |
+| Dvar                               | Description                                                                                                                     | Default Value |
+|------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|--------------:|
+| ttt_roundlimit                     | Rounds per map.                                                                                                                 |             8 |
+| ttt_timelimit                      | Timelimit per round in minutes. (Not including preptime.)                                                                       |           5.0 |
+| ttt_preptime                       | Length of the preparation phase (in seconds), where players can pick up weapons before roles are drawn.                         |            30 |
+| ttt_aftertime                      | Delay between the round ending and the final killcam being shown (in seconds).                                                  |            10 |
+| ttt_summary_timelimit              | Total time period the round summary will be shown for (in seconds).                                                             |            25 |
+| ttt_summary_rounds_per_view        | Amount of rounds to show at once in the summary. Note that the GUI only supports up to 6-7 rounds displayed at once.            |             4 |
+| ttt_summary_time_per_view          | Time (in seconds) until the summary displays the next wave of rounds after the animation finishes.                              |            10 |
+| ttt_traitor_pct                    | Fraction of players that will become traitors. The number of players will be multiplied by this number and then rounded down.   |           0.4 |
+| ttt_detective_pct                  | Fraction of players that will become detectives. The number of players will be multiplied by this number and then rounded down. |          0.17 |
+| ttt_headshot_multiplier            | Damage multiplier on headshot.                                                                                                  |           2.0 |
+| ttt_headshot_multiplier_sniper     | Damage multiplier on headshot with a sniper rifle.                                                                              |           2.5 |
+| ttt_knife_damage                   | Base damage dealt by melee attacks (excluding the Riot Shield).                                                                 |           100 |
+| ttt_knife_weapon_backstab_angle    | Maximum angle difference (in degrees) at which the knife weapon (standalone) can one-hit-kill players in the back.              |            50 |
+| ttt_armor_damage_multiplier        | Incoming (non-headshot) bullet damage multiplier for wearing armor.                                                             |           0.8 |
+| ttt_speed_item_mutiplier           | Speed multiplier for the hyperspeed detective item.                                                                             |           1.3 |
+| ttt_rpg_multiplier                 | Damage multiplier for the RPG-7 traitor item.                                                                                   |           1.8 |
+| ttt_claymore_multiplier            | Damage multiplier for claymore traitor item.                                                                                    |           2.2 |
+| ttt_claymore_delay                 | Delay (in seconds) until a claymore activates.                                                                                  |           3.0 |
+| ttt_bomb_radius                    | Radius (in world units) in which the bomb damages players. Damage is fatal in the inner 2/3 of the radius.                      |          1536 |
+| ttt_bomb_timer                     | Time (in seconds) until a planted bomb (traitor item) explodes.                                                                 |            45 |
+| ttt_bomb_defuse_failure_pct        | Chance (fraction) that a defusing a bomb will fail, resulting in an instant explosion.                                          |           0.2 |
+| ttt_feign_death_invis_time         | Length of invisibility (in seconds) when activating Feign Death.                                                                |           6.0 |
+| ttt_upgradestation_amount_required | Number of weapons required for a trade-in at an upgrade station.                                                                |             4 |
+| ttt_falldamage_min                 | Units of distance after which a fall will damage a player.                                                                      |           210 |
+| ttt_falldamage_max                 | Units of distance after which a fall will damage a player for their maximum health.                                             |           400 |
+| ttt_traitor_start_credits          | Amount of shop credits every traitor starts the round with.                                                                     |             1 |
+| ttt_traitor_kill_credits           | Amount of shop credits awarded to a traitor for killing an innocent or detective.                                               |             1 |
+| ttt_detective_start_credits        | Amount of shop credits every detective starts the round with.                                                                   |             1 |
+| ttt_detective_kill_credits         | Amount of shop credits awarded to a detective for killing a traitor.                                                            |             1 |
 
 ### Recommendations
 ⚠️ Furthermore there are some settings from the base game that should be changed for a better experience:

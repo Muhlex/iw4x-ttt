@@ -2,6 +2,8 @@
 
 init()
 {
+	if (level.ttt.modEnabled) precacheModel("com_plasticcase_health");
+
 	healthstation = spawnStruct();
 	healthstation.name = "HEALTH STATION";
 	healthstation.description = "^3Deployable Active Item\n^7Slowly ^2regenerates health ^7on use.\nCan be placed anywhere.\n\nPress [ ^3[{+actionslot 3}]^7 ] to equip.";
@@ -42,9 +44,19 @@ OnActivate()
 	self scripts\ttt\items::resetRoleInventory();
 
 	healthStation = spawn("script_model", spawnPos);
-	healthStation.targetname = "ttt_destructible_item";
 	healthStation setModel("com_plasticcase_friendly");
-	healthStation.angles = self.angles + (0, 90, 0);
+	healthStation.angles = combineAngles(self.angles, (0, -90, 0));
+
+	if (level.ttt.modEnabled)
+	{
+		healthStation.logoCrate = spawn("script_model", healthStation.origin);
+		healthStation.logoCrate.angles = healthStation.angles;
+		healthStation.logoCrate setModel("com_plasticcase_health");
+		healthStation.logoCrate notSolid();
+		healthStation.logoCrate linkTo(healthStation);
+	}
+
+	healthStation.targetname = "ttt_destructible_item";
 	healthStation cloneBrushmodelToScriptmodel(level.airDropCrateCollision);
 	healthStation physicsLaunchServer();
 	healthStation.hp = int(level.ttt.maxhealth * 2);
@@ -90,7 +102,10 @@ OnHealthStationDeath()
 	attacker thread maps\mp\gametypes\_damagefeedback::updateDamageFeedback("ttt_item");
 	playFX(level._effect["sentry_explode_mp"], self.origin);
 	self playSound("sentry_explode");
+
 	wait(4);
+
+	if (level.ttt.modEnabled) self.logoCrate delete();
 	self delete();
 }
 

@@ -22,48 +22,12 @@ initPlayer()
 
 getRandomWeapon()
 {
-	tieredWeapons = [];
-	for (i = 0; i < 3; i++) tieredWeapons[i] = [];
-
-	tieredWeapons[0][0] = "famas";
-	tieredWeapons[0][1] = "scar";
-	tieredWeapons[0][2] = "fal";
-	tieredWeapons[0][3] = "tavor";
-	tieredWeapons[0][4] = "masada";
-	tieredWeapons[0][5] = "ump45";
-	tieredWeapons[0][6] = "aug";
-
-	tieredWeapons[1][0] = "m4";
-	tieredWeapons[1][1] = "ak47";
-	tieredWeapons[1][2] = "mp5k";
-	tieredWeapons[1][3] = "p90";
-	tieredWeapons[1][4] = "uzi";
-	tieredWeapons[1][5] = "kriss";
-	tieredWeapons[1][6] = "rpd";
-	tieredWeapons[1][7] = "m1014";
-	tieredWeapons[1][8] = "beretta393_reflex";
-	tieredWeapons[1][9] = "glock";
-
-	tieredWeapons[2][0] = "fn2000";
-	tieredWeapons[2][1] = "mg4";
-	tieredWeapons[2][2] = "m40a3";
-	tieredWeapons[2][3] = "m40a3"; // generate more sniper rifles as this is the only one in the pool
-	tieredWeapons[2][4] = "usp";
-	tieredWeapons[2][5] = "deserteagle";
-	tieredWeapons[2][6] = "coltanaconda";
-	tieredWeapons[2][7] = "pp2000";
-	tieredWeapons[2][8] = "tmp";
-	tieredWeapons[2][9] = "model1887";
-	if (level.ttt.modEnabled)
-		tieredWeapons[2][9] = "winchester1200";
-
+	weapons = level.ttt.tieredWeapons;
 	weighting = randomInt(100);
-	result = undefined;
-	if (weighting < 20) result = tieredWeapons[0][randomInt(tieredWeapons[0].size)];
-	else if (weighting < 50) result = tieredWeapons[1][randomInt(tieredWeapons[1].size)];
-	else result = tieredWeapons[2][randomInt(tieredWeapons[2].size)];
 
-	return result + "_mp";
+	if (weighting < 20) return weapons[0][randomInt(weapons[0].size)];
+	else if (weighting < 50) return weapons[1][randomInt(weapons[1].size)];
+	else return weapons[2][randomInt(weapons[2].size)];
 }
 
 isWeaponDroppable(weaponName)
@@ -98,7 +62,7 @@ getPrimaryWeaponCount()
 	return primaryWeaponCount - int(hasKnife) - int(isRoleWeaponOnPlayer && isRoleWeaponPrimary);
 }
 
-createWeaponEnt(weaponName, ammoClip, ammoStock, item, data, origin, angles, velocity)
+createWeaponEnt(weaponName, ammoClip, ammoStock, item, data, origin, angles, velocity, doPhysics)
 {
 	if (!isDefined(weaponName)) return;
 	if (!isDefined(ammoClip)) ammoClip = 0;
@@ -108,6 +72,10 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, item, data, origin, angles, vel
 	if (!isDefined(origin)) origin = (0, 0, 0);
 	if (!isDefined(angles)) angles = (0, 0, 0);
 	if (!isDefined(velocity)) velocity = (0, 0, 0);
+	if (!isDefined(doPhysics)) doPhysics = true;
+	allowPickup = true;
+	implicitPickup = true;
+	if (scripts\ttt\items::isRoleWeapon(weaponName)) implicitPickup = false;
 
 	/**
 	 * Some weapons have weird models that always fall straight to the ground
@@ -122,50 +90,102 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, item, data, origin, angles, vel
 	physicsEnt setModel(getWeaponModel("p90_mp"));
 	physicsEnt hide();
 
-	weaponEnt = spawn("script_model", origin);
-	weaponEnt.angles = angles;
-	switch (getWeaponClass(weaponName)) {
-		case "weapon_smg":
-			weaponEnt.origin += anglesToForward(angles) * 10;
-			break;
-		case "weapon_pistol":
-		case "weapon_machine_pistol":
-		case "weapon_assault":
-			weaponEnt.origin += anglesToForward(angles) * 6;
-			break;
-		case "weapon_shotgun":
-			weaponEnt.origin += anglesToForward(angles) * -2;
-			break;
-	}
-	if (weaponName == "riotshield_mp") weaponEnt.angles = combineAngles(angles, (0, 90, 90));
-	if (isWeaponLaptop(weaponName)) weaponEnt.angles = combineAngles(angles, (90, 90, 0));
-	if (weaponName == "onemanarmy_mp" || isSubStr(weaponName, "oma"))
-	{
-		weaponEnt.angles = combineAngles(angles, (-90, 100, -35));
-		weaponEnt.origin += anglesToRight(angles) * -2;
-	}
+	weaponEnt = spawnWeaponModel(weaponName, origin, angles);
 	weaponEnt linkTo(physicsEnt);
-	weaponEnt setModel(getWeaponModel(weaponName));
-	weaponParts = getWeaponHideTags(weaponName);
-	foreach (part in weaponParts) weaponEnt hidePart(part);
 
+	weaponEnt.targetname = "ttt_dropped_weapon";
 	weaponEnt.physicsEnt = physicsEnt;
 	weaponEnt.weaponName = weaponName;
 	weaponEnt.ammoClip = ammoClip;
 	weaponEnt.ammoStock = ammoStock;
 	weaponEnt.item = item;
 	weaponEnt.data = data;
+	weaponEnt.allowPickup = allowPickup;
+	weaponEnt.implicitPickup = implicitPickup;
 
 	// magic numbers to make the item receive velocity around it's center of mass
 	launchOffset = 0 * anglesToRight(angles) + -10 * anglesToForward(angles) + 10 * anglesToUp(angles);
 
 	// ... because this takes an absolute position:
-	physicsEnt physicsLaunchServer(physicsEnt.origin + launchOffset, velocity);
+	if (doPhysics) physicsEnt physicsLaunchServer(physicsEnt.origin + launchOffset, velocity);
 
 	weaponEnt thread OnWeaponEntUsable();
 	weaponEnt thread OnWeaponEntPhysicsFinish();
+	if (!doPhysics) physicsEnt notify("physics_finished");
 
 	return weaponEnt;
+}
+
+spawnWeaponModel(weaponName, origin, angles)
+{
+	weaponEnt = spawn("script_model", origin);
+	weaponEnt.angles = angles;
+
+	offsetMultiplier = 0;
+	switch (getWeaponClass(weaponName)) {
+		case "weapon_smg":
+			offsetMultiplier = 10;
+			break;
+		case "weapon_pistol":
+		case "weapon_machine_pistol":
+		case "weapon_assault":
+			offsetMultiplier = 7;
+			break;
+		case "weapon_shotgun":
+			offsetMultiplier = -2;
+			break;
+	}
+	if (weaponName == "m79_mp")
+		offsetMultiplier = 8;
+	if (weaponName == "riotshield_mp")
+		weaponEnt.angles = combineAngles(angles, (0, 90, 90));
+	if (isWeaponLaptop(weaponName))
+		weaponEnt.angles = combineAngles(angles, (90, 90, 0));
+	if (weaponName == "onemanarmy_mp" || isSubStr(weaponName, "oma_"))
+	{
+		weaponEnt.angles = combineAngles(angles, (-90, 100, -35));
+		weaponEnt.origin += anglesToRight(angles) * -2;
+	}
+
+	weaponEnt.origin += anglesToForward(angles) * offsetMultiplier;
+
+	ents = [];
+	ents[0] = weaponEnt;
+
+	if (isSubstr(weaponName, "_akimbo"))
+	{
+		prevAngles = weaponEnt.angles;
+
+		akimboEnt = spawn("script_model", origin - anglesToForward(angles) * offsetMultiplier);
+		akimboEnt.angles = combineAngles(prevAngles, (-65, 180, 0));
+		akimboEnt.origin += anglesToUp(akimboEnt.angles) * offsetMultiplier;
+		akimboEnt.origin += anglesToForward(angles) * 6 + anglesToUp(angles) * 4;
+		weaponEnt.angles = combineAngles(prevAngles, (-65, 0, 0));
+		weaponEnt.origin += anglesToUp(weaponEnt.angles) * offsetMultiplier;
+		weaponEnt.origin += anglesToForward(angles) * -6 + anglesToUp(angles) * 4;
+
+		akimboEnt linkTo(weaponEnt);
+
+		ents[1] = akimboEnt;
+		weaponEnt.akimboEnt = akimboEnt;
+	}
+
+	foreach (ent in ents)
+	{
+		ent setModel(getWeaponModel(weaponName));
+		weaponParts = getWeaponHideTags(weaponName);
+		foreach (part in weaponParts) ent hidePart(part);
+	}
+
+	return weaponEnt;
+}
+
+deleteWeaponEnt()
+{
+	if (isDefined(self.physicsEnt)) self.physicsEnt delete();
+	if (isDefined(self.akimboEnt)) self.akimboEnt delete();
+	if (isDefined(self.killCamEnt)) self.killCamEnt delete();
+	self delete();
 }
 
 OnWeaponPickupTrigger(ent)
@@ -279,10 +299,11 @@ tryPickUpWeapon(weaponEnt, explicitPickup)
 	isRoleWeaponOnPlayer = self scripts\ttt\items::isRoleWeaponOnPlayer();
 	newIsRoleWeapon = scripts\ttt\items::isRoleWeapon(weaponEnt.weaponName);
 
+	if (!weaponEnt.allowPickup) return;
+	if (!explicitPickup && !weaponEnt.implicitPickup) return;
+
 	if (newIsRoleWeapon)
 	{
-		if (!explicitPickup) return;
-
 		if (hasRoleWeapon) self dropWeapon(self.ttt.items.roleInventory.item.weaponName);
 
 		scripts\ttt\items::setRoleInventory(weaponEnt.item, weaponEnt.ammoClip, weaponEnt.ammoStock, weaponEnt.data);
@@ -310,7 +331,7 @@ tryPickUpWeapon(weaponEnt, explicitPickup)
 				self dropWeapon(lastValidWeapon);
 		}
 
-		self giveWeapon(weaponEnt.weaponName);
+		self _giveWeapon(weaponEnt.weaponName);
 		self setWeaponAmmoClip(weaponEnt.weaponName, weaponEnt.ammoClip);
 		self setWeaponAmmoStock(weaponEnt.weaponName, weaponEnt.ammoStock);
 
@@ -324,9 +345,7 @@ tryPickUpWeapon(weaponEnt, explicitPickup)
 			self switchToWeapon(weaponEnt.weaponName);
 	}
 
-	weaponEnt.physicsEnt delete();
-	weaponEnt.killCamEnt delete();
-	weaponEnt delete();
+	weaponEnt deleteWeaponEnt();
 }
 
 tryPickUpAmmo(ammoEnt, weaponName)
@@ -610,9 +629,7 @@ OnWeaponEntDamagePlayer(attacker)
 						trace["normal"] * 64 + (0, 0, 48)
 					);
 
-					self.physicsEnt delete();
-					self.killCamEnt delete();
-					self delete();
+					self deleteWeaponEnt();
 					return; // function already implicitly ends due to the entity being deleted
 				}
 			}
@@ -626,7 +643,7 @@ OnWeaponEntDamagePlayer(attacker)
 
 giveKnifeWeapon()
 {
-	self giveWeapon(level.ttt.knifeWeapon);
+	self _giveWeapon(level.ttt.knifeWeapon);
 	self SetWeaponAmmoClip(level.ttt.knifeWeapon, 0);
 	self SetWeaponAmmoStock(level.ttt.knifeWeapon, 0);
 }

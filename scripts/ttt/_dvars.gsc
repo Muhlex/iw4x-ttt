@@ -23,6 +23,7 @@ init()
 	d["ttt_bomb_timer"] = 45;
 	d["ttt_bomb_defuse_failure_pct"] = 0.2;
 	d["ttt_feign_death_invis_time"] = 6.0;
+	d["ttt_upgradestation_amount_required"] = 4;
 	d["ttt_falldamage_min"] = 210;
 	d["ttt_falldamage_max"] = 400;
 	d["ttt_traitor_start_credits"] = 1;

@@ -37,7 +37,7 @@ OnActivate(item)
 
 	BOMB_WEAPON = "briefcase_bomb_mp";
 
-	self giveWeapon(BOMB_WEAPON);
+	self _giveWeapon(BOMB_WEAPON);
 	self setWeaponAmmoClip(BOMB_WEAPON, 0);
 	self setWeaponAmmoStock(BOMB_WEAPON, 0);
 	self switchToWeapon(BOMB_WEAPON);
@@ -127,7 +127,7 @@ OnDefuse(bombEnt)
 
 	if (!maps\mp\gametypes\_weapons::mayDropWeapon(self getCurrentWeapon())) return;
 
-	self giveWeapon(BOMB_WEAPON);
+	self _giveWeapon(BOMB_WEAPON);
 	self setWeaponAmmoClip(BOMB_WEAPON, 0);
 	self setWeaponAmmoStock(BOMB_WEAPON, 0);
 	self switchToWeapon(BOMB_WEAPON);
