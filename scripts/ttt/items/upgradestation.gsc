@@ -251,7 +251,6 @@ upgradeWeapons()
 	w[1] = "striker_mp";
 	w[2] = "glock_akimbo_mp";
 	w[3] = "m79_mp";
-	w[4] = "m4_heartbeat_mp";
 
 	upVector = anglesToUp(self.angles);
 

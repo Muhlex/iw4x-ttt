@@ -56,9 +56,10 @@ init()
 	scripts\ttt\items\lethaldrop::init();
 	scripts\ttt\items\riotshield::init();
 	scripts\ttt\items\spas12::init();
-	scripts\ttt\items\concussion::init();
+	scripts\ttt\items\heartbeat::init();
 	scripts\ttt\items\healthstation::init();
 	scripts\ttt\items\upgradestation::init();
+	scripts\ttt\items\concussion::init();
 	scripts\ttt\items\camera::init();
 	scripts\ttt\items\smell::init();
 
@@ -306,7 +307,11 @@ giveRoleWeapon()
 	inv = self.ttt.items.roleInventory;
 	if (!isDefined(inv.item.weaponName)) return;
 
-	self _giveWeapon(inv.item.weaponName);
+	camoIndex = undefined;
+	if (isDefined(inv.item.camo))
+		camoIndex = int(tableLookup("mp/camoTable.csv", 1, inv.item.camo, 0));
+
+	self _giveWeapon(inv.item.weaponName, camoIndex);
 	self setWeaponAmmoClip(inv.item.weaponName, inv.ammoClip);
 	self setWeaponAmmoStock(inv.item.weaponName, inv.ammoStock);
 	self switchToWeapon(inv.item.weaponName);

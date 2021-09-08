@@ -90,7 +90,7 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, item, data, origin, angles, vel
 	physicsEnt setModel(getWeaponModel("p90_mp"));
 	physicsEnt hide();
 
-	weaponEnt = spawnWeaponModel(weaponName, origin, angles);
+	weaponEnt = spawnWeaponModel(weaponName, origin, angles, item.camo);
 	weaponEnt linkTo(physicsEnt);
 
 	weaponEnt.targetname = "ttt_dropped_weapon";
@@ -116,8 +116,11 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, item, data, origin, angles, vel
 	return weaponEnt;
 }
 
-spawnWeaponModel(weaponName, origin, angles)
+spawnWeaponModel(weaponName, origin, angles, camo)
 {
+	camoIndex = 0;
+	if (isDefined(camo)) camoIndex = int(tableLookup("mp/camoTable.csv", 1, camo, 0));
+
 	weaponEnt = spawn("script_model", origin);
 	weaponEnt.angles = angles;
 
@@ -170,10 +173,12 @@ spawnWeaponModel(weaponName, origin, angles)
 		weaponEnt.akimboEnt = akimboEnt;
 	}
 
+	model = getWeaponModel(weaponName, camoIndex);
+	weaponParts = getWeaponHideTags(weaponName);
+
 	foreach (ent in ents)
 	{
-		ent setModel(getWeaponModel(weaponName));
-		weaponParts = getWeaponHideTags(weaponName);
+		ent setModel(model);
 		foreach (part in weaponParts) ent hidePart(part);
 	}
 
