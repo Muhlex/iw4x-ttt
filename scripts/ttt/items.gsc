@@ -10,6 +10,8 @@ init()
 	level.ttt.effects.cameraIdle = loadFX("misc/aircraft_light_wingtip_green");
 	level.ttt.effects.cameraActive = loadFX("misc/aircraft_light_red_blink");
 	level.ttt.effects.smokeGrenade = loadFX("props/american_smoke_grenade_mp");
+	if (level.ttt.modEnabled)
+		level.ttt.effects.smokeGrenade = loadFX("props/american_smoke_grenade_30s_mp");
 	level.ttt.effects.playerAppear = loadFX("muzzleflashes/cobra_rocket_flash_wv");
 	level.ttt.effects.redFlare = loadFX("misc/flare_ambient");
 

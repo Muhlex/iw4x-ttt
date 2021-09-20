@@ -3,6 +3,8 @@ init()
 	smoke = spawnStruct();
 	smoke.name = "NINJA SMOKE BOMB";
 	smoke.description = "^3Offhand Grenade\n^2Fast-thrown^7, ^2cluster ^7smoke grenade.\nDetonates ^2instantly ^7on impact.\n\nPress [ ^3[{+smoke}]^7 ] to throw.";
+	if (level.ttt.modEnabled)
+		smoke.description = "^3Offhand Grenade\n^2Fast-thrown^7, ^2cluster ^7smoke grenade.\nSmoke lingers for ^330 ^7sec.\n\nPress [ ^3[{+smoke}]^7 ] to throw.";
 	smoke.icon = "weapon_smokegrenade";
 	smoke.onBuy = ::OnBuy;
 	smoke.getIsAvailable = scripts\ttt\items::getIsAvailableOffhand;
