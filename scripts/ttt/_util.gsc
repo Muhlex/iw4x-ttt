@@ -340,6 +340,52 @@ removeDamageMultiplier(id)
 	self.ttt.damageMultipliers = array_remove(self.ttt.damageMultipliers, removeConfig);
 }
 
+anglesToNormal(angles, offsetVec)
+{
+	normal = (0, 0, 0);
+	if (offsetVec[0] != 0) normal += anglesToForward(angles) * offsetVec[0];
+	if (offsetVec[1] != 0) normal += anglesToRight(angles) * offsetVec[1];
+	if (offsetVec[2] != 0) normal += anglesToUp(angles) * offsetVec[2];
+
+	return normal;
+}
+
+vectorCross(v1, v2)
+{
+	return (v1[1] * v2[2] - v1[2] * v2[1], v1[2] * v2[0] - v1[0] * v2[2], v1[0] * v2[1] - v1[1] * v2[0]);
+}
+
+physicsTraceNormal(start, end)
+{
+	angles = vectorToAngles(end - start);
+	offsets = [];
+	offsets[0] = anglesToUp(angles) * 2;
+	offsets[1] = anglesToUp(angles) * -2 + anglesToRight(angles) * -2;
+	offsets[2] = anglesToUp(angles) * -2 + anglesToRight(angles) * 2;
+	hitPos = [];
+
+	foreach (i, offset in offsets)
+	{
+		hitPos[i] = physicsTrace(start + offset, end + offset);
+		thread drawDebugLine(hitPos[i] + (0, 0, 1), hitPos[i] - (0, 0, 1), (i == 0, i == 1, i == 2));
+	}
+
+	normal = vectorNormalize(vectorCross(hitPos[1] - hitPos[0], hitPos[2] - hitPos[0]));
+	thread drawDebugLine(hitPos[0], hitPos[0] + normal * 64);
+	return normal;
+}
+
+drawDebugText(origin, text, color, alpha, scale, ticks)
+{
+	if (!isDefined(ticks)) ticks = 200;
+
+	for (i = 0; i < ticks; i++)
+	{
+		print3D(origin, text, color, alpha, scale, 1);
+		wait(0.05);
+	}
+}
+
 drawDebugLine(pos1, pos2, color, ticks)
 {
 	if (!isDefined(color)) color = (1, 1, 1);
@@ -350,6 +396,45 @@ drawDebugLine(pos1, pos2, color, ticks)
 		line(pos1, pos2, color);
 		wait(0.05);
 	}
+}
+
+drawDebugPoint(pos, color, ticks)
+{
+	thread drawDebugLine((pos[0] + 1, pos[1] + 1, pos[2] + 1), (pos[0] - 1, pos[1] - 1, pos[2] - 1), color, ticks);
+	thread drawDebugLine((pos[0] - 1, pos[1] + 1, pos[2] + 1), (pos[0] + 1, pos[1] - 1, pos[2] - 1), color, ticks);
+	thread drawDebugLine((pos[0] + 1, pos[1] - 1, pos[2] + 1), (pos[0] - 1, pos[1] + 1, pos[2] - 1), color, ticks);
+	thread drawDebugLine((pos[0] - 1, pos[1] - 1, pos[2] + 1), (pos[0] + 1, pos[1] + 1, pos[2] - 1), color, ticks);
+}
+
+drawDebugBox(mins, maxs, color, ticks)
+{
+	verts = [];
+	verts[0] = (mins[0], mins[1], mins[2]);
+	verts[1] = (maxs[0], mins[1], mins[2]);
+	verts[2] = (maxs[0], maxs[1], mins[2]);
+	verts[3] = (mins[0], maxs[1], mins[2]);
+	verts[4] = (mins[0], mins[1], maxs[2]);
+	verts[5] = (maxs[0], mins[1], maxs[2]);
+	verts[6] = (maxs[0], maxs[1], maxs[2]);
+	verts[7] = (mins[0], maxs[1], maxs[2]);
+
+	edges = [];
+
+	for (i = 0; i < 4; i++)
+	{
+		// connect vertices horizontally
+		edges[i][0] = i;
+		edges[i][1] = (i + 1) % 4;
+		edges[i + 4][0] = i + 4;
+		edges[i + 4][1] = (i + 1) % 4 + 4;
+
+		// connect vertices vertically
+		edges[i + 8][0] = i;
+		edges[i + 8][1] = i + 4;
+	}
+
+	for (i = 0; i < edges.size; i++)
+		thread drawDebugLine(verts[edges[i][0]], verts[edges[i][1]], color, ticks);
 }
 
 drawDebugCircle(pos, radius, color, ticks)

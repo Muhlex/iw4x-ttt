@@ -38,6 +38,7 @@ init()
 	level.ttt.items["detective"] = [];
 	level.ttt.items["internal"] = [];
 
+	scripts\ttt\items\passengerhelicopter::init();
 	scripts\ttt\items\armor::init();
 
 	scripts\ttt\items\radar::init();

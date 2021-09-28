@@ -85,6 +85,8 @@ initPlayer()
 	self.ttt.damageMultipliers = [];
 	self.ttt.attackerHitFeedback = true;
 	self.ttt.isTeleporting = false;
+	self.ttt.vehicles = spawnStruct();
+	self.ttt.vehicles.controls = [];
 
 	self scripts\ttt\use::initPlayer();
 	self scripts\ttt\pickups::initPlayer();
@@ -287,6 +289,7 @@ OnPlayerSpawn()
 		self thread scripts\ttt\items::OnPlayerBuyMenu();
 		self thread OnPlayerHealthUpdate();
 		self thread OnPlayerAttack();
+		self thread OnPlayerVehicleControl();
 	}
 }
 
@@ -450,6 +453,38 @@ OnPlayerAttack()
 	{
 		self waittill("ttt_attack");
 		if (self getCurrentWeapon() == level.ttt.knifeWeapon) self clientExec("+melee; -melee");
+	}
+}
+
+OnPlayerVehicleControl()
+{
+	self endon("disconnect");
+	self endon("death");
+
+	events = [];
+	events["gostand"] = "ttt_vehicle_jump";
+	events["breath_sprint"] = "ttt_vehicle_sprint";
+
+	foreach (command, event in events)
+	{
+		self notifyOnPlayerCommand("+" + event, "+" + command);
+		self notifyOnPlayerCommand("-" + event, "-" + command);
+		controlName = getSubStr(event, "ttt_vehicle_".size);
+		self.ttt.vehicles.controls[controlName] = false;
+		self thread OnPlayerVehicleControlButton(event, controlName);
+	}
+}
+OnPlayerVehicleControlButton(event, controlName)
+{
+	self endon("disconnect");
+	self endon("death");
+
+	for (;;)
+	{
+		self waittill("+" + event);
+		self.ttt.vehicles.controls[controlName] = true;
+		self waittill("-" + event);
+		self.ttt.vehicles.controls[controlName] = false;
 	}
 }
 
