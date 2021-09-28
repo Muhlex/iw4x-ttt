@@ -200,10 +200,11 @@ OnWeaponPickupTrigger(ent)
 OnWeaponPickupAvailable(ent)
 {
 	self scripts\ttt\ui::destroyUseAvailableHint();
+	label = getWeaponPickupLabel(getWeaponRarity(ent.weaponName));
 	displayName = level.ttt.localizedWeaponNames[ent.weaponName];
 	if (scripts\ttt\items::isRoleWeapon(ent.weaponName) && isDefined(ent.item))
 		displayName = getRoleStringColor(ent.item.role) + ent.item.name;
-	self scripts\ttt\ui::displayUseAvailableHint(&"[ ^3[{+activate}] ^7] for ^3", displayName);
+	self scripts\ttt\ui::displayUseAvailableHint(label, displayName);
 }
 OnWeaponPickupAvailableEnd(ent)
 {

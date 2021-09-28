@@ -160,21 +160,72 @@ removeColorsFromString(str)
 
 getRoleStringColor(role)
 {
-	result = "";
 	switch (role)
 	{
 		case "innocent":
-			result = "^2";
-			break;
+			return "^2";
 		case "traitor":
-			result = "^1";
-			break;
+			return "^1";
 		case "detective":
-			result = "^5";
-			break;
+			return "^5";
 	}
+}
 
-	return result;
+getWeaponRarity(weaponName)
+{
+	for (i = 0; i < level.ttt.tieredWeapons.size; i++)
+		if (isInArray(level.ttt.tieredWeapons[i], weaponName))
+			return (level.ttt.tieredWeapons.size - 1) - i;
+	if (scripts\ttt\items::isRoleWeapon(weaponName))
+		return 3;
+	else
+		return 4;
+}
+
+getWeaponRarityString(rarity)
+{
+	return getWeaponRarityStringColor(rarity) + getWeaponRarityStringStars(rarity);
+}
+
+getWeaponRarityStringStars(rarity)
+{
+	result = "[";
+	for (i = 0; i <= rarity; i++) result += "¤";
+	return result + "]";
+}
+
+getWeaponRarityStringColor(rarity)
+{
+	switch (rarity)
+	{
+		case 0:
+			return "^7";
+		case 1:
+			return "^2";
+		case 2:
+			return "^4";
+		case 3:
+			return "^6";
+		case 4:
+			return "^;";
+	}
+}
+
+getWeaponPickupLabel(rarity)
+{
+	switch (rarity)
+	{
+		case 0:
+			return &"[ ^3[{+activate}] ^7] for ^3&&1 ^7·";
+		case 1:
+			return &"[ ^3[{+activate}] ^7] for ^3&&1 ^2··";
+		case 2:
+			return &"[ ^3[{+activate}] ^7] for ^3&&1 ^4···";
+		case 3:
+			return &"[ ^3[{+activate}] ^7] for ^3&&1 ^6····";
+		case 4:
+			return &"[ ^3[{+activate}] ^7] for ^3&&1 ^;·····";
+	}
 }
 
 printToTraitorChat(message, ignorePlayer)

@@ -47,6 +47,8 @@ init()
 	makeDvarServerInfo("ui_allow_classchange", false);
 	makeDvarServerInfo("ui_allow_teamchange", false);
 
+	setDvar("sv_customTextColor", "1 0.85 0 1");
+
 	setDvar("scr_player_forceautoassign", true);
 	setDvar("scr_player_forcerespawn", true);
 	setDvar("scr_game_hardpoints", false);
