@@ -230,6 +230,12 @@ OnWeaponEntPhysicsFinish()
 
 	stopFXOnTag(level.ttt.effects.trailEffect, self, "tag_weapon");
 
+	if (level.ttt.modEnabled)
+	{
+		lootGlowEffect = level.ttt.effects.lootGlow[getWeaponRarity(self.weaponName)];
+		playFXOnTag(lootGlowEffect, self.physicsEnt, "tag_brass");
+	}
+
 	// Rotate the laptop if it is facing the ground:
 	if (isWeaponLaptop(self.weaponName) && anglesToUp(self.angles)[2] < 0)
 		self.physicsEnt rotateRoll(-180, 0.5, 0.25, 0.25);

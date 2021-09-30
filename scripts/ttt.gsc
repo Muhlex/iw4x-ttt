@@ -37,6 +37,15 @@ init()
 	level.ttt.preparing = true;
 
 	level.ttt.effects = spawnStruct();
+	if (level.ttt.modEnabled)
+	{
+		level.ttt.effects.lootGlow = [];
+		level.ttt.effects.lootGlow[0] = loadFX("custom/loot_glow_common");
+		level.ttt.effects.lootGlow[1] = loadFX("custom/loot_glow_uncommon");
+		level.ttt.effects.lootGlow[2] = loadFX("custom/loot_glow_rare");
+		level.ttt.effects.lootGlow[3] = loadFX("custom/loot_glow_epic");
+		level.ttt.effects.lootGlow[4] = loadFX("custom/loot_glow_legendary");
+	}
 
 	level.inGracePeriod = false;
 
