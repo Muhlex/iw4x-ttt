@@ -433,7 +433,7 @@ OnPlayerGrenadeFire()
 		OFFHAND_ITEMS[1] = "flash_grenade_mp";
 		OFFHAND_ITEMS[2] = "concussion_grenade_mp";
 
-		if (isInArray(OFFHAND_ITEMS, weaponName) && self hasWeapon(weaponName))
+		if (isInArray(OFFHAND_ITEMS, weaponName) && self hasWeapon(weaponName) && self getWeaponAmmoClip(weaponName) < 1)
 			self takeWeapon(weaponName);
 	}
 }

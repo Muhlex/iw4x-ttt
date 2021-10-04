@@ -1,7 +1,7 @@
 init()
 {
 	concussion = spawnStruct();
-	concussion.name = "STUN GRENADE";
+	concussion.name = "2x STUN GRENADE";
 	concussion.description = "^3Offhand Grenade\n^2Disorients ^7and ^2slows ^7targets\ncaught in the explosion.\n\nPress [ ^3[{+smoke}]^7 ] to throw.";
 	concussion.icon = "weapon_concgrenade";
 	concussion.onBuy = ::OnBuy;
@@ -14,7 +14,7 @@ init()
 OnBuy()
 {
 	WEAPON_NAME = "concussion_grenade_mp";
+	self setOffhandSecondaryClass("smoke");
 	self giveWeapon(WEAPON_NAME);
-	self setWeaponAmmoClip(WEAPON_NAME, 1);
-	self SetOffhandSecondaryClass("smoke");
+	self setWeaponAmmoClip(WEAPON_NAME, 2);
 }
