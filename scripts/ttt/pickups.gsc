@@ -103,8 +103,8 @@ createWeaponEnt(weaponName, ammoClip, ammoStock, item, data, origin, angles, vel
 	weaponEnt.allowPickup = allowPickup;
 	weaponEnt.implicitPickup = implicitPickup;
 
-	// magic numbers to make the item receive velocity around it's center of mass
-	launchOffset = 0 * anglesToRight(angles) + -10 * anglesToForward(angles) + 10 * anglesToUp(angles);
+	// magic number to make the item receive velocity around it's center of mass
+	launchOffset = anglesToForward(angles) * -10;
 
 	// ... because this takes an absolute position:
 	if (doPhysics) physicsEnt physicsLaunchServer(physicsEnt.origin + launchOffset, velocity);
@@ -488,14 +488,15 @@ dropWeapon(weaponName, velocity, takeWeapon)
 	}
 
 	eyePos = self getEye();
+	eyeAngles = self getPlayerAngles();
 	spawnPos = physicsTrace(
 		eyePos,
-		eyePos + anglesToForward(self.angles) * 32
+		eyePos + anglesToForward(eyeAngles) * 32
 	);
-	spawnPos -= anglesToForward(self.angles) * 24;
+	spawnPos -= anglesToForward(eyeAngles) * 24;
 	spawnPos = physicsTrace(spawnPos, spawnPos + (0, 0, -16)) + (0, 0, 8);
 
-	weaponEnt = createWeaponEnt(weaponName, ammoClip, ammoStock, item, data, spawnPos, self getPlayerAngles() + (0, 90, 0), velocity);
+	weaponEnt = createWeaponEnt(weaponName, ammoClip, ammoStock, item, data, spawnPos, combineAngles(self.angles, (0, 90, 0)), velocity);
 
 	if (self.ttt.pickups.dropCanDamage)
 	{

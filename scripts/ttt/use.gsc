@@ -86,8 +86,7 @@ getAvailableUseEnt()
 		if (!ent.useThroughSolids)
 		{
 			targetPos = ent.origin + (0, 0, 4); // make sure the position is never below the ground
-			tracedPos = physicsTrace(playerEyeOrigin, targetPos);
-			if (tracedPos != targetPos) continue;
+			if (!bulletTracePassed(playerEyeOrigin, targetPos, false, self)) continue;
 		}
 
 		if (!isDefined(highestPriority) || highestPriority < ent.usePriority)
