@@ -28,7 +28,7 @@ init()
 	d["ttt_falldamage_max"] = 400;
 	d["ttt_traitor_start_credits"] = 1;
 	d["ttt_traitor_kill_credits"] = 1;
-	d["ttt_detective_start_credits"] = 1;
+	d["ttt_detective_start_credits"] = 2;
 	d["ttt_detective_kill_credits"] = 1;
 
 	level.ttt.dvars = [];
