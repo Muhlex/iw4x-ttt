@@ -98,6 +98,8 @@ activateBombThink(item)
 
 		bombEnt showBomb();
 
+		bombEnt playSound("sentry_gun_plant");
+
 		level.ttt.bombs[level.ttt.bombs.size] = bombEnt;
 		updateBombHuds();
 
