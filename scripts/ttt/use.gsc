@@ -85,7 +85,7 @@ getAvailableUseEnt()
 
 		if (!ent.useThroughSolids)
 		{
-			targetPos = ent.origin + (0, 0, 4); // make sure the position is never below the ground
+			targetPos = ent.origin + (0, 0, 8); // make sure the position is never below the ground
 			if (!bulletTracePassed(playerEyeOrigin, targetPos, false, self)) continue;
 		}
 
