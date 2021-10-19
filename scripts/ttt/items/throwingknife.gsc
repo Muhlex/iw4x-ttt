@@ -23,23 +23,11 @@ OnBuy()
 
 OnThrowingKnifePlayerHit()
 {
-	level waittill("player_damage", eVictim, eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, sWeapon, vPoint, vDir, sHitLoc, psOffsetTime);
-
-	// Make throwing knife unusable if it hits a player:
-
-	if (sWeapon == "throwingknife_mp")
+	for (;;)
 	{
-		// Get the throwing knife entity for this damage event:
-		knives = getEntArray("grenade", "classname");
-		foreach (knife in knives) if (knife.model != "weapon_parabolic_knife") knives = array_remove(knives, knife);
-		thisKnife = undefined;
-		foreach (knife in knives)
-		{
-			if (knife.origin != vPoint) continue;
+		level waittill("player_damage", eVictim, eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, sWeapon, vPoint, vDir, sHitLoc, psOffsetTime);
 
-			thisKnife = knife;
-			break;
-		}
-		if (isDefined(thisKnife)) thisKnife makeUnusable();
+		if (sWeapon != "throwingknife_mp") continue;
+		eInflictor makeUnusable();
 	}
 }
