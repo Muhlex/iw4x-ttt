@@ -4,7 +4,7 @@ init()
 {
 	armor = spawnStruct();
 	armor.name = "ARMOR";
-	armor.description = "^3Passive Item\n^7Reduces incoming bullet damage\nby ^2" + ((1 - level.ttt.armorDamageMultiplier) * 100) + " percent^7.\n\nDefault equipment for detectives.";
+	armor.description = "^3Passive Item\n^7Reduces incoming ^1non-headshot\n^7bullet damage by ^2" + ((1 - level.ttt.armorDamageMultiplier) * 100) + " percent^7.\n\nDefault equipment for detectives.";
 	armor.icon = "cardicon_vest_1";
 	armor.onBuy = ::OnBuy;
 	armor.getIsAvailable = scripts\ttt\items::getIsAvailablePassive;
