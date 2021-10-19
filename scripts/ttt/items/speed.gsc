@@ -1,3 +1,5 @@
+#include scripts\ttt\_util;
+
 init()
 {
 	speed = spawnStruct();
@@ -14,6 +16,5 @@ init()
 
 OnBuy()
 {
-	self.moveSpeedScaler = level.ttt.speedItemMultiplier;
-	self setMoveSpeedScale(self.moveSpeedScaler);
+	self addSpeedMultiplier("speed_item", level.ttt.speedItemMultiplier);
 }

@@ -61,6 +61,7 @@ init()
 	scripts\ttt\items\heartbeat::init();
 	scripts\ttt\items\healthstation::init();
 	scripts\ttt\items\upgradestation::init();
+	scripts\ttt\items\juggernaut::init();
 	scripts\ttt\items\concussion::init();
 	scripts\ttt\items\camera::init();
 	scripts\ttt\items\smell::init();

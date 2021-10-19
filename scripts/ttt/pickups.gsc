@@ -140,14 +140,19 @@ spawnWeaponModel(weaponName, origin, angles, camo)
 	}
 	if (weaponName == "m79_mp")
 		offsetMultiplier = 8;
-	if (weaponName == "riotshield_mp")
+	else if (weaponName == "riotshield_mp")
 		weaponEnt.angles = combineAngles(angles, (0, 90, 90));
-	if (isWeaponLaptop(weaponName))
+	else if (isWeaponLaptop(weaponName))
 		weaponEnt.angles = combineAngles(angles, (90, 90, 0));
-	if (weaponName == "onemanarmy_mp" || isSubStr(weaponName, "oma_"))
+	else if (weaponName == "onemanarmy_mp" || isSubStr(weaponName, "oma_"))
 	{
 		weaponEnt.angles = combineAngles(angles, (-90, 100, -35));
 		weaponEnt.origin += anglesToRight(angles) * -2;
+	}
+	else if (maps\mp\killstreaks\_airdrop::isAirdropMarker(weaponName))
+	{
+		weaponEnt.origin += anglesToUp(angles) * -1;
+		weaponEnt.angles = combineAngles(angles, (90, 0, 0));
 	}
 
 	weaponEnt.origin += anglesToForward(angles) * offsetMultiplier;
@@ -173,7 +178,12 @@ spawnWeaponModel(weaponName, origin, angles, camo)
 		weaponEnt.akimboEnt = akimboEnt;
 	}
 
-	model = getWeaponModel(weaponName, camoIndex);
+	model = undefined;
+	if (maps\mp\killstreaks\_airdrop::isAirdropMarker(weaponName))
+		model = "projectile_us_smoke_grenade";
+	else
+		model = getWeaponModel(weaponName, camoIndex);
+
 	weaponParts = getWeaponHideTags(weaponName);
 
 	foreach (ent in ents)

@@ -23,6 +23,9 @@ init()
 	level.ttt.claymoreDelay = getDvarFloat("ttt_claymore_delay");
 	level.ttt.feignDeathInvisTime = getDvarFloat("ttt_feign_death_invis_time");
 	level.ttt.upgradestationAmountRequired = getDvarInt("ttt_upgradestation_amount_required");
+	level.ttt.juggernautDamageMultiplierBullet = getDvarFloat("ttt_juggernaut_damage_multiplier_bullet");
+	level.ttt.juggernautDamageMultiplierExplosive = getDvarFloat("ttt_juggernaut_damage_multiplier_explosive");
+	level.ttt.juggernautSpeedMultiplier = getDvarFloat("ttt_juggernaut_speed_multiplier");
 	level.ttt.preptime = max(getDvarInt("ttt_preptime"), 1);
 
 	level.ttt.knifeWeapon = "beretta_tactical_mp";
@@ -94,6 +97,7 @@ initPlayer()
 	self.ttt.role = undefined;
 	self.ttt.bodyFound = false;
 	self.ttt.damageMultipliers = [];
+	self.ttt.speedMultipliers = [];
 	self.ttt.attackerHitFeedback = true;
 	self.ttt.isTeleporting = false;
 
@@ -280,8 +284,7 @@ OnPlayerSpawn()
 		self _SetActionSlot(1, ""); // disable nightvision
 		self scripts\ttt\items::resetPlayerEquipment();
 
-		self detachAll();
-		self [[game[self.team + "_model"]["SMG"]]]();
+		self setPlayerModel(game[self.team + "_model"]["SMG"]);
 
 		self scripts\ttt\pickups::giveKnifeWeapon();
 		self setSpawnWeapon(level.ttt.knifeWeapon);
@@ -578,11 +581,8 @@ drawPlayerRoles()
 		else player iPrintLnBold("There are ^1" + traitorCount + "^7 traitors among us");
 		player scripts\ttt\ui::updatePlayerRoleDisplay();
 
-		if (player.ttt.role == "detective")
-		{
-			player detachAll();
-			player [[game[player.team + "_model"]["RIOT"]]]();
-		}
+		if (level.ttt.modEnabled && player.ttt.role == "detective")
+			player setPlayerModel(game[player.team + "_model"]["RIOT"]);
 	}
 
 	logPrint("TTT_ROUND_START;" + getSystemTime() + "\n");

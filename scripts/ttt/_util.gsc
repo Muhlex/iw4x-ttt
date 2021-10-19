@@ -49,6 +49,20 @@ unfreezePlayer()
 	self.freezeEnt delete();
 }
 
+setPlayerModel(model) // model can either be a string or a function callback
+{
+	self detach(self.headModel, "");
+	self.headModel = undefined;
+	self maps\mp\gametypes\_weapons::detach_all_weapons();
+
+	if (isString(model))
+		self setModel(model);
+	else
+		self [[model]]();
+
+	self maps\mp\gametypes\_weapons::stowedWeaponsRefresh();
+}
+
 playSoundDelayed(sound, delay)
 {
 	wait(delay);
@@ -389,6 +403,46 @@ removeDamageMultiplier(id)
 	}
 
 	self.ttt.damageMultipliers = array_remove(self.ttt.damageMultipliers, removeConfig);
+}
+
+addSpeedMultiplier(id, multiplier)
+{
+	if (!isDefined(id)) return;
+	if (!isDefined(multiplier)) return;
+
+	config = spawnStruct();
+	config.id = id;
+	config.multiplier = multiplier;
+
+	self.ttt.speedMultipliers[self.ttt.speedMultipliers.size] = config;
+	self updateSpeedMultipliers();
+}
+
+removeSpeedMultiplier(id)
+{
+	removeConfig = undefined;
+
+	foreach (config in self.ttt.speedMultipliers)
+	{
+		if (config.id == id)
+		{
+			removeConfig = config;
+			break;
+		}
+	}
+
+	self.ttt.speedMultipliers = array_remove(self.ttt.speedMultipliers, removeConfig);
+}
+
+updateSpeedMultipliers()
+{
+	speedScale = 1.0;
+
+	foreach (config in self.ttt.speedMultipliers)
+		speedScale *= config.multiplier;
+
+	self.moveSpeedScaler = speedScale;
+	self setMoveSpeedScale(speedScale);
 }
 
 drawDebugLine(pos1, pos2, color, ticks)
