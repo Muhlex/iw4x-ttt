@@ -1,5 +1,11 @@
 init()
 {
+	if (level.ttt.modEnabled)
+	{
+		precacheItem("winchester1200_mp");
+		precacheItem("iw5_mp7_mp");
+	}
+
 	w = [];
 	w[0][0] = "tavor_mp";
 	w[0][1] = "fal_mp";
@@ -7,6 +13,8 @@ init()
 	w[0][3] = "mp5k_mp";
 	w[0][4] = "ump45_mp";
 	w[0][5] = "aug_mp";
+	if (level.ttt.modEnabled)
+		w[0][6] = "iw5_mp7_mp";
 
 	w[1][0] = "m4_mp";
 	w[1][1] = "famas_mp";
@@ -27,9 +35,10 @@ init()
 	w[2][6] = "coltanaconda_mp";
 	w[2][7] = "pp2000_mp";
 	w[2][8] = "tmp_mp";
-	w[2][9] = "model1887_mp";
 	if (level.ttt.modEnabled)
 		w[2][9] = "winchester1200_mp";
+	else
+		w[2][9] = "model1887_mp";
 
 	level.ttt.tieredWeapons = w;
 }

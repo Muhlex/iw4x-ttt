@@ -1199,6 +1199,7 @@ init()
 	strings["wa2000_thermal_xmags_mp"] = &"WEAPON_WA2000_BLING";
 	strings["wa2000_xmags_mp"] = &"WEAPON_WA2000_XMAGS";
 	strings["winchester1200_mp"] = &"WEAPON_WINCHESTER1200";
+	strings["iw5_mp7_mp"] = &"MP7";
 
 	level.ttt.localizedWeaponNames = strings;
 }

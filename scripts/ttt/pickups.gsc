@@ -6,8 +6,6 @@ init()
 {
 	precacheModel("weapon_scavenger_grenadebag");
 
-	if (level.ttt.modEnabled) precacheItem("winchester1200_mp");
-
 	level.ttt.pickups = spawnStruct();
 	level.ttt.effects.trailEffect = loadFX("props/throwingknife_geotrail");
 }
