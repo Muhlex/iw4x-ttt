@@ -150,7 +150,9 @@ removeColorsFromString(str)
 	parts = strTok(str, "^");
 	foreach (i, part in parts)
 	{
-		switch (getSubStr(part, 0, 1))
+		if (i == 0 && str[0] != "^") continue;
+
+		switch (part[0])
 		{
 			case "0":
 			case "1":
