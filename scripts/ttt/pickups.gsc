@@ -587,7 +587,7 @@ OnWeaponEntDamagePlayer(attacker)
 
 	TICK_RATE = 20;
 
-	distanceSq = 0.0; // Was used for damage calculation once. Currently always one-hit-kills.
+	distance = 0.0;
 
 	for (;;)
 	{
@@ -610,20 +610,19 @@ OnWeaponEntDamagePlayer(attacker)
 				lastTickOrigins[i] = self.physicsEnt.lastTickOrigin + lastForward * (i * -12);
 			}
 
-			velocitySq = lengthSquared(origins[1] * TICK_RATE - lastTickOrigins[1] * TICK_RATE);
-			distanceSq += distanceSquared(origins[1], lastTickOrigins[1]);
+			distanceTick = distance(origins[1], lastTickOrigins[1]);
+			distance += distanceTick;
+			velocity = distanceTick * TICK_RATE;
 
 			for (i = 0; i < origins.size; i++)
 			{
 				trace = bulletTrace(lastTickOrigins[i], origins[i], true, attacker);
 				if (isDefined(trace["entity"]) && isPlayer(trace["entity"]) && isAlive(trace["entity"]))
 				{
-					if (velocitySq > 256 * 256)
+					if (velocity > 200)
 					{
-						// velocityFactor = min(velocitySq / (512 * 512), 1);
-						// distanceFactor = min(distanceSq / (192 * 192), 1);
-						// damage = level.ttt.maxhealth * velocityFactor * distanceFactor;
-						damage = level.ttt.maxhealth;
+						distanceFactor = min(distance / 160, 1);
+						damage = level.ttt.maxhealth * distanceFactor;
 						trace["entity"] thread [[level.callbackPlayerDamage]](
 							self, // eInflictor The entity that causes the damage. ( e.g. a turret )
 							attacker, // eAttacker The entity that is attacking.
