@@ -232,11 +232,15 @@ OnRoundChatMessage()
 {
 	level endon("game_ended");
 
+	QUICKMESSAGE_PREFIX = "QUICKMESSAGE_";
 	for (;;)
 	{
 		level waittill("say", text, player);
 
 		if (!isDefined(player.ttt.role) || player.ttt.role != "traitor" || !isAlive(player))
+			continue;
+
+		if (getSubStr(text, 0, QUICKMESSAGE_PREFIX.size) == QUICKMESSAGE_PREFIX)
 			continue;
 
 		printToTraitorChat("^1" + removeColorsFromString(player.name) + "^7: " + text);
