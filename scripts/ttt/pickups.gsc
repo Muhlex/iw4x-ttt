@@ -365,7 +365,28 @@ tryPickUpWeapon(weaponEnt, explicitPickup)
 			self switchToWeapon(weaponEnt.weaponName);
 	}
 
+	self thread OnPickUpWeapon(weaponEnt);
+}
+
+OnPickUpWeapon(weaponEnt)
+{
+	pickupAnimEnt = spawnWeaponModel(
+		weaponEnt.weaponName,
+		weaponEnt.physicsEnt.origin - anglesToForward(weaponEnt.physicsEnt.angles) * 12,
+		weaponEnt.physicsEnt.angles,
+		weaponEnt.item.camo
+	);
 	weaponEnt deleteWeaponEnt();
+
+	LENGTH = 0.3;
+
+	for (time = LENGTH; time > 0; time -= 0.1)
+	{
+		pickupAnimEnt moveTo(self getTagOrigin("tag_stowed_hip_rear"), time);
+		pickupAnimEnt rotateTo(self getPlayerAngles(), time * 1.5); // don't fully rotate
+		wait(0.1);
+	}
+	pickupAnimEnt delete();
 }
 
 tryPickUpAmmo(ammoEnt, weaponName)
