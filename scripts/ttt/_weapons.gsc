@@ -3,7 +3,6 @@ init()
 	if (level.ttt.modEnabled)
 	{
 		precacheItem("winchester1200_mp");
-		precacheItem("iw5_mp7_mp");
 	}
 
 	w = [];
@@ -13,8 +12,6 @@ init()
 	w[0][3] = "mp5k_mp";
 	w[0][4] = "ump45_mp";
 	w[0][5] = "aug_mp";
-	if (level.ttt.modEnabled)
-		w[0][6] = "iw5_mp7_mp";
 
 	w[1][0] = "m4_mp";
 	w[1][1] = "famas_mp";
