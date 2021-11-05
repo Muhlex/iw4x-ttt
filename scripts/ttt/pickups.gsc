@@ -386,7 +386,7 @@ OnPickUpWeapon(weaponEnt)
 		pickupAnimEnt rotateTo(self getPlayerAngles(), time * 1.5); // don't fully rotate
 		wait(0.1);
 	}
-	pickupAnimEnt delete();
+	pickupAnimEnt deleteWeaponEnt();
 }
 
 tryPickUpAmmo(ammoEnt, weaponName)
