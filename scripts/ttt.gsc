@@ -117,6 +117,7 @@ initPlayer()
 	);
 
 	self setClientDvar("ui_ttt_block_esc_menu", false);
+	makeDvarServerInfo("g_teamColor_EnemyTeam", "1 1 1 1");
 }
 
 OnPrematchOver()
