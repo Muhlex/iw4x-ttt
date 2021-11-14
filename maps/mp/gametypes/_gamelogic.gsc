@@ -784,7 +784,7 @@ setXenonRanks( winner )
 
 checkTimeLimit( prevTimePassed )
 {
-	if (level.ttt.preparing) return;
+	if (level.ttt.enabled && level.ttt.preparing) return;
 
 	if ( isDefined( level.timeLimitOverride ) && level.timeLimitOverride )
 		return;
