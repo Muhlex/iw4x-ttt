@@ -234,13 +234,29 @@ doFinalKillCamFX( camTime )
 		wait( camTime - 1.0 );
 	}
 
-	setSlowMotion( 1.0, 0.33, intoSlowMoTime ); // start timescale, end timescale, lerp duration
-	wait( intoSlowMoTime + .5 );
-	setSlowMotion( 0.33, 1, 1.0 );
+	// setSlowMotion( 1.0, 0.33, intoSlowMoTime ); // start timescale, end timescale, lerp duration
+	// wait( intoSlowMoTime + .5 );
+	// setSlowMotion( 0.33, 1, 1.0 );
+
+	thread setSlowMotionCustom(1.0, 0.33, intoSlowMoTime);
+	wait intoSlowMoTime + .5;
+	thread setSlowMotionCustom(0.33, 1.0, 1.0);
 
 	level.doingFinalKillcamFx = undefined;
 }
 
+// The IW4X engine version does not support lerped timescale changes. Thus we emulate it:
+setSlowMotionCustom(startTimescale, endTimescale, lerpSecs)
+{
+	lerpTicks = lerpSecs / 0.05;
+	step = (endTimescale - startTimescale) / lerpTicks;
+
+	for (i = startTimescale; i != endTimescale; i += step)
+	{
+		setSlowMotion(i, i + step, 0.0);
+		wait 0.05;
+	}
+}
 
 calculateKillCamTime( startTime )
 {
