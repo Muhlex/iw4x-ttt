@@ -1,8 +1,3 @@
-// TODO:
-// - make sure script_gameobjectname = "bombzone" isnt a problem
-// - make it work with scavenger
-// - extinguish on existing smoke (track smokes and extinguish when incen intersects)
-
 #include common_scripts\utility;
 
 init()
@@ -12,6 +7,7 @@ init()
 	setDvarIfUninitialized("scr_incendiary_damage", 50);
 	setDvarIfUninitialized("scr_incendiary_flame_radius", 72);
 	setDvarIfUninitialized("scr_incendiary_flame_height", 96);
+	setDvarIfUninitialized("scr_incendiary_replace_offhand", "");
 
 	level.incendiary = spawnStruct();
 	level.incendiary.effects = [];
@@ -22,12 +18,14 @@ init()
 	level.incendiary.effects["fire_ground"] = loadFX("fire/tank_fire_turret_small");
 	level.incendiary.effects["fire_center"] = loadFX("fire/jet_afterburner");
 	level.incendiary.effects["fire_dynlight"] = loadFX("misc/outdoor_motion_light");
+	level.incendiary.effects["smoke_grenade"] = loadFX("props/american_smoke_grenade_mp");
 	// misc/glow_stick_glow_red // red glow and light
 	// misc/flares_cobra // huge but nice falling flare thingys
 	level.incendiary.models = [];
 	level.incendiary.models["projectile"] = "projectile_at4";
 
 	level.incendiary.fires = [];
+	level.incendiary.smokeOrigins = [];
 
 	foreach (model in level.incendiary.models)
 		precacheModel(model);
@@ -64,27 +62,17 @@ giveIncendiary()
 	self setWeaponHudIconOverride("secondaryoffhand", "hud_burningbarrelicon");
 }
 
-takeIncendiary()
+takeIncendiary(takeConcussion)
 {
+	if (!isDefined(takeConcussion)) takeConcussion = true;
+
 	self.hasIncendiary = false;
 
-	self takeWeapon("concussion_grenade_mp");
+	if (takeConcussion) self takeWeapon("concussion_grenade_mp");
 	self setWeaponHudIconOverride("secondaryoffhand", "none");
 }
 
-// giveSmoke()
-// {
-// 	self takeWeapon("flash_grenade_mp");
-// 	self takeWeapon("smoke_grenade_mp");
-// 	self takeWeapon("concussion_grenade_mp");
-
-// 	WEAPON_NAME = "smoke_grenade_mp";
-// 	self giveWeapon(WEAPON_NAME);
-// 	self setWeaponAmmoClip(WEAPON_NAME, 1);
-// 	self setOffhandSecondaryClass("smoke");
-// }
-
-spawnFire(position, radius, duration, owner, killCamEnt)
+spawnFire(position, radius, duration, damage, owner, killCamEnt)
 {
 	points = getFirePoints(position, radius);
 	origins = [];
@@ -109,12 +97,12 @@ spawnFire(position, radius, duration, owner, killCamEnt)
 	fire.owner = owner;
 	fire.radius = radius;
 	fire.duration = duration;
+	fire.damage = damage;
 	fire.flameRadius = getDvarInt("scr_incendiary_flame_radius");
-	fire.flameHeight = getDvarInt("scr_incendiary_flame_radius");
+	fire.flameHeight = getDvarInt("scr_incendiary_flame_height");
 	// fire.birthtime = getTime();
 	fire.triggers = [];
 	fire.players = [];
-	fire.extinguishQueued = false;
 	fire.killCamEnt = killCamEnt;
 	fire.script_gameobjectname = "bombzone"; // this forces killCamEnt to be used and hopefully has no side effects
 
@@ -140,6 +128,15 @@ spawnFire(position, radius, duration, owner, killCamEnt)
 
 	level.incendiary.fires[level.incendiary.fires.size] = fire;
 
+	foreach (smokeOrigin in level.incendiary.smokeOrigins)
+	{
+		if (getFireSmokeIntersection(fire, smokeOrigin, true))
+		{
+			fire extinguishFire();
+			break;
+		}
+	}
+
 	return fire;
 }
 
@@ -156,6 +153,12 @@ deleteFire()
 	self delete();
 }
 
+extinguishFire()
+{
+	self playSound("veh_tire_deflate_decay");
+	self deleteFire();
+}
+
 // ##### END PUBLIC #####
 
 OnPlayerConnect()
@@ -163,14 +166,14 @@ OnPlayerConnect()
 	self [[level.incendiary.origFuncs.callbackPlayerConnect]]();
 
 	self.hasIncendiary = false;
-	self thread OnPlayerSpawn();
-	self thread OnPlayerIncendiaryThrow();
+	self thread OnPlayerGiveLoadout();
+	self thread OnPlayerGrenadeThrow();
 }
 
 OnPlayerDamage(eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, sWeapon, vPoint, vDir, sHitLoc, psOffsetTime)
 {
 	// Prevent stun effect from being applied (and anything else a stun grenade does to players).
-	if (isDefined(eInflictor.isIncendiary) && eInflictor.isIncendiary && sMeansOfDeath == "MOD_GRENADE_SPLASH")
+	if (isDefined(eInflictor.isIncendiary) && eInflictor.isIncendiary && sMeansOfDeath != "MOD_IMPACT")
 		return;
 
 	self [[level.incendiary.origFuncs.callbackPlayerDamage]](eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, sWeapon, vPoint, vDir, sHitLoc, psOffsetTime);
@@ -178,49 +181,123 @@ OnPlayerDamage(eInflictor, eAttacker, iDamage, iDFlags, sMeansOfDeath, sWeapon, 
 
 OnPlayerKilled(eInflictor, attacker, iDamage, sMeansOfDeath, sWeapon, vDir, sHitLoc, psOffsetTime, deathAnimDuration)
 {
-	self [[level.incendiary.origFuncs.callbackPlayerKilled]](eInflictor, attacker, iDamage, sMeansOfDeath, sWeapon, vDir, sHitLoc, psOffsetTime, deathAnimDuration);
+	self thread [[level.incendiary.origFuncs.callbackPlayerKilled]](eInflictor, attacker, iDamage, sMeansOfDeath, sWeapon, vDir, sHitLoc, psOffsetTime, deathAnimDuration);
+
+	waittillframeend;
 
 	if (self.hasIncendiary)
 	{
 		self setWeaponHudIconOverride("secondaryoffhand", "none");
 		self.hasIncendiary = false;
 	}
+
+	foreach (bag in getEntArray("weapon_scavenger_bag_mp", "classname"))
+	{
+		bag notify("incendiary__stop_tracking");
+		bag thread OnScavengerBagPickup();
+	}
 }
 
-OnPlayerSpawn()
+OnPlayerGiveLoadout()
 {
-	// self endon("disconnect");
+	self endon("disconnect");
 
-	// for (;;)
-	// {
-	// 	self waittill("spawned_player");
+	for (;;)
+	{
+		self waittill("giveLoadout");
 
-	// 	self giveIncendiary();
-	// }
+		if (self.hasIncendiary)
+			self takeIncendiary(false);
+
+		if (self getReplaceOffhandWithIncendiary())
+			self giveIncendiary();
+	}
 }
 
-OnPlayerIncendiaryThrow()
+OnScavengerBagPickup()
+{
+	self endon("incendiary__stop_tracking");
+	self endon("death");
+	level endon("game_ended");
+
+	self waittill("scavenger", player);
+	waittillframeend; // wait for regular scavenger pickup
+
+	if (!player.hasIncendiary) return;
+
+	player giveIncendiary();
+}
+
+OnPlayerGrenadeThrow()
 {
 	self endon("disconnect");
 
 	for (;;)
 	{
 		self waittill("grenade_fire", grenade, weaponName);
-		// if (weaponName == "smoke_grenade_mp") self giveIncendiary();
-		if (weaponName != "concussion_grenade_mp") continue;
-		if (!self.hasIncendiary) continue;
 
-		grenade.isIncendiary = true;
-		killCamEnt = grenade createKillcamEnt(); // used for flame kills only (not grenade impact kills)
-		grenade thread OnIncendiaryExplode(self, killCamEnt);
-		grenade thread createProjectileVisuals();
-		self setWeaponHudIconOverride("secondaryoffhand", "none");
+		if (weaponName == "smoke_grenade_mp")
+		{
+			grenade thread OnSmokeGrenadeThink();
+			grenade thread OnSmokeExplode();
+		}
+		else if (weaponName == "concussion_grenade_mp")
+		{
+			if (!self.hasIncendiary) continue;
 
-		// self giveSmoke();
+			grenade.isIncendiary = true;
+			killCamEnt = grenade createKillcamEnt(); // used for flame kills only (not grenade impact kills)
+			grenade thread OnIncendiaryExplode(self, killCamEnt);
+			grenade thread createProjectileVisuals();
+			self setWeaponHudIconOverride("secondaryoffhand", "none");
+		}
 	}
 }
 
-OnIncendiaryProjectileThink()
+OnSmokeGrenadeThink()
+{
+	self endon("death");
+
+	for (;;)
+	{
+		wait 0.1;
+
+		foreach (fire in level.incendiary.fires)
+			if (getFirePointIntersection(fire, self.origin))
+			{
+				origin = bulletTrace(self.origin, self.origin - (0, 0, fire.flameHeight), false)["position"];
+				playFX(level.incendiary.effects["smoke_grenade"], origin);
+				playSoundAtPos(origin, "smokegrenade_explode_default");
+				fire extinguishFire();
+
+				self notify("explode", origin);
+				self delete();
+				break;
+			}
+	}
+}
+
+OnSmokeExplode()
+{
+	self waittill("explode", position);
+
+	level.incendiary.smokeOrigins[level.incendiary.smokeOrigins.size] = position;
+
+	foreach (fire in level.incendiary.fires)
+		if (getFireSmokeIntersection(fire, position, false))
+			fire extinguishFire();
+
+	thread OnSmokeExpire(position);
+}
+
+OnSmokeExpire(position)
+{
+	wait 11.0;
+
+	level.incendiary.smokeOrigins = array_remove(level.incendiary.smokeOrigins, position);
+}
+
+OnIncendiaryVismodelThink()
 {
 	self endon("death");
 
@@ -243,6 +320,7 @@ OnIncendiaryExplode(owner, killCamEnt)
 		position,
 		getDvarFloat("scr_incendiary_radius"),
 		getDvarFloat("scr_incendiary_duration"),
+		getDvarInt("scr_incendiary_damage"),
 		owner,
 		killCamEnt
 	);
@@ -279,10 +357,10 @@ OnFireTriggerTouch(fire)
 
 		timeAlive = (time - fire.birthtime) / 1000;
 		timeAliveScale = min(timeAlive / 6.0 + 0.4, 1);
-		distance = distance(player.origin, fire.origin);
+		distance = distance2D(player.origin, fire.origin);
 		minDamageDistance = fire.radius + 128;
 		distanceScale = 1 - min(distance / minDamageDistance, 1);
-		damage = int(timeAliveScale * distanceScale * getDvarInt("scr_incendiary_damage"));
+		damage = int(timeAliveScale * distanceScale * fire.damage);
 
 		player thread [[level.callbackPlayerDamage]](
 			fire, // eInflictor The entity that causes the damage. ( e.g. a turret )
@@ -297,7 +375,7 @@ OnFireTriggerTouch(fire)
 			0 // psOffsetTime The time offset for the damage
 		);
 
-		if (timeAlive > 1.2) player shellShock("frag_grenade_mp", damage * 0.04);
+		if (timeAlive > 1.0) player shellShock("frag_grenade_mp", damage * 0.04);
 
 		playerdata.lastTouchTime = time;
 		fire.players[player.guid] = playerdata;
@@ -308,26 +386,12 @@ OnFireTriggerThink(fire)
 {
 	self endon("death");
 
-	triggerRadiusSq = fire.flameRadius * fire.flameRadius;
-
-	for (i = 0; true; i++)
+	for (;;)
 	{
-		grenades = getEntArray("grenade", "classname");
-		foreach (grenade in grenades)
-		{
-			if (grenade.model != "projectile_us_smoke_grenade") continue;
-			if (fire.extinguishQueued) continue;
-			if (distanceSquared(self.origin, grenade.origin) > triggerRadiusSq) continue;
-
-			fire.extinguishQueued = true;
-			grenade thread OnSmokeFireExtinguish(fire);
-		}
-
-		if (i % 5 != 0) continue;
-
 		foreach (ent in getDamageableEnts())
 		{
-			if (distanceSquared(self.origin, ent.origin) > triggerRadiusSq) continue;
+			if (!getPointCylinderIntersection(ent.origin + (0, 0, 32), self.origin, fire.flameRadius, fire.flameHeight))
+				continue;
 
 			ent notify(
 				"damage",
@@ -343,18 +407,8 @@ OnFireTriggerThink(fire)
 			);
 		}
 
-		wait 0.1;
+		wait 0.5;
 	}
-}
-
-OnSmokeFireExtinguish(fire)
-{
-	self waittill("explode", position);
-
-	wait 0.4;
-
-	fire playSound("veh_tire_deflate_decay");
-	fire deleteFire();
 }
 
 getSpawnPoint()
@@ -368,7 +422,7 @@ getSpawnPoint()
 
 		foreach (fire in level.incendiary.fires)
 		{
-			if (!(fire getPositionIsInFire(spawnPoint.origin))) continue;
+			if (!(getFireSpawnIntersection(fire, spawnPoint.origin))) continue;
 
 			inFire = true;
 
@@ -395,18 +449,6 @@ getSpawnPoint()
 	return spawnPoint;
 }
 
-getPositionIsInFire(position)
-{
-	foreach (trigger in self.triggers)
-	{
-		radius = self.flameRadius + 32;
-		if (distanceSquared(position * (1, 1, 0), trigger.origin * (1, 1, 0)) < radius * radius)
-			return true;
-	}
-
-	return false;
-}
-
 createKillcamEnt()
 {
 	ent = spawn("script_model", self.origin);
@@ -421,7 +463,7 @@ createProjectileVisuals()
 	vismodel = spawn("script_model", self.origin);
 	vismodel setModel(level.incendiary.models["projectile"]);
 	vismodel linkTo(self);
-	vismodel thread OnIncendiaryProjectileThink();
+	vismodel thread OnIncendiaryVismodelThink();
 	self.vismodel = vismodel;
 
 	wait 0.05;
@@ -499,6 +541,71 @@ playFireFXGround(origin)
 	}
 }
 
+getReplaceOffhandWithIncendiary()
+{
+	replaceOffhands = strTok(getDvar("scr_incendiary_replace_offhand"), ",");
+	if (replaceOffhands.size < 1) return false;
+
+	foreach (weaponName in self getWeaponsListOffhands())
+		if (isInArray(replaceOffhands, weaponName))
+			return true;
+
+	return false;
+}
+
+getFirePointIntersection(fire, pointPos)
+{
+	foreach (trigger in fire.triggers)
+		if (getPointCylinderIntersection(pointPos, trigger.origin, fire.flameRadius, fire.flameHeight))
+			return true;
+
+	return false;
+}
+
+getFireSpawnIntersection(fire, spawnOrigin)
+{
+	foreach (trigger in fire.triggers)
+		if (getCylinderCylinderIntersection(spawnOrigin, 32, 64, trigger.origin, fire.flameRadius, fire.flameHeight))
+			return true;
+
+	return false;
+}
+
+getFireSmokeIntersection(fire, smokeOrigin, favorFire)
+{
+	SMOKE_RADIUS = 128;
+	SMOKE_HEIGHT = 96;
+	// Adjust the outcome depending on the player-intended action:
+	// Incendiary thrown at smoke? -> Consider the smoke smaller than it actually is.
+	// Smoke thrown at incendiary to extinguish it? -> Allow full smoke radius.
+	if (isDefined(favorFire) && favorFire)
+	{
+		SMOKE_RADIUS = 80;
+		SMOKE_HEIGHT = 64;
+	}
+
+	foreach (trigger in fire.triggers)
+		if (getCylinderCylinderIntersection(smokeOrigin, SMOKE_RADIUS, SMOKE_HEIGHT, trigger.origin, fire.flameRadius, fire.flameHeight))
+			return true;
+
+	return false;
+}
+
+getPointCylinderIntersection(origin, cOrigin, cRadius, cHeight)
+{
+	return getCylinderCylinderIntersection(origin, 0, 0, cOrigin, cRadius, cHeight);
+}
+
+getCylinderCylinderIntersection(aOrigin, aRadius, aHeight, bOrigin, bRadius, bHeight)
+{
+	radii = aRadius + bRadius;
+	xyIntersects = distanceSquared(aOrigin * (1, 1, 0), bOrigin * (1, 1, 0)) <= radii * radii;
+	halfHeights = (aHeight / 2) + (bHeight / 2);
+	zIntersects = abs((bOrigin[2] + (bHeight / 2)) - (aOrigin[2] + (aHeight / 2))) <= halfHeights;
+
+	return xyIntersects && zIntersects;
+}
+
 getFirePoints(position, radius)
 {
 	SPACING = 64;
@@ -571,14 +678,6 @@ getSunflowerPattern(position, count, spacing)
 	return result;
 }
 
-drawDebugPoint(pos, color, ticks)
-{
-	thread scripts\ttt\_util::drawDebugLine((pos[0] + 1, pos[1] + 1, pos[2] + 1), (pos[0] - 1, pos[1] - 1, pos[2] - 1), color, ticks);
-	thread scripts\ttt\_util::drawDebugLine((pos[0] - 1, pos[1] + 1, pos[2] + 1), (pos[0] + 1, pos[1] - 1, pos[2] - 1), color, ticks);
-	thread scripts\ttt\_util::drawDebugLine((pos[0] + 1, pos[1] - 1, pos[2] + 1), (pos[0] - 1, pos[1] + 1, pos[2] - 1), color, ticks);
-	thread scripts\ttt\_util::drawDebugLine((pos[0] - 1, pos[1] - 1, pos[2] + 1), (pos[0] + 1, pos[1] + 1, pos[2] - 1), color, ticks);
-}
-
 getDamageableEnts()
 {
 	ents = [];
@@ -590,4 +689,10 @@ getDamageableEnts()
 	ents = array_combine(getEntArray("explodable_barrel", "targetname"), ents);
 	ents = array_combine(getEntArray("vending_machine", "targetname"), ents);
 	return ents;
+}
+
+isInArray(array, searchValue)
+{
+	foreach (value in array) if (value == searchValue) return true;
+	return false;
 }
