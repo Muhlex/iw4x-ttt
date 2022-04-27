@@ -234,11 +234,15 @@ endGameCustom(winner, endReasonText)
 
 	// I wanted some slow-mo...
 	// Since the iw4x engine version doesn't support easing into/from slow-mo, we emulate it:
-	for (i = 1.0; i > 0.4; i -= 0.05)
-	{
-		setSlowMotion(i, i - 0.05, 0.0);
-		wait 0.1;
-	}
+
+	// Somehow this breaks everything, so disable it for now...
+	// for (i = 1.0; i > 0.4; i -= 0.05)
+	// {
+	// 	setSlowMotion(i, i - 0.05, 0.05);
+	// 	wait 0.1;
+	// }
+	setSlowMotion(1.0, 0.4, 0.45);
+	wait 0.5;
 	setSlowMotion(0.4, 1.0, 0.05);
 
 	if (!wasOnlyRound())
