@@ -1,0 +1,10 @@
+VERSION             "1"
+FILENOTES           "TTT localized strings"
+
+REFERENCE           MPUI_TTT
+LANG_ENGLISH        "Trouble in Terrorist Town"
+
+REFERENCE           MPUI_TTT_CAPS
+LANG_ENGLISH        "TROUBLE IN TERRORIST TOWN"
+
+ENDMARKER

@@ -574,7 +574,7 @@ PlayerKilled_internal( eInflictor, attacker, victim, iDamage, sMeansOfDeath, sWe
 	//prof_begin( " PlayerKilled_3_drop" );
 	// drop weapons from killed player
 	victim maps\mp\gametypes\_weapons::dropScavengerForDeath( attacker );	// must be done before dropWeaponForDeath, since we use some weapon information
-	if (!level.randomizer.enabled && !level.ttt.enabled)
+	if (!level.ttt.enabled)
 		victim maps\mp\gametypes\_weapons::dropWeaponForDeath( attacker );
 
 	if (level.ttt.enabled) victim scripts\ttt\pickups::deathDropWeapons();

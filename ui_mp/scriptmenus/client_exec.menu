@@ -1,0 +1,15 @@
+{
+	menuDef
+	{
+		name "client_exec"
+		rect 0 0 1 1
+		visible 0
+		fullscreen 0
+
+		onOpen
+		{
+			exec "vstr client_exec";
+			close self;
+		}
+	}
+}

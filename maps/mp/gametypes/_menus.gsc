@@ -142,7 +142,6 @@ onMenuResponse()
 		{
 			self closepopupMenu();
 			self closeInGameMenu();
-			if (level.randomizer.enabled) self iPrintLnBold("Can't change class in ^3randomizer ^7mode");
 			if (level.ttt.enabled) self iPrintLnBold("Can't change class in ^3TTT");
 			if ( getDvar( "g_gametype" ) != "oitc" && getDvar( "g_gametype" ) != "gg" && getDvar( "g_gametype" ) != "ss" && !isDefined(level.customClassCB) && !level.randomizer.enabled && !level.ttt.enabled )
 			{
@@ -155,7 +154,6 @@ onMenuResponse()
 		{
 			self closepopupMenu();
 			self closeInGameMenu();
-			if (level.randomizer.enabled) self iPrintLnBold("Can't change class in ^3randomizer ^7mode");
 			if (level.ttt.enabled) self iPrintLnBold("Can't change class in ^3TTT");
 			if ( getDvar( "g_gametype" ) != "oitc" && getDvar( "g_gametype" ) != "gg" && getDvar( "g_gametype" ) != "ss" && !isDefined(level.customClassCB) && !level.randomizer.enabled && !level.ttt.enabled )
 			{

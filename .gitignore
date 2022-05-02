@@ -1,3 +1,5 @@
+.vscode
+
 demos/
 logs/
 images/
@@ -5,3 +7,5 @@ images/
 
 bots.txt
 missingasset.csv
+iw4x.stat
+mod.ff

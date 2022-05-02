@@ -1,0 +1,21 @@
+{
+	menuDef
+	{
+		name "class_opfor"
+		rect 0 0 0 0 0 0
+		forecolor 1 1 1 1
+		onOpen
+		{
+			setLocalVarString "ui_team" ( "opfor" );
+			if (dvarbool("ui_ttt_block_esc_menu"))
+			{
+				scriptmenuresponse "ttt_esc_menu_blocked";
+			}
+			else
+			{
+				open "class";
+			}
+			close self;
+		}
+	}
+}

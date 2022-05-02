@@ -650,11 +650,7 @@ spawnPlayer()
 	assert( isValidClass( self.class ) );
 
 	self maps\mp\gametypes\_class::setClass( self.class );
-
-	if (level.randomizer.enabled)
-		self scripts\randomizer::giveRandomizerLoadout( self.team, self.class, level.randomizer.loadout, true );
-	else
-		self maps\mp\gametypes\_class::giveLoadout( self.team, self.class );
+	self maps\mp\gametypes\_class::giveLoadout( self.team, self.class );
 
 	if ( getDvarInt( "camera_thirdPerson" ) )
 		self setThirdPersonDOF( true );
