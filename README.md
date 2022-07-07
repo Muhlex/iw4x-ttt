@@ -1,4 +1,4 @@
-# Trouble in Terrorist Town
+# Trouble in Taskforce Town
 
 **💥 README is currently outdated and will be updated with next major version release. 💥**
 
